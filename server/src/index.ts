@@ -31,6 +31,7 @@ const PORT = process.env.PORT || 5000;
 // Security middleware
 app.use(helmet());
 const defaultAllowedOrigins = [
+  'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5175'
@@ -94,7 +95,7 @@ const authenticateToken = (req: express.Request, res: express.Response, next: ex
 // User routes
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password, firstName, lastName, phone, state, city, occupation, income } = req.body;
 
     const existingUser = await prisma.user.findUnique({
       where: { email }
@@ -111,7 +112,12 @@ app.post('/api/auth/register', async (req, res) => {
         email,
         password: hashedPassword,
         firstName,
-        lastName
+        lastName,
+        phone: phone || null,
+        state: state || null,
+        city: city || null,
+        occupation: occupation || null,
+        income: income ? parseFloat(income) : null,
       }
     });
 
@@ -126,10 +132,17 @@ app.post('/api/auth/register', async (req, res) => {
         id: newUser.id,
         email: newUser.email,
         firstName: newUser.firstName,
-        lastName: newUser.lastName
+        lastName: newUser.lastName,
+        role: newUser.role,
+        phone: newUser.phone,
+        state: newUser.state,
+        city: newUser.city,
+        occupation: newUser.occupation,
+        income: newUser.income,
       }
     });
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
   }
 });
@@ -163,7 +176,15 @@ app.post('/api/auth/login', async (req, res) => {
         id: user.id,
         email: user.email,
         firstName: user.firstName,
-        lastName: user.lastName
+        lastName: user.lastName,
+        role: user.role,
+        phone: user.phone,
+        state: user.state,
+        city: user.city,
+        occupation: user.occupation,
+        income: user.income,
+        education: user.education,
+        familySize: user.familySize,
       }
     });
   } catch (error) {
@@ -171,11 +192,93 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Mount routes
+// Auth profile endpoint (matches what client expects)
+app.get('/api/auth/profile', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        dateOfBirth: true,
+        address: true,
+        city: true,
+        state: true,
+        pincode: true,
+        aadharNumber: true,
+        panNumber: true,
+        income: true,
+        occupation: true,
+        education: true,
+        familySize: true,
+        disability: true,
+        veteranStatus: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch profile' });
+  }
+});
+
+// Dashboard stats endpoint
+app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const [totalSchemes, applications, eligibilityChecks] = await Promise.all([
+      prisma.governmentScheme.count({ where: { isActive: true } }),
+      prisma.application.findMany({
+        where: { userId },
+        select: { status: true }
+      }),
+      prisma.eligibilityCheck.count({
+        where: { userId, isEligible: true }
+      })
+    ]);
+
+    const totalApplications = applications.length;
+    const pendingApplications = applications.filter(a => a.status === 'PENDING').length;
+    const approvedApplications = applications.filter(a => a.status === 'APPROVED').length;
+    const rejectedApplications = applications.filter(a => a.status === 'REJECTED').length;
+
+    res.json({
+      totalSchemes,
+      eligibleSchemes: eligibilityChecks,
+      totalApplications,
+      pendingApplications,
+      approvedApplications,
+      rejectedApplications,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+  }
+});
+
+// Mount routes — apply authenticateToken to protected route groups
 app.use('/api/schemes', schemesRoutes);
-app.use('/api/applications', applicationsRoutes);
-app.use('/api/users', usersRoutes);
-app.use('/api/notifications', notificationsRoutes);
+app.use('/api/applications', authenticateToken, applicationsRoutes);
+app.use('/api/users', authenticateToken, usersRoutes);
+app.use('/api/notifications', authenticateToken, notificationsRoutes);
 
 // Scheme routes
 app.get('/api/schemes', async (req, res) => {
