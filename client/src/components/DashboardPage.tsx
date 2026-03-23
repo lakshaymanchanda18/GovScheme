@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Container, Grid, Card, CardContent, Button, Avatar,
-  Chip, LinearProgress, IconButton, Skeleton, Stack, Divider, Paper
+  Chip, LinearProgress, IconButton, Skeleton, Stack, Divider
 } from '@mui/material';
 import {
-  MenuBook, Search, Assignment, TrendingUp, Notifications,
+  MenuBook, Search, Assignment, TrendingUp,
   ArrowForward, CheckCircle, Schedule, Cancel, Star,
-  AccountBalance, Person, SmartToy, Refresh
+  AccountBalance, SmartToy
 } from '@mui/icons-material';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth, User } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import { useI18n } from '../hooks/useI18n';
 
@@ -36,6 +36,10 @@ const QUICK_ACTIONS = [
   { icon: <SmartToy sx={{ fontSize: 28 }} />, label: 'AI Assistant', path: '/chatbot', gradient: 'linear-gradient(135deg, #0891b2, #06b6d4)', shadow: 'rgba(8,145,178,0.25)' },
 ];
 
+const PROFILE_FIELDS: (keyof User)[] = [
+  'firstName', 'lastName', 'email', 'phone', 'state', 'income', 'occupation', 'education'
+];
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const { api } = useApi();
@@ -59,41 +63,34 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const schemesData = await api.get('/schemes');
-      setSchemes(schemesData.slice(0, 5));
-      setStats({
-        totalSchemes: schemesData.length,
-        eligibleSchemes: Math.floor(schemesData.length * 0.6),
-        totalApplications: 3,
-        pendingApplications: 1,
-        approvedApplications: 1,
-        rejectedApplications: 1,
-      });
+      // Fetch stats and schemes in parallel from server
+      const [statsData, schemesData] = await Promise.all([
+        api.get('/dashboard/stats').catch(() => null),
+        api.get('/schemes').catch(() => []),
+      ]);
+
+      if (statsData) {
+        setStats(statsData);
+      }
+
+      setSchemes(Array.isArray(schemesData) ? schemesData.slice(0, 5) : []);
     } catch {
-      // Use fallback demo data
-      setStats({
-        totalSchemes: 24,
-        eligibleSchemes: 14,
-        totalApplications: 3,
-        pendingApplications: 1,
-        approvedApplications: 1,
-        rejectedApplications: 1,
-      });
+      // Stats will stay at defaults (zeros)
     } finally {
       setLoading(false);
     }
   };
 
-  const firstName = (user as any)?.firstName || 'User';
-  const profileComplete = (user as any) ? 
-    (['firstName', 'lastName', 'email', 'phone', 'state', 'income', 'occupation', 'education']
-      .filter(k => (user as any)[k]).length / 8) * 100 : 40;
+  const firstName = user?.firstName || 'User';
+  const profileComplete = user
+    ? (PROFILE_FIELDS.filter(k => user[k]).length / PROFILE_FIELDS.length) * 100
+    : 0;
 
   const statCards = [
-    { label: 'Available Schemes', value: stats.totalSchemes, icon: <AccountBalance />, gradient: 'linear-gradient(135deg, #4f46e5, #818cf8)', bg: '#eef2ff' },
-    { label: 'Eligible For You', value: stats.eligibleSchemes, icon: <CheckCircle />, gradient: 'linear-gradient(135deg, #059669, #34d399)', bg: '#dcfce7' },
-    { label: 'Applications', value: stats.totalApplications, icon: <Assignment />, gradient: 'linear-gradient(135deg, #d97706, #fbbf24)', bg: '#fef3c7' },
-    { label: 'Approved', value: stats.approvedApplications, icon: <Star />, gradient: 'linear-gradient(135deg, #0891b2, #22d3ee)', bg: '#cffafe' },
+    { label: 'Available Schemes', value: stats.totalSchemes, icon: <AccountBalance />, bg: '#eef2ff', color: '#4f46e5' },
+    { label: 'Eligible For You', value: stats.eligibleSchemes, icon: <CheckCircle />, bg: '#dcfce7', color: '#059669' },
+    { label: 'Applications', value: stats.totalApplications, icon: <Assignment />, bg: '#fef3c7', color: '#d97706' },
+    { label: 'Approved', value: stats.approvedApplications, icon: <Star />, bg: '#cffafe', color: '#0891b2' },
   ];
 
   return (
@@ -114,14 +111,8 @@ export default function DashboardPage() {
             overflow: 'hidden',
           }}
         >
-          <Box sx={{
-            position: 'absolute', top: -40, right: -40, width: 200, height: 200,
-            borderRadius: '50%', background: 'rgba(255,255,255,0.06)',
-          }} />
-          <Box sx={{
-            position: 'absolute', bottom: -60, right: 100, width: 150, height: 150,
-            borderRadius: '50%', background: 'rgba(255,255,255,0.04)',
-          }} />
+          <Box sx={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
+          <Box sx={{ position: 'absolute', bottom: -60, right: 100, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
           <Box sx={{ position: 'relative', zIndex: 1 }}>
             <Typography variant="h4" sx={{ fontWeight: 800, mb: 1, letterSpacing: '-0.02em' }}>
               Welcome back, {firstName}! 👋
@@ -146,24 +137,12 @@ export default function DashboardPage() {
                   border: '1px solid #f1f5f9',
                   animationDelay: `${idx * 80}ms`,
                   transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 32px rgba(0,0,0,0.06)',
-                  },
+                  '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 32px rgba(0,0,0,0.06)' },
                 }}
               >
                 <CardContent sx={{ p: 2.5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                    <Avatar
-                      sx={{
-                        width: 42,
-                        height: 42,
-                        background: card.bg,
-                        color: card.gradient.includes('#4f46e5') ? '#4f46e5' :
-                               card.gradient.includes('#059669') ? '#059669' :
-                               card.gradient.includes('#d97706') ? '#d97706' : '#0891b2',
-                      }}
-                    >
+                    <Avatar sx={{ width: 42, height: 42, background: card.bg, color: card.color }}>
                       {card.icon}
                     </Avatar>
                   </Box>
@@ -184,7 +163,7 @@ export default function DashboardPage() {
         </Grid>
 
         <Grid container spacing={3}>
-          {/* ===== QUICK ACTIONS ===== */}
+          {/* ===== QUICK ACTIONS + RECENT SCHEMES ===== */}
           <Grid item xs={12} md={8}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#0f172a' }} className="animate-fade-in-up delay-200">
               Quick Actions
@@ -197,30 +176,14 @@ export default function DashboardPage() {
                     elevation={0}
                     onClick={() => navigate(action.path)}
                     sx={{
-                      borderRadius: '18px',
-                      border: '1px solid #f1f5f9',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      animationDelay: `${300 + idx * 80}ms`,
+                      borderRadius: '18px', border: '1px solid #f1f5f9', cursor: 'pointer',
+                      textAlign: 'center', animationDelay: `${300 + idx * 80}ms`,
                       transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: `0 12px 32px ${action.shadow}`,
-                        borderColor: 'transparent',
-                      },
+                      '&:hover': { transform: 'translateY(-4px)', boxShadow: `0 12px 32px ${action.shadow}`, borderColor: 'transparent' },
                     }}
                   >
                     <CardContent sx={{ p: 2.5 }}>
-                      <Avatar
-                        sx={{
-                          width: 52,
-                          height: 52,
-                          mx: 'auto',
-                          mb: 1.5,
-                          background: action.gradient,
-                          boxShadow: `0 6px 20px ${action.shadow}`,
-                        }}
-                      >
+                      <Avatar sx={{ width: 52, height: 52, mx: 'auto', mb: 1.5, background: action.gradient, boxShadow: `0 6px 20px ${action.shadow}` }}>
                         {action.icon}
                       </Avatar>
                       <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>
@@ -236,11 +199,7 @@ export default function DashboardPage() {
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#0f172a' }} className="animate-fade-in-up delay-400">
               Recent Schemes
             </Typography>
-            <Card
-              elevation={0}
-              className="animate-fade-in-up delay-400"
-              sx={{ borderRadius: '18px', border: '1px solid #f1f5f9' }}
-            >
+            <Card elevation={0} className="animate-fade-in-up delay-400" sx={{ borderRadius: '18px', border: '1px solid #f1f5f9' }}>
               {loading ? (
                 <CardContent>
                   {[1, 2, 3].map(i => (
@@ -259,26 +218,12 @@ export default function DashboardPage() {
                     <Box key={scheme.id}>
                       <Box
                         sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 2,
-                          p: 2.5,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          '&:hover': { backgroundColor: 'rgba(79,70,229,0.03)' },
+                          display: 'flex', alignItems: 'center', gap: 2, p: 2.5, cursor: 'pointer',
+                          transition: 'all 0.2s ease', '&:hover': { backgroundColor: 'rgba(79,70,229,0.03)' },
                         }}
                         onClick={() => navigate(`/schemes/${scheme.id}`)}
                       >
-                        <Avatar
-                          sx={{
-                            width: 44,
-                            height: 44,
-                            background: `hsl(${(idx * 60) + 240}, 60%, 95%)`,
-                            color: `hsl(${(idx * 60) + 240}, 60%, 45%)`,
-                            fontWeight: 700,
-                            fontSize: '0.9rem',
-                          }}
-                        >
+                        <Avatar sx={{ width: 44, height: 44, background: `hsl(${(idx * 60) + 240}, 60%, 95%)`, color: `hsl(${(idx * 60) + 240}, 60%, 45%)`, fontWeight: 700, fontSize: '0.9rem' }}>
                           {scheme.name[0]}
                         </Avatar>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -289,17 +234,7 @@ export default function DashboardPage() {
                             {scheme.department}
                           </Typography>
                         </Box>
-                        <Chip
-                          label={scheme.category}
-                          size="small"
-                          sx={{
-                            fontWeight: 600,
-                            fontSize: '0.7rem',
-                            background: 'rgba(79,70,229,0.08)',
-                            color: '#4f46e5',
-                            borderRadius: '8px',
-                          }}
-                        />
+                        <Chip label={scheme.category} size="small" sx={{ fontWeight: 600, fontSize: '0.7rem', background: 'rgba(79,70,229,0.08)', color: '#4f46e5', borderRadius: '8px' }} />
                         <IconButton size="small" sx={{ color: '#94a3b8' }}>
                           <ArrowForward fontSize="small" />
                         </IconButton>
@@ -308,12 +243,7 @@ export default function DashboardPage() {
                     </Box>
                   ))}
                   <Box sx={{ p: 2, textAlign: 'center' }}>
-                    <Button
-                      size="small"
-                      endIcon={<ArrowForward />}
-                      onClick={() => navigate('/schemes')}
-                      sx={{ textTransform: 'none', fontWeight: 600, color: '#4f46e5' }}
-                    >
+                    <Button size="small" endIcon={<ArrowForward />} onClick={() => navigate('/schemes')} sx={{ textTransform: 'none', fontWeight: 600, color: '#4f46e5' }}>
                       View All Schemes
                     </Button>
                   </Box>
@@ -322,7 +252,7 @@ export default function DashboardPage() {
                 <CardContent sx={{ textAlign: 'center', py: 4 }}>
                   <MenuBook sx={{ fontSize: 48, color: '#cbd5e1', mb: 1 }} />
                   <Typography variant="body2" color="text.secondary">
-                    No schemes loaded yet. Check back soon!
+                    No schemes loaded yet. Make sure the server is running.
                   </Typography>
                 </CardContent>
               )}
@@ -332,16 +262,10 @@ export default function DashboardPage() {
           {/* ===== SIDEBAR ===== */}
           <Grid item xs={12} md={4}>
             {/* Profile Completion */}
-            <Card
-              elevation={0}
-              className="animate-fade-in-up delay-300"
-              sx={{ borderRadius: '18px', border: '1px solid #f1f5f9', mb: 3 }}
-            >
+            <Card elevation={0} className="animate-fade-in-up delay-300" sx={{ borderRadius: '18px', border: '1px solid #f1f5f9', mb: 3 }}>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#0f172a' }}>
-                    Profile
-                  </Typography>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#0f172a' }}>Profile</Typography>
                   <Chip
                     label={`${Math.round(profileComplete)}%`}
                     size="small"
@@ -356,37 +280,19 @@ export default function DashboardPage() {
                   variant="determinate"
                   value={profileComplete}
                   sx={{
-                    height: 8,
-                    borderRadius: 4,
-                    mb: 2,
-                    backgroundColor: '#f1f5f9',
+                    height: 8, borderRadius: 4, mb: 2, backgroundColor: '#f1f5f9',
                     '& .MuiLinearProgress-bar': {
                       borderRadius: 4,
-                      background: profileComplete >= 80
-                        ? 'linear-gradient(90deg, #059669, #34d399)'
-                        : 'linear-gradient(90deg, #4f46e5, #818cf8)',
+                      background: profileComplete >= 80 ? 'linear-gradient(90deg, #059669, #34d399)' : 'linear-gradient(90deg, #4f46e5, #818cf8)',
                     },
                   }}
                 />
                 <Typography variant="body2" sx={{ color: '#64748b', mb: 2 }}>
-                  {profileComplete < 80
-                    ? 'Complete your profile to get better scheme recommendations.'
-                    : 'Great! Your profile is nearly complete.'}
+                  {profileComplete < 80 ? 'Complete your profile to get better scheme recommendations.' : 'Great! Your profile is nearly complete.'}
                 </Typography>
                 <Button
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                  onClick={() => navigate('/profile')}
-                  id="dashboard-profile-btn"
-                  sx={{
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    borderRadius: '10px',
-                    borderColor: '#e2e8f0',
-                    color: '#4f46e5',
-                    '&:hover': { borderColor: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.04)' },
-                  }}
+                  fullWidth variant="outlined" size="small" onClick={() => navigate('/profile')} id="dashboard-profile-btn"
+                  sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '10px', borderColor: '#e2e8f0', color: '#4f46e5', '&:hover': { borderColor: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.04)' } }}
                 >
                   Complete Profile
                 </Button>
@@ -394,58 +300,35 @@ export default function DashboardPage() {
             </Card>
 
             {/* Application Status Summary */}
-            <Card
-              elevation={0}
-              className="animate-fade-in-up delay-400"
-              sx={{ borderRadius: '18px', border: '1px solid #f1f5f9', mb: 3 }}
-            >
+            <Card elevation={0} className="animate-fade-in-up delay-400" sx={{ borderRadius: '18px', border: '1px solid #f1f5f9', mb: 3 }}>
               <CardContent sx={{ p: 3 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#0f172a', mb: 2 }}>
-                  Application Status
-                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#0f172a', mb: 2 }}>Application Status</Typography>
                 <Stack spacing={2}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Schedule sx={{ color: '#f59e0b', fontSize: 20 }} />
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>Pending</Typography>
                     </Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f59e0b' }}>
-                      {stats.pendingApplications}
-                    </Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f59e0b' }}>{stats.pendingApplications}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <CheckCircle sx={{ color: '#22c55e', fontSize: 20 }} />
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>Approved</Typography>
                     </Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#22c55e' }}>
-                      {stats.approvedApplications}
-                    </Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#22c55e' }}>{stats.approvedApplications}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Cancel sx={{ color: '#ef4444', fontSize: 20 }} />
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>Rejected</Typography>
                     </Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ef4444' }}>
-                      {stats.rejectedApplications}
-                    </Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ef4444' }}>{stats.rejectedApplications}</Typography>
                   </Box>
                 </Stack>
                 <Button
-                  fullWidth
-                  size="small"
-                  endIcon={<ArrowForward />}
-                  onClick={() => navigate('/applications')}
-                  sx={{
-                    mt: 2.5,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    borderRadius: '10px',
-                    color: '#4f46e5',
-                    backgroundColor: 'rgba(79,70,229,0.06)',
-                    '&:hover': { backgroundColor: 'rgba(79,70,229,0.12)' },
-                  }}
+                  fullWidth size="small" endIcon={<ArrowForward />} onClick={() => navigate('/applications')}
+                  sx={{ mt: 2.5, textTransform: 'none', fontWeight: 600, borderRadius: '10px', color: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.06)', '&:hover': { backgroundColor: 'rgba(79,70,229,0.12)' } }}
                 >
                   View All Applications
                 </Button>
@@ -454,13 +337,8 @@ export default function DashboardPage() {
 
             {/* Tips Card */}
             <Card
-              elevation={0}
-              className="animate-fade-in-up delay-500"
-              sx={{
-                borderRadius: '18px',
-                border: '1px solid rgba(20,184,166,0.2)',
-                background: 'linear-gradient(135deg, #f0fdfa, #ecfdf5)',
-              }}
+              elevation={0} className="animate-fade-in-up delay-500"
+              sx={{ borderRadius: '18px', border: '1px solid rgba(20,184,166,0.2)', background: 'linear-gradient(135deg, #f0fdfa, #ecfdf5)' }}
             >
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#0f766e', mb: 1 }}>

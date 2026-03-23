@@ -4,8 +4,32 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  phone?: string;
+  dateOfBirth?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  aadharNumber?: string;
+  panNumber?: string;
+  income?: number;
+  occupation?: string;
+  education?: string;
+  familySize?: number;
+  disability?: string;
+  veteranStatus?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export const useAuth = () => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const queryClient = useQueryClient();
 
@@ -38,7 +62,7 @@ export const useAuth = () => {
       localStorage.setItem('token', response.data.token);
       setUser(response.data.user);
       return { success: true, user: response.data.user };
-    } catch (error) {
+    } catch (error: any) {
       return { success: false, error: error.response?.data?.error || 'Login failed' };
     }
   };
@@ -49,7 +73,7 @@ export const useAuth = () => {
       localStorage.setItem('token', response.data.token);
       setUser(response.data.user);
       return { success: true, user: response.data.user };
-    } catch (error) {
+    } catch (error: any) {
       return { success: false, error: error.response?.data?.error || 'Registration failed' };
     }
   };
