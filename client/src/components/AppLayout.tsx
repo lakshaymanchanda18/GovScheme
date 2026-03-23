@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Box, AppBar, Toolbar, Typography, IconButton, Button, Avatar,
@@ -7,10 +7,11 @@ import {
 } from '@mui/material';
 import {
   Dashboard, MenuBook, Search, Assignment, AccountCircle,
-  ExitToApp, Menu as MenuIcon, Close, Home, SmartToy,
+  ExitToApp, Menu as MenuIcon, Close, SmartToy,
   Notifications as NotificationsIcon
 } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
+import { useApi } from '../hooks/useApi';
 import { useI18n } from '../hooks/useI18n';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
@@ -24,12 +25,30 @@ const NAV_ITEMS = [
 
 export default function AppLayout() {
   const { user, logout } = useAuth();
+  const { api } = useApi();
   const { t } = useI18n();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Fetch real notification count from server
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const data = await api.get('/notifications/unread-count');
+        setUnreadCount(data.unreadCount || 0);
+      } catch {
+        setUnreadCount(0);
+      }
+    };
+    fetchNotifications();
+    // Refresh every 60 seconds
+    const interval = setInterval(fetchNotifications, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -153,10 +172,7 @@ export default function AppLayout() {
                     backgroundColor: location.pathname === item.path ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
                     borderRadius: '10px',
                     px: 2,
-                    '&:hover': {
-                      backgroundColor: 'rgba(79, 70, 229, 0.06)',
-                      color: '#4f46e5',
-                    },
+                    '&:hover': { backgroundColor: 'rgba(79, 70, 229, 0.06)', color: '#4f46e5' },
                     transition: 'all 0.2s ease',
                   }}
                 >
@@ -170,13 +186,17 @@ export default function AppLayout() {
 
           <Tooltip title="Notifications">
             <IconButton sx={{ color: '#64748b' }} id="notifications-btn">
-              <Badge badgeContent={3} color="error" sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem', height: 18, minWidth: 18 } }}>
+              <Badge
+                badgeContent={unreadCount}
+                color="error"
+                sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem', height: 18, minWidth: 18 } }}
+              >
                 <NotificationsIcon />
               </Badge>
             </IconButton>
           </Tooltip>
 
-          <Tooltip title={user ? `${(user as any).firstName || ''} ${(user as any).lastName || ''}` : 'Profile'}>
+          <Tooltip title={user ? `${user.firstName || ''} ${user.lastName || ''}` : 'Profile'}>
             <IconButton
               component={Link}
               to="/profile"
@@ -190,14 +210,12 @@ export default function AppLayout() {
             >
               <Avatar
                 sx={{
-                  width: 34,
-                  height: 34,
+                  width: 34, height: 34,
                   background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                  fontSize: '0.85rem',
-                  fontWeight: 700,
+                  fontSize: '0.85rem', fontWeight: 700,
                 }}
               >
-                {user ? ((user as any).firstName?.[0] || 'U').toUpperCase() : 'U'}
+                {user ? (user.firstName?.[0] || 'U').toUpperCase() : 'U'}
               </Avatar>
             </IconButton>
           </Tooltip>
@@ -208,10 +226,7 @@ export default function AppLayout() {
               startIcon={<ExitToApp />}
               id="logout-btn"
               sx={{
-                ml: 1,
-                textTransform: 'none',
-                color: '#64748b',
-                borderRadius: '10px',
+                ml: 1, textTransform: 'none', color: '#64748b', borderRadius: '10px',
                 '&:hover': { backgroundColor: 'rgba(239,68,68,0.06)', color: '#ef4444' },
               }}
             >
@@ -240,13 +255,9 @@ export default function AppLayout() {
       <Box
         component="footer"
         sx={{
-          py: 3,
-          px: 4,
-          textAlign: 'center',
-          borderTop: '1px solid',
-          borderColor: 'rgba(226,232,240,0.8)',
-          background: 'rgba(255,255,255,0.6)',
-          backdropFilter: 'blur(10px)',
+          py: 3, px: 4, textAlign: 'center',
+          borderTop: '1px solid', borderColor: 'rgba(226,232,240,0.8)',
+          background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(10px)',
         }}
       >
         <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
