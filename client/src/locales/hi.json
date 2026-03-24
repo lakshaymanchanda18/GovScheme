@@ -40,7 +40,7 @@
     "logout": "लॉग आउट"
   },
   "auth": {
-    "welcome": "GovScheme में आपका स्वागत है",
+    "welcome": "SaralYojna में आपका स्वागत है",
     "loginTitle": "साइन इन करें",
     "registerTitle": "खाता बनाएं",
     "email": "ईमेल पता",
@@ -189,7 +189,7 @@
     "mostPopularSchemes": "सबसे लोकप्रिय योजनाएं"
   },
   "chatbot": {
-    "title": "GovScheme सहायक",
+    "title": "SaralYojna सहायक",
     "placeholder": "योजनाओं, पात्रता या आवेदन प्रक्रिया के बारे में पूछें...",
     "greeting": "नमस्ते! मैं आपकी कैसे मदद कर सकता हूं?",
     "typing": "टाइपिंग...",
@@ -211,11 +211,11 @@
     "schemeUpdate": "नई योजना उपलब्ध"
   },
   "footer": {
-    "about": "GovScheme के बारे में",
+    "about": "SaralYojna के बारे में",
     "help": "सहायता और समर्थन",
     "privacy": "गोपनीयता नीति",
     "terms": "सेवा की शर्तें",
     "contact": "हमसे संपर्क करें",
-    "copyright": "© 2024 GovScheme। सर्वाधिकार सुरक्षित।"
+    "copyright": "© 2024 SaralYojna। सर्वाधिकार सुरक्षित।"
   }
 }

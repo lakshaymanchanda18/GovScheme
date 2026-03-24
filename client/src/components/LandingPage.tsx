@@ -96,7 +96,7 @@ export default function LandingPage() {
             letterSpacing: '-0.02em',
           }}
         >
-          GovScheme
+          SaralYojna
         </Typography>
         <Stack direction="row" spacing={1.5} alignItems="center">
           <Button
@@ -398,7 +398,7 @@ export default function LandingPage() {
               </Box>
             </Typography>
             <Typography sx={{ color: '#64748b', maxWidth: 560, mx: 'auto', fontSize: '1.1rem' }}>
-              GovScheme simplifies the entire journey from discovering government schemes to tracking your application.
+              SaralYojna simplifies the entire journey from discovering government schemes to tracking your application.
             </Typography>
           </Box>
           <Grid container spacing={3}>
@@ -460,7 +460,7 @@ export default function LandingPage() {
               Three simple steps
             </Typography>
             <Typography sx={{ color: '#64748b', maxWidth: 480, mx: 'auto', fontSize: '1.1rem' }}>
-              Getting started with GovScheme is quick and easy
+              Getting started with SaralYojna is quick and easy
             </Typography>
           </Box>
           <Grid container spacing={4}>
@@ -558,7 +558,7 @@ export default function LandingPage() {
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={4}>
               <Typography sx={{ fontWeight: 800, fontSize: '1.4rem', background: 'linear-gradient(135deg, #818cf8, #5eead4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                GovScheme
+                SaralYojna
               </Typography>
               <Typography variant="body2" sx={{ color: '#94a3b8', mt: 1 }}>
                 Empowering citizens with unified access to government welfare schemes.
@@ -574,7 +574,7 @@ export default function LandingPage() {
             </Grid>
             <Grid item xs={12} md={4}>
               <Typography variant="body2" sx={{ color: '#64748b', textAlign: { xs: 'left', md: 'right' } }}>
-                © {new Date().getFullYear()} GovScheme. All rights reserved.
+                © {new Date().getFullYear()} SaralYojna. All rights reserved.
               </Typography>
             </Grid>
           </Grid>

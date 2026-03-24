@@ -2,26 +2,25 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import { verify, sign } from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 import { hash, compare } from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import { createTransport } from 'nodemailer';
 import rateLimit from 'express-rate-limit';
-import { body, validationResult } from 'express-validator';
 import { prisma } from './config/prisma';
 import schemesRoutes from './routes/schemes';
 import applicationsRoutes from './routes/applications';
 import usersRoutes from './routes/users';
 import notificationsRoutes from './routes/notifications';
-
-// Extend Express Request interface
-declare global {
-  namespace Express {
-    interface Request {
-      user?: { userId: string };
-    }
-  }
-}
+import adminRoutes from './routes/admin';
+import chatbotRoutes from './routes/chatbot';
+import eligibilityRoutes from './routes/eligibility';
+import integrationsRoutes from './routes/integrations';
+import voiceRoutes from './routes/voice';
+import { authenticateToken } from './middleware/auth';
+import { registerHandler, startQueueWorker, enqueueJob } from './services/queue';
+import { cacheSet } from './services/cache';
+import { importSchemes, loadJsonFile } from './services/schemeImport';
+import path from 'path';
 
 dotenv.config();
 
@@ -50,6 +49,19 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Simple request id + logging
+app.use((req, res, next) => {
+  const requestId = uuidv4();
+  (req as any).requestId = requestId;
+  res.setHeader('X-Request-Id', requestId);
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`[${requestId}] ${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`);
+  });
+  next();
+});
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -58,15 +70,20 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Email setup
-const transporter = createTransport({
-  host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT || '587'),
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: 'Too many auth requests'
+});
+const chatbotLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: 'Too many chatbot requests'
+});
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: 'Too many upload requests'
 });
 
 // Health check
@@ -74,23 +91,10 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// JWT middleware
-const authenticateToken = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ error: 'Access token required' });
-  }
-
-  verify(token, process.env.JWT_SECRET || 'default-secret', (err: any, user: any) => {
-    if (err) {
-      return res.status(403).json({ error: 'Invalid token' });
-    }
-    req.user = user;
-    next();
-  });
-};
+// Targeted rate limits
+app.use('/api/auth', authLimiter);
+app.use('/api/chatbot', chatbotLimiter);
+app.use('/api/applications/upload', uploadLimiter);
 
 // User routes
 app.post('/api/auth/register', async (req, res) => {
@@ -274,378 +278,128 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
   }
 });
 
-// Mount routes — apply authenticateToken to protected route groups
+// Mount routes - apply authenticateToken to protected route groups
 app.use('/api/schemes', schemesRoutes);
 app.use('/api/applications', authenticateToken, applicationsRoutes);
 app.use('/api/users', authenticateToken, usersRoutes);
 app.use('/api/notifications', authenticateToken, notificationsRoutes);
+app.use('/api/admin', authenticateToken, adminRoutes);
+app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/eligibility', eligibilityRoutes);
+app.use('/api/integrations', integrationsRoutes);
+app.use('/api/voice', voiceRoutes);
 
-// Scheme routes
-app.get('/api/schemes', async (req, res) => {
-  try {
-    const { category, department, state } = req.query;
-
-    const where: any = { isActive: true };
-
-    if (category) where.category = category;
-    if (department) where.department = department;
-    if (state) where.stateSpecific = { contains: state };
-
-    const schemes = await prisma.governmentScheme.findMany({
-      where,
-      orderBy: { createdAt: 'desc' }
-    });
-
-    res.json(schemes);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch schemes' });
-  }
+// Background job handlers
+registerHandler('UPLOAD_PROCESSED', async (payload) => {
+  await prisma.notification.create({
+    data: {
+      userId: payload.userId,
+      title: 'Document uploaded',
+      message: `Your document "${payload.documentName}" was uploaded successfully.`,
+      type: 'INFO'
+    }
+  });
 });
 
-// Eligibility checker (AI-powered)
-app.post('/api/eligibility/check', authenticateToken, async (req, res) => {
-  try {
-    const { schemeId } = req.body;
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
-
-    const scheme = await prisma.governmentScheme.findUnique({
-      where: { id: schemeId }
-    });
-
-    if (!scheme) {
-      return res.status(404).json({ error: 'Scheme not found' });
-    }
-
-    // AI eligibility assessment
-    const eligibilityResult = await assessEligibility(user, scheme);
-
-    await prisma.eligibilityCheck.create({
-      data: {
-        userId,
-        schemeId,
-        isEligible: eligibilityResult.isEligible,
-        confidenceScore: eligibilityResult.confidenceScore,
-        matchedCriteria: eligibilityResult.matchedCriteria,
-        unmatchedCriteria: eligibilityResult.unmatchedCriteria
-      }
-    });
-
-    res.json(eligibilityResult);
-  } catch (error) {
-    res.status(500).json({ error: 'Eligibility check failed' });
-  }
-});
-
-// AI eligibility + recommendations (heuristic scoring, non-agentic)
-app.post('/api/eligibility/ai-check', async (req, res) => {
-  try {
-    const { personalInfo, financialInfo, additionalInfo, userId } = req.body || {};
-
-    const profileFromBody = {
-      age: Number(personalInfo?.age) || undefined,
-      state: personalInfo?.state || undefined,
-      familySize: Number(personalInfo?.familySize) || undefined,
-      education: personalInfo?.education || undefined,
-      occupation: personalInfo?.occupation || undefined,
-      income: Number(financialInfo?.income) || undefined,
-      disability: additionalInfo?.disability || undefined,
-      veteranStatus: additionalInfo?.veteranStatus || undefined,
-      caste: additionalInfo?.caste || undefined
-    };
-
-    let userProfile: any = profileFromBody;
-    if (userId) {
-      const user = await prisma.user.findUnique({ where: { id: userId } });
-      if (user) {
-        userProfile = {
-          ...userProfile,
-          state: userProfile.state || user.state || undefined,
-          familySize: userProfile.familySize || user.familySize || undefined,
-          education: userProfile.education || user.education || undefined,
-          occupation: userProfile.occupation || user.occupation || undefined,
-          income: userProfile.income || (user.income ? Number(user.income) : undefined),
-          disability: userProfile.disability || user.disability || undefined,
-          veteranStatus: userProfile.veteranStatus || user.veteranStatus || undefined
-        };
-        if (!userProfile.age && user.dateOfBirth) {
-          userProfile.age = calculateAge(user.dateOfBirth);
+registerHandler('ANALYTICS_REFRESH', async () => {
+  const [totalUsers, totalApplications, approvedApplications, rejectedApplications, mostPopularSchemes, appsForSeg] =
+    await Promise.all([
+      prisma.user.count(),
+      prisma.application.count(),
+      prisma.application.count({ where: { status: 'APPROVED' } }),
+      prisma.application.count({ where: { status: 'REJECTED' } }),
+      prisma.governmentScheme.findMany({
+        select: {
+          id: true,
+          name: true,
+          applications: { select: { id: true } }
         }
-      }
-    }
+      }),
+      prisma.application.findMany({
+        include: {
+          user: { select: { state: true } },
+          scheme: { select: { category: true } }
+        }
+      })
+    ]);
 
-    const schemes = await prisma.governmentScheme.findMany({
-      where: { isActive: true },
-      orderBy: { createdAt: 'desc' }
-    });
+  const popular = mostPopularSchemes
+    .map((scheme) => ({
+      id: scheme.id,
+      name: scheme.name,
+      applicationCount: scheme.applications.length
+    }))
+    .sort((a, b) => b.applicationCount - a.applicationCount)
+    .slice(0, 6);
 
-    const scored = schemes.map((scheme) => {
-      const { score, reasons, isEligible } = scoreScheme(userProfile, scheme);
-      return {
-        scheme,
-        score,
-        reasons,
-        isEligible
-      };
-    }).sort((a, b) => b.score - a.score);
+  const statusDistribution: Record<string, number> = {};
+  const categoryBreakdown: Record<string, number> = {};
+  const stateBreakdown: Record<string, number> = {};
 
-    const top = scored.slice(0, 5);
-    const best = top[0];
+  appsForSeg.forEach((app) => {
+    statusDistribution[app.status] = (statusDistribution[app.status] || 0) + 1;
+    const category = app.scheme?.category || 'Unknown';
+    categoryBreakdown[category] = (categoryBreakdown[category] || 0) + 1;
+    const state = app.user?.state || 'Unknown';
+    stateBreakdown[state] = (stateBreakdown[state] || 0) + 1;
+  });
 
-    const matchedCriteria = best ? best.reasons.matched : [];
-    const unmatchedCriteria = best ? best.reasons.unmatched : [];
-    const confidenceScore = best ? best.score : 0;
-    const isEligible = best ? best.isEligible : false;
+  cacheSet('admin:analytics', {
+    totalUsers,
+    totalApplications,
+    approvedApplications,
+    rejectedApplications,
+    mostPopularSchemes: popular,
+    statusDistribution,
+    categoryBreakdown,
+    stateBreakdown
+  }, 60 * 1000);
+});
 
-    const recommendedSchemes = top.map((item) => ({
-      id: item.scheme.id,
-      name: item.scheme.name,
-      matchPercentage: Math.round(item.score * 100),
-      benefits: item.scheme.benefits,
-      whyRecommended: item.reasons.matched
-    }));
+startQueueWorker(1000);
 
-    const documentSuggestions = best?.scheme?.requiredDocuments
-      ? best.scheme.requiredDocuments.split(',').map((d: string) => d.trim()).filter(Boolean)
-      : [];
+// Periodic analytics refresh
+setInterval(() => {
+  enqueueJob('ANALYTICS_REFRESH', {});
+}, 60000);
 
-    res.json({
-      isEligible,
-      confidenceScore,
-      matchedCriteria,
-      unmatchedCriteria,
-      recommendedSchemes,
-      documentSuggestions
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'AI eligibility check failed' });
+// Periodic scheme validation (staleness check)
+registerHandler('SCHEME_VALIDATE', async () => {
+  const schemes = await prisma.governmentScheme.findMany();
+  const stale = schemes.filter((s) => Date.now() - new Date(s.updatedAt).getTime() > 1000 * 60 * 60 * 24 * 180);
+  if (stale.length > 0) {
+    console.log(`Stale schemes detected: ${stale.length}`);
   }
 });
 
-// Application routes
-app.post('/api/applications', authenticateToken, async (req, res) => {
+setInterval(() => {
+  enqueueJob('SCHEME_VALIDATE', {});
+}, 1000 * 60 * 60 * 24);
+
+// Periodic scheme refresh from local seed file
+registerHandler('SCHEME_REFRESH', async () => {
+  const seedPath = path.resolve(process.cwd(), '../data/schemes.seed.json');
   try {
-    const { schemeId, applicationData, documents } = req.body;
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
-
-    const application = await prisma.application.create({
-      data: {
-        userId,
-        schemeId,
-        applicationData,
-        documents
-      }
-    });
-
-    res.status(201).json({
-      message: 'Application submitted successfully',
-      application
-    });
+    const schemes = loadJsonFile(seedPath);
+    await importSchemes(schemes);
+    console.log('Scheme refresh completed');
   } catch (error) {
-    res.status(500).json({ error: 'Application submission failed' });
+    console.error('Scheme refresh failed', error);
   }
 });
 
-// Notification routes
-app.get('/api/notifications', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
-
-    const notifications = await prisma.notification.findMany({
-      where: { userId, isRead: false },
-      orderBy: { createdAt: 'desc' }
-    });
-
-    res.json(notifications);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch notifications' });
-  }
-});
-
-// AI eligibility assessment function
-const assessEligibility = async (user: any, scheme: any) => {
-  const criteria = JSON.parse(scheme.eligibilityCriteria || '{}');
-  const userData = JSON.parse(JSON.stringify(user));
-
-  let matchedCriteria: any = {};
-  let unmatchedCriteria: any = {};
-  let isEligible = true;
-  let confidenceScore = 1.0;
-
-  // Check income criteria
-  if (criteria.incomeLimit && user.income) {
-    if (user.income <= criteria.incomeLimit) {
-      matchedCriteria.income = true;
-    } else {
-      unmatchedCriteria.income = `Income exceeds limit of ${criteria.incomeLimit}`;
-      isEligible = false;
-    }
-  }
-
-  // Check age criteria
-  if (criteria.ageLimit && user.dateOfBirth) {
-    const age = calculateAge(user.dateOfBirth);
-    const ageLimits = criteria.ageLimit.split('-');
-    const minAge = parseInt(ageLimits[0]);
-    const maxAge = ageLimits[1] ? parseInt(ageLimits[1]) : undefined;
-
-    if ((maxAge !== undefined && age < minAge) || (maxAge !== undefined && age > maxAge)) {
-      unmatchedCriteria.age = `Age not within ${criteria.ageLimit} years`;
-      isEligible = false;
-    } else {
-      matchedCriteria.age = true;
-    }
-  }
-
-  // Check education criteria
-  if (criteria.educationCriteria && user.education) {
-    if (user.education.toLowerCase().includes(criteria.educationCriteria.toLowerCase())) {
-      matchedCriteria.education = true;
-    } else {
-      unmatchedCriteria.education = `Education does not match ${criteria.educationCriteria}`;
-      isEligible = false;
-    }
-  }
-
-  // Check occupation criteria
-  if (criteria.occupationCriteria && user.occupation) {
-    if (user.occupation.toLowerCase().includes(criteria.occupationCriteria.toLowerCase())) {
-      matchedCriteria.occupation = true;
-    } else {
-      unmatchedCriteria.occupation = `Occupation does not match ${criteria.occupationCriteria}`;
-      isEligible = false;
-    }
-  }
-
-  // Check disability criteria
-  if (criteria.disabilityCriteria && user.disability) {
-    if (criteria.disabilityCriteria === 'any' || user.disability.toLowerCase().includes(criteria.disabilityCriteria.toLowerCase())) {
-      matchedCriteria.disability = true;
-    } else {
-      unmatchedCriteria.disability = `Disability does not match ${criteria.disabilityCriteria}`;
-      isEligible = false;
-    }
-  }
-
-  // Check state-specific criteria
-  if (criteria.stateSpecific && user.state) {
-    if (user.state.toLowerCase().includes(criteria.stateSpecific.toLowerCase())) {
-      matchedCriteria.state = true;
-    } else {
-      unmatchedCriteria.state = `State does not match ${criteria.stateSpecific}`;
-      isEligible = false;
-    }
-  }
-
-  // Calculate confidence score
-  const totalCriteria = Object.keys(criteria).length;
-  const matchedCount = Object.keys(matchedCriteria).length;
-  confidenceScore = matchedCount / totalCriteria;
-
-  return {
-    isEligible,
-    confidenceScore,
-    matchedCriteria,
-    unmatchedCriteria,
-    recommendation: isEligible ? 'Eligible' : 'Not Eligible'
-  };
-};
-
-const calculateAge = (birthDate: Date) => {
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-
-  return age;
-};
-
-const parseAgeLimit = (ageLimit?: string | null) => {
-  if (!ageLimit) return { min: undefined, max: undefined };
-  const parts = ageLimit.split('-').map((p) => parseInt(p.trim(), 10)).filter((n) => !Number.isNaN(n));
-  if (parts.length === 1) return { min: parts[0], max: parts[0] };
-  return { min: parts[0], max: parts[1] };
-};
-
-const scoreScheme = (user: any, scheme: any) => {
-  const matched: string[] = [];
-  const unmatched: string[] = [];
-
-  let score = 0;
-  let totalWeight = 0;
-  const weights = {
-    income: 0.35,
-    education: 0.2,
-    state: 0.15,
-    occupation: 0.15,
-    age: 0.15
-  };
-
-  const addScore = (weight: number, isMatch: boolean, reasonMatch: string, reasonNo: string) => {
-    totalWeight += weight;
-    if (isMatch) {
-      score += weight;
-      matched.push(reasonMatch);
-    } else {
-      unmatched.push(reasonNo);
-    }
-  };
-
-  const incomeLimit = scheme.incomeLimit ? Number(scheme.incomeLimit) : undefined;
-  if (incomeLimit !== undefined && user.income !== undefined) {
-    addScore(weights.income, user.income <= incomeLimit, 'Income within limit', `Income exceeds ${incomeLimit}`);
-  }
-
-  const { min, max } = parseAgeLimit(scheme.ageLimit);
-  if (user.age !== undefined && (min !== undefined || max !== undefined)) {
-    const okMin = min === undefined || user.age >= min;
-    const okMax = max === undefined || user.age <= max;
-    addScore(weights.age, okMin && okMax, 'Age matches scheme', 'Age outside allowed range');
-  }
-
-  if (scheme.educationCriteria && user.education) {
-    const ok = user.education.toLowerCase().includes(String(scheme.educationCriteria).toLowerCase());
-    addScore(weights.education, ok, 'Education matches', 'Education does not match');
-  }
-
-  if (scheme.occupationCriteria && user.occupation) {
-    const ok = user.occupation.toLowerCase().includes(String(scheme.occupationCriteria).toLowerCase());
-    addScore(weights.occupation, ok, 'Occupation matches', 'Occupation does not match');
-  }
-
-  if (scheme.stateSpecific && user.state) {
-    const ok = user.state.toLowerCase().includes(String(scheme.stateSpecific).toLowerCase());
-    addScore(weights.state, ok, 'State matches scheme', 'State does not match');
-  }
-
-  const finalScore = totalWeight > 0 ? score / totalWeight : 0;
-  const isEligible = unmatched.length === 0;
-
-  return { score: finalScore, reasons: { matched, unmatched }, isEligible };
-};
+setInterval(() => {
+  enqueueJob('SCHEME_REFRESH', {});
+}, 1000 * 60 * 60 * 24 * 7);
 
 // Error handling middleware
 app.use((err: any, req: any, res: any, next: any) => {
   console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+  const status = err.status || 500;
+  res.status(status).json({
+    error: err.message || 'Something went wrong!',
+    requestId: (req as any).requestId
+  });
 });
 
 app.listen(PORT, () => {

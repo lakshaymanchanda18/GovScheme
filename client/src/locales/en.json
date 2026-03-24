@@ -40,7 +40,7 @@
     "logout": "Logout"
   },
   "auth": {
-    "welcome": "Welcome to GovScheme",
+    "welcome": "Welcome to SaralYojna",
     "loginTitle": "Sign In",
     "registerTitle": "Create Account",
     "email": "Email Address",
@@ -189,7 +189,7 @@
     "mostPopularSchemes": "Most Popular Schemes"
   },
   "chatbot": {
-    "title": "GovScheme Assistant",
+    "title": "SaralYojna Assistant",
     "placeholder": "Ask me about schemes, eligibility, or application process...",
     "greeting": "Hello! How can I help you today?",
     "typing": "Typing...",
@@ -211,11 +211,11 @@
     "schemeUpdate": "New scheme available"
   },
   "footer": {
-    "about": "About GovScheme",
+    "about": "About SaralYojna",
     "help": "Help & Support",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "contact": "Contact Us",
-    "copyright": "© 2024 GovScheme. All rights reserved."
+    "copyright": "© 2024 SaralYojna. All rights reserved."
   }
 }

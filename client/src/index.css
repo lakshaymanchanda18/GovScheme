@@ -227,3 +227,39 @@ img {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+/* Low-bandwidth mode: reduce motion and heavy effects */
+body.low-bandwidth * {
+  animation: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Kiosk mode: larger text and simplified layout */
+body.kiosk-mode {
+  font-size: 18px;
+}
+
+body.kiosk-mode .MuiAppBar-root {
+  position: static;
+}
+
+body.kiosk-mode footer {
+  display: none;
+}
+
+/* Assisted mode */
+body.assisted-mode {
+  outline: 0;
+}
+
+/* Simple mode for low literacy */
+body.simple-mode {
+  font-size: 19px;
+  line-height: 1.6;
+}
+
+body.simple-mode .MuiButton-root {
+  font-size: 0.95rem;
+}

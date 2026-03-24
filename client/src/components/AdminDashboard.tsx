@@ -64,8 +64,24 @@ export default function AdminDashboard() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [analytics, setAnalytics] = useState<any>({});
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [auditMeta, setAuditMeta] = useState<{ total: number; page: number; pageSize: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<any[] | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [previewHeaders, setPreviewHeaders] = useState<string[]>([]);
+  const [previewRows, setPreviewRows] = useState<string[][]>([]);
+  const [previewErrors, setPreviewErrors] = useState<string[][]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [auditFilter, setAuditFilter] = useState({
+    q: '',
+    action: '',
+    entityType: '',
+    actorId: ''
+  });
   
   // Scheme management
   const [schemeDialog, setSchemeDialog] = useState(false);
@@ -115,10 +131,31 @@ export default function AdminDashboard() {
       setApplications(appsData);
       setUsers(usersData);
       setAnalytics(analyticsData);
+      const logsData = await api.get('/admin/audit-logs?page=1&pageSize=50');
+      setAuditLogs(logsData.data || []);
+      setAuditMeta(logsData.meta || null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAuditLogs = async (pageOverride?: number) => {
+    try {
+      const params = new URLSearchParams();
+      if (auditFilter.q) params.append('q', auditFilter.q);
+      if (auditFilter.action) params.append('action', auditFilter.action);
+      if (auditFilter.entityType) params.append('entityType', auditFilter.entityType);
+      if (auditFilter.actorId) params.append('actorId', auditFilter.actorId);
+      const pageToUse = pageOverride || auditMeta?.page || 1;
+      params.append('page', String(pageToUse));
+      if (auditMeta?.pageSize) params.append('pageSize', String(auditMeta.pageSize));
+      const logsData = await api.get(`/admin/audit-logs?${params.toString()}`);
+      setAuditLogs(logsData.data || []);
+      setAuditMeta(logsData.meta || null);
+    } catch {
+      // ignore
     }
   };
 
@@ -211,21 +248,91 @@ export default function AdminDashboard() {
           <Typography variant="h4" gutterBottom>
             {t('admin.dashboard')}
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setEditingScheme(null);
-              setSchemeForm({
-                name: '', description: '', category: '', department: '', benefits: '',
-                eligibilityCriteria: '', applicationProcess: '', requiredDocuments: '',
-                incomeLimit: '', ageLimit: '', familySizeLimit: '', isActive: true
-              });
-              setSchemeDialog(true);
-            }}
-          >
-            {t('admin.addScheme')}
-          </Button>
+          <Box display="flex" gap={1}>
+            <Button
+              variant="outlined"
+              component="label"
+              disabled={importing}
+            >
+              {importing ? 'Importing...' : 'Import CSV'}
+              <input
+                type="file"
+                accept=".csv"
+                hidden
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setImportFile(file);
+                  setImportError(null);
+                  setImportResult(null);
+                  const text = await file.text();
+                  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+                  if (lines.length < 2) {
+                    setImportError('CSV must have a header and at least one row');
+                    e.target.value = '';
+                    return;
+                  }
+                  const parseLine = (line: string) => {
+                    const out: string[] = [];
+                    let current = '';
+                    let inQuotes = false;
+                    for (let i = 0; i < line.length; i++) {
+                      const ch = line[i];
+                      if (ch === '"' && line[i + 1] === '"') {
+                        current += '"';
+                        i++;
+                      } else if (ch === '"') {
+                        inQuotes = !inQuotes;
+                      } else if (ch === ',' && !inQuotes) {
+                        out.push(current.trim());
+                        current = '';
+                      } else {
+                        current += ch;
+                      }
+                    }
+                    out.push(current.trim());
+                    return out.map((v) => v.replace(/^"|"$/g, '').trim());
+                  };
+                  const headers = parseLine(lines[0]);
+                  const rows = lines.slice(1, 6).map(parseLine);
+                  const required = ['name', 'description', 'category', 'department', 'eligibilityCriteria', 'benefits', 'applicationProcess', 'requiredDocuments'];
+                  const errors = rows.map((row) => {
+                    const obj: any = {};
+                    headers.forEach((h, i) => {
+                      obj[h] = row[i] || '';
+                    });
+                    const rowErrors: string[] = [];
+                    required.forEach((field) => {
+                      if (!obj[field] || String(obj[field]).trim() === '') {
+                        rowErrors.push(`Missing ${field}`);
+                      }
+                    });
+                    return rowErrors;
+                  });
+                  setPreviewHeaders(headers);
+                  setPreviewRows(rows);
+                  setPreviewErrors(errors);
+                  setPreviewOpen(true);
+                  e.target.value = '';
+                }}
+              />
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setEditingScheme(null);
+                setSchemeForm({
+                  name: '', description: '', category: '', department: '', benefits: '',
+                  eligibilityCriteria: '', applicationProcess: '', requiredDocuments: '',
+                  incomeLimit: '', ageLimit: '', familySizeLimit: '', isActive: true
+                });
+                setSchemeDialog(true);
+              }}
+            >
+              {t('admin.addScheme')}
+            </Button>
+          </Box>
         </Box>
 
         {error && (
@@ -233,12 +340,71 @@ export default function AdminDashboard() {
             {error}
           </Alert>
         )}
+        {importError && (
+          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setImportError(null)}>
+            {importError}
+          </Alert>
+        )}
+        {importResult && (
+          <Alert severity="success" sx={{ mb: 3 }} onClose={() => setImportResult(null)}>
+            Imported {importResult.filter((r) => r.ok).length} schemes, {importResult.filter((r) => !r.ok).length} failed.
+          </Alert>
+        )}
+        {importResult && importResult.filter((r) => !r.ok).length > 0 && (
+          <Box mb={3}>
+            <Typography variant="subtitle1" gutterBottom>
+              Import Errors
+            </Typography>
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Scheme</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Errors</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {importResult.filter((r) => !r.ok).map((row, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>{row.name || 'Unnamed'}</TableCell>
+                      <TableCell>Failed</TableCell>
+                      <TableCell>{(row.errors || []).join('; ')}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <Box mt={2}>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  const rows = importResult.filter((r) => !r.ok);
+                  const header = 'name,errors\n';
+                  const body = rows
+                    .map((r) => `"${r.name || ''}","${(r.errors || []).join('; ')}"`)
+                    .join('\n');
+                  const blob = new Blob([header + body], { type: 'text/csv;charset=utf-8;' });
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = 'import-errors.csv';
+                  link.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Download Error CSV
+              </Button>
+            </Box>
+          </Box>
+        )}
 
         <Tabs value={activeTab} onChange={handleTabChange} aria-label="admin tabs">
           <Tab label={t('admin.manageSchemes')} icon={<AssignmentIcon />} />
           <Tab label={t('admin.manageApplications')} icon={<AnalyticsIcon />} />
           <Tab label={t('admin.manageUsers')} icon={<PeopleIcon />} />
           <Tab label={t('admin.analytics')} icon={<DashboardIcon />} />
+          <Tab label="Audit Logs" icon={<VisibilityIcon />} />
         </Tabs>
 
         {/* Schemes Management */}
@@ -489,8 +655,250 @@ export default function AdminDashboard() {
                 </Grid>
               </Box>
             )}
+
+            {analytics.statusDistribution && (
+              <Box mt={4}>
+                <Typography variant="h6" gutterBottom>
+                  Status Distribution
+                </Typography>
+                <Grid container spacing={2}>
+                  {Object.entries(analytics.statusDistribution).map(([status, count]: any) => (
+                    <Grid item xs={12} sm={6} md={3} key={status}>
+                      <Card>
+                        <CardContent>
+                          <Typography variant="body2" color="text.secondary">
+                            {status}
+                          </Typography>
+                          <Typography variant="h5">{count}</Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
+
+            {analytics.categoryBreakdown && (
+              <Box mt={4}>
+                <Typography variant="h6" gutterBottom>
+                  Category Coverage
+                </Typography>
+                <Grid container spacing={2}>
+                  {Object.entries(analytics.categoryBreakdown).map(([category, count]: any) => (
+                    <Grid item xs={12} sm={6} md={4} key={category}>
+                      <Card>
+                        <CardContent>
+                          <Typography variant="body2" color="text.secondary">
+                            {category}
+                          </Typography>
+                          <Typography variant="h5">{count}</Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
+
+            {analytics.stateBreakdown && (
+              <Box mt={4}>
+                <Typography variant="h6" gutterBottom>
+                  State Coverage
+                </Typography>
+                <Grid container spacing={2}>
+                  {Object.entries(analytics.stateBreakdown).map(([state, count]: any) => (
+                    <Grid item xs={12} sm={6} md={4} key={state}>
+                      <Card>
+                        <CardContent>
+                          <Typography variant="body2" color="text.secondary">
+                            {state}
+                          </Typography>
+                          <Typography variant="h5">{count}</Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
           </Box>
         )}
+
+        {/* Audit Logs */}
+        {activeTab === 4 && (
+          <Box mt={4}>
+            <Box display="flex" gap={2} mb={2} flexWrap="wrap">
+              <TextField
+                label="Search"
+                size="small"
+                value={auditFilter.q}
+                onChange={(e) => setAuditFilter({ ...auditFilter, q: e.target.value })}
+              />
+              <TextField
+                label="Action"
+                size="small"
+                value={auditFilter.action}
+                onChange={(e) => setAuditFilter({ ...auditFilter, action: e.target.value })}
+              />
+              <TextField
+                label="Entity"
+                size="small"
+                value={auditFilter.entityType}
+                onChange={(e) => setAuditFilter({ ...auditFilter, entityType: e.target.value })}
+              />
+              <TextField
+                label="Actor"
+                size="small"
+                value={auditFilter.actorId}
+                onChange={(e) => setAuditFilter({ ...auditFilter, actorId: e.target.value })}
+              />
+              <Button variant="contained" onClick={() => fetchAuditLogs(1)}>
+                Filter
+              </Button>
+              {auditMeta && (
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    const header = 'time,action,entityType,actorId,metadata\n';
+                    const body = auditLogs
+                      .map((log) => `"${log.createdAt}","${log.action}","${log.entityType}","${log.actorId || ''}","${log.metadata ? JSON.stringify(log.metadata).replace(/"/g, '""') : ''}"`)
+                      .join('\n');
+                    const blob = new Blob([header + body], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'audit-logs.csv';
+                    link.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  Export CSV
+                </Button>
+              )}
+            </Box>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Time</TableCell>
+                    <TableCell>Action</TableCell>
+                    <TableCell>Entity</TableCell>
+                    <TableCell>Actor</TableCell>
+                    <TableCell>Metadata</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {auditLogs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell>{formatDate(new Date(log.createdAt))}</TableCell>
+                      <TableCell>{log.action}</TableCell>
+                      <TableCell>{log.entityType}</TableCell>
+                      <TableCell>{log.actorId || 'system'}</TableCell>
+                      <TableCell>
+                        <Typography variant="caption" color="text.secondary">
+                          {log.metadata ? JSON.stringify(log.metadata) : '-'}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {auditMeta && (
+              <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
+                <Typography variant="body2" color="text.secondary">
+                  Page {auditMeta.page} of {Math.ceil(auditMeta.total / auditMeta.pageSize)}
+                </Typography>
+                <Box display="flex" gap={1}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={auditMeta.page <= 1}
+                    onClick={() => fetchAuditLogs(auditMeta.page - 1)}
+                  >
+                    Prev
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={auditMeta.page >= Math.ceil(auditMeta.total / auditMeta.pageSize)}
+                    onClick={() => fetchAuditLogs(auditMeta.page + 1)}
+                  >
+                    Next
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {/* Import Preview Dialog */}
+        <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="md" fullWidth>
+          <DialogTitle>Import Preview</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Showing first {previewRows.length} rows from {importFile?.name}
+            </Typography>
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    {previewHeaders.map((h) => (
+                      <TableCell key={h}>{h}</TableCell>
+                    ))}
+                    <TableCell>Validation</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {previewRows.map((row, idx) => (
+                    <TableRow key={idx}>
+                      {row.map((cell, cidx) => (
+                        <TableCell key={cidx}>{cell}</TableCell>
+                      ))}
+                      <TableCell>
+                        {previewErrors[idx] && previewErrors[idx].length > 0 ? (
+                          <Chip label={`${previewErrors[idx].length} issues`} color="warning" size="small" />
+                        ) : (
+                          <Chip label="OK" color="success" size="small" />
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setPreviewOpen(false)}>Cancel</Button>
+            <Button
+              variant="contained"
+              disabled={!importFile || importing}
+              onClick={async () => {
+                if (!importFile) return;
+                setImporting(true);
+                setImportError(null);
+                setImportResult(null);
+                try {
+                  const formData = new FormData();
+                  formData.append('file', importFile);
+                  const response = await api.post('/admin/schemes/import', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                  });
+                  setImportResult(response.results || []);
+                  fetchData();
+                  setPreviewOpen(false);
+                } catch (err: any) {
+                  setImportError(err?.error || 'Failed to import CSV');
+                } finally {
+                  setImporting(false);
+                  setImportFile(null);
+                }
+              }}
+            >
+              Confirm Import
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Scheme Dialog */}
         <Dialog open={schemeDialog} onClose={() => setSchemeDialog(false)} maxWidth="md" fullWidth>

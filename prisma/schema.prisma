@@ -48,6 +48,7 @@ model GovernmentScheme {
   benefits          String
   applicationProcess String
   requiredDocuments String
+  sourceUrl         String?
   incomeLimit       Decimal?
   ageLimit          String?
   familySizeLimit   Int?
@@ -79,6 +80,7 @@ model Application {
   applicationData    String?   // Store form data as JSON string
   user              User      @relation(fields: [userId], references: [id])
   scheme            GovernmentScheme @relation(fields: [schemeId], references: [id])
+  statusUpdates     ApplicationStatusUpdate[]
 
   @@map("applications")
 }
@@ -109,4 +111,28 @@ model Notification {
   user              User      @relation(fields: [userId], references: [id])
 
   @@map("notifications")
+}
+
+model ApplicationStatusUpdate {
+  id             String      @id @default(cuid())
+  applicationId  String
+  status         String
+  source         String
+  details        String?
+  createdAt      DateTime    @default(now())
+  application    Application @relation(fields: [applicationId], references: [id])
+
+  @@map("application_status_updates")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorId     String?
+  action      String
+  entityType  String
+  entityId    String?
+  metadata    String?
+  createdAt   DateTime @default(now())
+
+  @@map("audit_logs")
 }

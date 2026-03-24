@@ -157,7 +157,7 @@ export default function RegisterPage() {
           </Button>
 
           <Typography variant="h5" sx={{ fontWeight: 900, background: 'linear-gradient(135deg, #4f46e5, #14b8a6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', mb: 1 }}>
-            GovScheme
+            SaralYojna
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', mb: 0.5 }}>
             Create your account

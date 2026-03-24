@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Box, Typography, Grid, Card, CardContent, Chip, Button, TextField, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Checkbox, Paper, Divider } from '@mui/material';
+import { Container, Box, Typography, Grid, Card, CardContent, Chip, Button, TextField, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Checkbox, Paper, Divider, Alert } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import { useI18n } from '../hooks/useI18n';
@@ -35,9 +35,27 @@ export default function ApplicationForm() {
   });
   const [documents, setDocuments] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const assistedMode = localStorage.getItem('assistedMode') === 'true';
+  const simpleMode = localStorage.getItem('simpleMode') === 'true';
 
   useEffect(() => {
     fetchScheme();
+  }, [schemeId]);
+
+  useEffect(() => {
+    const draftKey = `applicationDraft:${schemeId}`;
+    const draft = localStorage.getItem(draftKey);
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        setFormData(parsed.formData || formData);
+        setDocuments(parsed.documents || []);
+        setDraftLoaded(true);
+      } catch {
+        // ignore
+      }
+    }
   }, [schemeId]);
 
   const fetchScheme = async () => {
@@ -87,6 +105,7 @@ export default function ApplicationForm() {
 
       await api.post('/applications', formDataWithUser);
       alert('Application submitted successfully!');
+      localStorage.removeItem(`applicationDraft:${schemeId}`);
       navigate('/applications');
     } catch (err) {
       setError(err.error || 'Failed to submit application');
@@ -105,6 +124,21 @@ export default function ApplicationForm() {
         <Typography variant="h4" gutterBottom>
           {t('applyForScheme')} - {scheme.name}
         </Typography>
+        {(assistedMode || simpleMode) && (
+          <Box mb={2}>
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="body2">
+                {assistedMode ? 'Assisted mode: follow steps and save drafts for later.' : null}
+                {simpleMode ? ' Simple mode: simplified layout and larger text.' : null}
+              </Typography>
+            </Paper>
+          </Box>
+        )}
+        {draftLoaded && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Draft loaded from previous session.
+          </Alert>
+        )}
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -121,6 +155,7 @@ export default function ApplicationForm() {
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleInputChange}
+                        inputProps={{ 'aria-label': 'First name' }}
                         required
                       />
                     </Grid>
@@ -131,6 +166,7 @@ export default function ApplicationForm() {
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleInputChange}
+                        inputProps={{ 'aria-label': 'Last name' }}
                         required
                       />
                     </Grid>
@@ -344,6 +380,31 @@ export default function ApplicationForm() {
             </Grid>
           </Grid>
         </form>
+        <Box display="flex" gap={2} mt={2}>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              const draftKey = `applicationDraft:${schemeId}`;
+              localStorage.setItem(draftKey, JSON.stringify({ formData, documents }));
+              alert('Draft saved');
+            }}
+            aria-label="Save draft"
+          >
+            Save Draft
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              localStorage.removeItem(`applicationDraft:${schemeId}`);
+              setDraftLoaded(false);
+              alert('Draft cleared');
+            }}
+            aria-label="Clear draft"
+          >
+            Clear Draft
+          </Button>
+        </Box>
       </Box>
     </Container>
   );

@@ -50,6 +50,10 @@ export default function ApplicationTracker() {
   const [documentsDialog, setDocumentsDialog] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [readiness, setReadiness] = useState<{ readinessPercent: number; missingDocuments: string[] } | null>(null);
+  const [readinessByApp, setReadinessByApp] = useState<Record<string, number>>({});
+  const [statusDialog, setStatusDialog] = useState(false);
+  const [statusUpdates, setStatusUpdates] = useState<any[]>([]);
 
   useEffect(() => {
     fetchApplications();
@@ -60,6 +64,21 @@ export default function ApplicationTracker() {
       setLoading(true);
       const data = await api.get('/applications');
       setApplications(data);
+      const readinessEntries = await Promise.all(
+        (data || []).map(async (app: Application) => {
+          try {
+            const r = await api.get(`/applications/${app.id}/readiness`);
+            return [app.id, r.readinessPercent] as const;
+          } catch {
+            return [app.id, 0] as const;
+          }
+        })
+      );
+      const map: Record<string, number> = {};
+      readinessEntries.forEach(([id, percent]) => {
+        map[id] = percent;
+      });
+      setReadinessByApp(map);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch applications');
     } finally {
@@ -121,6 +140,8 @@ export default function ApplicationTracker() {
     try {
       const data = await api.get(`/applications/${applicationId}/documents`);
       setDocuments(data);
+      const readinessData = await api.get(`/applications/${applicationId}/readiness`);
+      setReadiness(readinessData);
     } catch (err) {
       setError('Failed to fetch documents');
     }
@@ -130,6 +151,17 @@ export default function ApplicationTracker() {
     setSelectedApplication(application);
     fetchDocuments(application.id);
     setDocumentsDialog(true);
+  };
+
+  const openStatusDialog = async (application: Application) => {
+    setSelectedApplication(application);
+    try {
+      const data = await api.get(`/applications/${application.id}/status`);
+      setStatusUpdates(data);
+    } catch {
+      setStatusUpdates([]);
+    }
+    setStatusDialog(true);
   };
 
   const getStatusIcon = (status: string) => {
@@ -298,6 +330,7 @@ export default function ApplicationTracker() {
                   <TableCell>{t('applications.status')}</TableCell>
                   <TableCell>{t('applications.submittedDate')}</TableCell>
                   <TableCell>{t('applications.progress')}</TableCell>
+                  <TableCell>Doc Readiness</TableCell>
                   <TableCell>{t('applications.actions')}</TableCell>
                 </TableRow>
               </TableHead>
@@ -342,6 +375,19 @@ export default function ApplicationTracker() {
                       </Box>
                     </TableCell>
                     <TableCell>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <LinearProgress
+                          variant="determinate"
+                          value={readinessByApp[app.id] || 0}
+                          sx={{ width: 80 }}
+                          color={(readinessByApp[app.id] || 0) >= 80 ? 'success' : 'info'}
+                        />
+                        <Typography variant="body2">
+                          {readinessByApp[app.id] || 0}%
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
                       <Box display="flex" gap={1}>
                         <Button
                           size="small"
@@ -356,6 +402,13 @@ export default function ApplicationTracker() {
                           onClick={() => openDocumentsDialog(app)}
                         >
                           {t('applications.uploadDocuments')}
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => openStatusDialog(app)}
+                        >
+                          Status Updates
                         </Button>
                         {app.rejectionReason && (
                           <Button
@@ -410,6 +463,26 @@ export default function ApplicationTracker() {
                 <Typography variant="subtitle1" gutterBottom>
                   {t('applications.uploadedDocuments')}
                 </Typography>
+                {readiness && (
+                  <Box mb={2}>
+                    <Typography variant="body2" color="text.secondary">
+                      Document readiness: {readiness.readinessPercent}%
+                    </Typography>
+                    <LinearProgress
+                      variant="determinate"
+                      value={readiness.readinessPercent}
+                      sx={{ mt: 1 }}
+                      color={readiness.readinessPercent >= 80 ? 'success' : 'info'}
+                    />
+                    {readiness.missingDocuments && readiness.missingDocuments.length > 0 && (
+                      <Box mt={1}>
+                        <Typography variant="caption" color="text.secondary">
+                          Missing: {readiness.missingDocuments.join(', ')}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                )}
                 <List>
                   {documents.map((doc) => (
                     <ListItem key={doc.id}>
@@ -433,6 +506,30 @@ export default function ApplicationTracker() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDocumentsDialog(false)}>{t('common.close')}</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Status Updates Dialog */}
+        <Dialog open={statusDialog} onClose={() => setStatusDialog(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Status Updates</DialogTitle>
+          <DialogContent>
+            {statusUpdates.length === 0 ? (
+              <Alert severity="info">No status updates found.</Alert>
+            ) : (
+              <List>
+                {statusUpdates.map((u) => (
+                  <ListItem key={u.id}>
+                    <ListItemText
+                      primary={`${u.status} (${u.source})`}
+                      secondary={new Date(u.createdAt).toLocaleString()}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setStatusDialog(false)}>{t('common.close')}</Button>
           </DialogActions>
         </Dialog>
       </Box>
