@@ -104,7 +104,17 @@ router.get('/eligibility', async (req, res) => {
       orderBy: { checkedAt: 'desc' }
     });
 
-    res.json(eligibilityChecks);
+    const parsed = eligibilityChecks.map((check) => ({
+      ...check,
+      matchedCriteria: (() => {
+        try { return check.matchedCriteria ? JSON.parse(check.matchedCriteria) : []; } catch { return []; }
+      })(),
+      unmatchedCriteria: (() => {
+        try { return check.unmatchedCriteria ? JSON.parse(check.unmatchedCriteria) : []; } catch { return []; }
+      })()
+    }));
+
+    res.json(parsed);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch eligibility checks' });
   }

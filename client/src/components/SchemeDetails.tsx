@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Box, Typography, Chip, Button, Grid, Card, CardContent, CardMedia } from '@mui/material';
+import { Container, Box, Typography, Chip, Button, Grid, Card, CardContent, CardMedia, Link } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import { useI18n } from '../hooks/useI18n';
@@ -146,6 +146,16 @@ export default function SchemeDetails() {
                     {scheme.occupationCriteria || 'Not specified'}
                   </Typography>
                 </Box>
+                {scheme.sourceUrl && (
+                  <Box display="flex" justifyContent="space-between" mb={2}>
+                    <Typography variant="body2" color="text.secondary">
+                      Source:
+                    </Typography>
+                    <Link href={scheme.sourceUrl} target="_blank" rel="noreferrer">
+                      Official link
+                    </Link>
+                  </Box>
+                )}
               </CardContent>
             </Card>
           </Grid>

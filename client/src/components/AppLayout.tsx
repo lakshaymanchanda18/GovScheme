@@ -3,12 +3,12 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Box, AppBar, Toolbar, Typography, IconButton, Button, Avatar,
   Drawer, List, ListItem, ListItemIcon, ListItemText, Divider,
-  useMediaQuery, useTheme, Tooltip, Badge
+  useMediaQuery, useTheme, Tooltip, Badge, Switch, FormControlLabel
 } from '@mui/material';
 import {
   Dashboard, MenuBook, Search, Assignment, AccountCircle,
   ExitToApp, Menu as MenuIcon, Close, SmartToy,
-  Notifications as NotificationsIcon
+  Notifications as NotificationsIcon, Settings as SettingsIcon
 } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
@@ -31,10 +31,34 @@ export default function AppLayout() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [lowBandwidth, setLowBandwidth] = useState(() => localStorage.getItem('lowBandwidth') === 'true');
+  const [kioskMode, setKioskMode] = useState(() => localStorage.getItem('kioskMode') === 'true');
+  const [assistedMode, setAssistedMode] = useState(() => localStorage.getItem('assistedMode') === 'true');
+  const [simpleMode, setSimpleMode] = useState(() => localStorage.getItem('simpleMode') === 'true');
   const location = useLocation();
   const navigate = useNavigate();
 
   // Fetch real notification count from server
+  useEffect(() => {
+    document.body.classList.toggle('low-bandwidth', lowBandwidth);
+    localStorage.setItem('lowBandwidth', lowBandwidth ? 'true' : 'false');
+  }, [lowBandwidth]);
+
+  useEffect(() => {
+    document.body.classList.toggle('kiosk-mode', kioskMode);
+    localStorage.setItem('kioskMode', kioskMode ? 'true' : 'false');
+  }, [kioskMode]);
+
+  useEffect(() => {
+    document.body.classList.toggle('assisted-mode', assistedMode);
+    localStorage.setItem('assistedMode', assistedMode ? 'true' : 'false');
+  }, [assistedMode]);
+
+  useEffect(() => {
+    document.body.classList.toggle('simple-mode', simpleMode);
+    localStorage.setItem('simpleMode', simpleMode ? 'true' : 'false');
+  }, [simpleMode]);
+
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -59,7 +83,7 @@ export default function AppLayout() {
     <Box sx={{ width: 260, pt: 2 }}>
       <Box sx={{ px: 3, pb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography variant="h6" sx={{ fontWeight: 800, background: 'linear-gradient(135deg, #4f46e5, #14b8a6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          GovScheme
+          SaralYojna
         </Typography>
         <IconButton onClick={() => setDrawerOpen(false)}>
           <Close />
@@ -102,6 +126,19 @@ export default function AppLayout() {
         >
           <ListItemIcon sx={{ minWidth: 40 }}><AccountCircle /></ListItemIcon>
           <ListItemText primary={t('navigation.profile', 'Profile')} />
+        </ListItem>
+        <ListItem
+          component={Link}
+          to="/settings"
+          onClick={() => setDrawerOpen(false)}
+          sx={{
+            borderRadius: '12px', px: 2,
+            backgroundColor: location.pathname === '/settings' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+            '&:hover': { backgroundColor: 'rgba(79, 70, 229, 0.05)' },
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 40 }}><SettingsIcon /></ListItemIcon>
+          <ListItemText primary={t('navigation.settings', 'Settings')} />
         </ListItem>
         <ListItem
           onClick={handleLogout}
@@ -152,7 +189,7 @@ export default function AppLayout() {
             }}
             id="app-logo"
           >
-            GovScheme
+            SaralYojna
           </Typography>
 
           {/* Desktop Nav */}
@@ -181,6 +218,8 @@ export default function AppLayout() {
               ))}
             </Box>
           )}
+
+          {/* Settings link moved to profile section */}
 
           <LanguageSwitcher />
 
@@ -261,7 +300,7 @@ export default function AppLayout() {
         }}
       >
         <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-          © {new Date().getFullYear()} GovScheme · Empowering Citizens
+          © {new Date().getFullYear()} SaralYojna · Empowering Citizens
         </Typography>
       </Box>
     </Box>

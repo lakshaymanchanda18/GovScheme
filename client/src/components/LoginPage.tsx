@@ -92,7 +92,7 @@ export default function LoginPage() {
               mb: 1,
             }}
           >
-            GovScheme
+            SaralYojna
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', mb: 0.5 }}>
             Welcome back

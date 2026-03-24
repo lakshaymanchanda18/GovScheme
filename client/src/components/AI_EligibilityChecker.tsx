@@ -86,6 +86,14 @@ export default function AI_EligibilityChecker() {
   
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EligibilityResult | null>(null);
+  const [simulation, setSimulation] = useState<{
+    isEligible: boolean;
+    confidenceScore: number;
+    matchedCriteria: string[];
+    unmatchedCriteria: string[];
+  } | null>(null);
+  const [simulateIncome, setSimulateIncome] = useState<number>(0);
+  const [simulateAge, setSimulateAge] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
 
   const handleNext = () => {
@@ -117,9 +125,37 @@ export default function AI_EligibilityChecker() {
       });
       
       setResult(response);
+      setSimulation(null);
+      setSimulateIncome(formData.financialInfo.income || 0);
+      setSimulateAge(formData.personalInfo.age || 0);
       setActiveStep(3); // Go to results step
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to check eligibility');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSimulate = async (schemeId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.post('/eligibility/simulate', {
+        schemeId,
+        profile: {
+          age: simulateAge,
+          income: simulateIncome,
+          state: formData.personalInfo.state,
+          familySize: formData.personalInfo.familySize,
+          education: formData.personalInfo.education,
+          occupation: formData.personalInfo.occupation,
+          disability: formData.additionalInfo.disability,
+          veteranStatus: formData.additionalInfo.veteranStatus
+        }
+      });
+      setSimulation(response);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Simulation failed');
     } finally {
       setLoading(false);
     }
@@ -402,6 +438,61 @@ export default function AI_EligibilityChecker() {
                     <Chip key={index} label={doc} color="info" variant="outlined" />
                   ))}
                 </Box>
+              </Box>
+            )}
+
+            {result.recommendedSchemes.length > 0 && (
+              <Box mb={3}>
+                <Typography variant="subtitle1" gutterBottom>
+                  What-if simulation (top recommendation)
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Simulated Income"
+                      type="number"
+                      value={simulateIncome}
+                      onChange={(e) => setSimulateIncome(Number(e.target.value))}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Simulated Age"
+                      type="number"
+                      value={simulateAge}
+                      onChange={(e) => setSimulateAge(Number(e.target.value))}
+                    />
+                  </Grid>
+                </Grid>
+                <Box mt={2}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleSimulate(result.recommendedSchemes[0].id)}
+                    disabled={loading}
+                  >
+                    Simulate
+                  </Button>
+                </Box>
+                {simulation && (
+                  <Box mt={2}>
+                    <Alert severity={simulation.isEligible ? "success" : "warning"}>
+                      <Typography variant="body2">
+                        Simulated result: {simulation.isEligible ? 'Eligible' : 'Not eligible'} (
+                        {Math.round(simulation.confidenceScore * 100)}%)
+                      </Typography>
+                    </Alert>
+                    <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
+                      {simulation.matchedCriteria.map((c, i) => (
+                        <Chip key={`sim-m-${i}`} label={c} color="success" variant="outlined" />
+                      ))}
+                      {simulation.unmatchedCriteria.map((c, i) => (
+                        <Chip key={`sim-u-${i}`} label={c} color="error" variant="outlined" />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
               </Box>
             )}
 

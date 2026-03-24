@@ -19,6 +19,7 @@ import ApplicationForm from './components/ApplicationForm';
 import UserProfile from './components/UserProfile';
 import UserApplications from './components/UserApplications';
 import { ChatbotPage } from './components/Chatbot';
+import { SettingsPage } from './components/SettingsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactElement }) {
   const { user, loading } = useAuth();
@@ -79,6 +80,7 @@ function App() {
         <Route path="/applications/:schemeId" element={<ApplicationForm />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/chatbot" element={<ChatbotPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
       {/* ===== CATCH-ALL ===== */}

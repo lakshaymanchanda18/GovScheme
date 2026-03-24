@@ -119,7 +119,7 @@ i18n.use(initReactI18next).init({
   resources: {
     en: {
       translation: {
-        welcome: 'Welcome to GovScheme',
+        welcome: 'Welcome to SaralYojna',
         login: 'Login',
         register: 'Register',
         schemes: 'Government Schemes',

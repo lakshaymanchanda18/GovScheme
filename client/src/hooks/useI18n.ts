@@ -1,12 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
+import { SUPPORTED_LANGUAGES } from '../locales/languages';
 
 export const useI18n = () => {
   const { t, i18n: i18nInstance } = useTranslation();
 
-  const switchLanguage = (language: 'en' | 'hi') => {
-    i18n.changeLanguage(language);
-    localStorage.setItem('language', language);
+  const switchLanguage = (language: string) => {
+    if (SUPPORTED_LANGUAGES.find(l => l.code === language)) {
+      i18n.changeLanguage(language);
+      localStorage.setItem('language', language);
+    }
   };
 
   const formatDate = (date: Date): string => {

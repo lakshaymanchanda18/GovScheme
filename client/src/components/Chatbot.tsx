@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Button, Card, CardContent, IconButton, TextField, Typography, List, ListItem, ListItemText, Chip, Fab, Dialog, DialogTitle, DialogContent, DialogActions, Alert } from '@mui/material';
+import { Box, Button, Card, CardContent, IconButton, TextField, Typography, List, ListItem, ListItemText, Chip, Fab, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Grid, Link } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import { useI18n } from '../hooks/useI18n';
@@ -12,6 +12,8 @@ interface Message {
   isUser: boolean;
   timestamp: Date;
   suggestions?: string[];
+  sources?: string[];
+  sourceScores?: Array<{ id: string; confidence: number }>;
 }
 
 interface ChatbotProps {
@@ -43,10 +45,46 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sourceMap, setSourceMap] = useState<Record<string, { id: string; name: string; benefits?: string; category?: string; sourceUrl?: string }>>({});
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    const last = messages[messages.length - 1];
+    if (!last?.sources || last.sources.length === 0) return;
+
+    const fetchSources = async () => {
+      const missing = last.sources!.filter((id) => !sourceMap[id]);
+      if (missing.length === 0) return;
+      try {
+        const results = await Promise.all(
+          missing.map((id) => api.get(`/schemes/${id}`))
+        );
+        const nextMap = { ...sourceMap };
+        results.forEach((scheme: any) => {
+          if (scheme?.id && scheme?.name) {
+            nextMap[scheme.id] = {
+              id: scheme.id,
+              name: scheme.name,
+              benefits: scheme.benefits,
+              category: scheme.category,
+              sourceUrl: scheme.sourceUrl
+            };
+          }
+        });
+        setSourceMap(nextMap);
+      } catch {
+        // Ignore source fetch errors
+      }
+    };
+
+    fetchSources();
+  }, [messages, api, sourceMap]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -83,10 +121,16 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
         text: response.reply,
         isUser: false,
         timestamp: new Date(),
-        suggestions: response.suggestions || []
+        suggestions: response.suggestions || [],
+        sources: response.sources || [],
+        sourceScores: response.sourceScores || []
       };
 
       setMessages(prev => [...prev, botMessage]);
+      if (ttsEnabled && 'speechSynthesis' in window) {
+        const utter = new SpeechSynthesisUtterance(response.reply);
+        window.speechSynthesis.speak(utter);
+      }
     } catch (err) {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -289,6 +333,80 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
               </Box>
             )}
 
+            {/* Sources */}
+            {messages[messages.length - 1]?.sources && messages[messages.length - 1].sources.length > 0 && (
+              <Box sx={{ px: 2, pb: 1 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                  Sources
+                </Typography>
+                <Grid container spacing={1}>
+                  {messages[messages.length - 1].sources!.map((sourceId, index) => {
+                    const source = sourceMap[sourceId];
+                    const confidence = messages[messages.length - 1].sourceScores?.find((s) => s.id === sourceId)?.confidence;
+                    return (
+                      <Grid item xs={12} sm={6} key={index}>
+                        <Card
+                          variant="outlined"
+                          sx={{
+                            p: 1,
+                            borderColor: index === 0 ? 'primary.main' : undefined,
+                            boxShadow: index === 0 ? '0 0 0 2px rgba(79,70,229,0.15)' : undefined
+                          }}
+                        >
+                          <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
+                            <Box display="flex" justifyContent="space-between" alignItems="center">
+                              <Typography variant="subtitle2" fontWeight={700}>
+                                {source?.name || `Scheme ${sourceId.slice(0, 6)}`}
+                              </Typography>
+                              {index === 0 && (
+                                <Chip label="Top Pick" size="small" color="primary" />
+                              )}
+                            </Box>
+                            {source?.category && (
+                              <Typography variant="caption" color="text.secondary">
+                                {source.category}
+                              </Typography>
+                            )}
+                            {typeof confidence === 'number' && (
+                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                Confidence: {confidence}%
+                              </Typography>
+                            )}
+                            {source?.benefits && (
+                              <Typography variant="body2" sx={{ mt: 0.5 }}>
+                                {source.benefits}
+                              </Typography>
+                            )}
+                            {source?.sourceUrl && (
+                              <Link href={source.sourceUrl} target="_blank" rel="noreferrer" variant="caption">
+                                Official source
+                              </Link>
+                            )}
+                            <Box display="flex" gap={1} mt={1}>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => handleNavigate(`/schemes/${sourceId}`)}
+                              >
+                                View
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                onClick={() => handleNavigate(`/applications/${sourceId}`)}
+                              >
+                                Apply
+                              </Button>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              </Box>
+            )}
+
             {/* Action Buttons */}
             {getActionButtons(messages[messages.length - 1]).length > 0 && (
               <Box sx={{ px: 2, pb: 2 }}>
@@ -315,6 +433,41 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
                   {error}
                 </Alert>
               )}
+              <Box display="flex" gap={1} mb={1}>
+                <Button
+                  size="small"
+                  variant={voiceEnabled ? 'contained' : 'outlined'}
+                  onClick={() => {
+                    setVoiceEnabled(!voiceEnabled);
+                    if (!voiceEnabled) {
+                      const SpeechRecognition: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+                      if (SpeechRecognition) {
+                        const recognition = new SpeechRecognition();
+                        recognition.lang = 'en-IN';
+                        recognition.onresult = (event: any) => {
+                          const transcript = event.results[0][0].transcript;
+                          setInputValue(transcript);
+                        };
+                        recognitionRef.current = recognition;
+                        recognition.start();
+                      }
+                    } else {
+                      recognitionRef.current?.stop?.();
+                    }
+                  }}
+                  aria-label="Toggle voice input"
+                >
+                  {voiceEnabled ? 'Stop Voice' : 'Voice Input'}
+                </Button>
+                <Button
+                  size="small"
+                  variant={ttsEnabled ? 'contained' : 'outlined'}
+                  onClick={() => setTtsEnabled(!ttsEnabled)}
+                  aria-label="Toggle text to speech"
+                >
+                  {ttsEnabled ? 'TTS On' : 'TTS Off'}
+                </Button>
+              </Box>
               <Box display="flex" gap={1}>
                 <TextField
                   fullWidth
@@ -326,6 +479,7 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
                   disabled={isTyping}
                   multiline
                   maxRows={3}
+                  inputProps={{ 'aria-label': 'Chatbot message input' }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 20
@@ -336,6 +490,7 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
                   color="primary"
                   onClick={handleSendMessage}
                   disabled={!inputValue.trim() || isTyping}
+                  aria-label="Send message"
                   sx={{
                     backgroundColor: 'primary.main',
                     color: 'white',
