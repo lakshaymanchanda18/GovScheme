@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import { sign } from 'jsonwebtoken';
 import { hash, compare } from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -29,25 +30,23 @@ const PORT = process.env.PORT || 5000;
 
 // Security middleware
 app.use(helmet());
-const defaultAllowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:5175'
-];
-const allowedOrigins = process.env.FRONTEND_URL
-  ? [process.env.FRONTEND_URL, ...defaultAllowedOrigins]
-  : defaultAllowedOrigins;
-
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
+    callback(null, origin || true);
   },
   credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());
+
+// Cookie configuration for JWT tokens
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  path: '/',
+};
 
 // Simple request id + logging
 app.use((req, res, next) => {
@@ -129,9 +128,10 @@ app.post('/api/auth/register', async (req, res) => {
       expiresIn: process.env.JWT_EXPIRE || '7d'
     });
 
+    res.cookie('token', token, COOKIE_OPTIONS);
+
     res.status(201).json({
       message: 'User registered successfully',
-      token,
       user: {
         id: newUser.id,
         email: newUser.email,
@@ -173,9 +173,10 @@ app.post('/api/auth/login', async (req, res) => {
       expiresIn: process.env.JWT_EXPIRE || '7d'
     });
 
+    res.cookie('token', token, COOKIE_OPTIONS);
+
     res.json({
       message: 'Login successful',
-      token,
       user: {
         id: user.id,
         email: user.email,
@@ -194,6 +195,12 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: 'Login failed' });
   }
+});
+
+// Logout endpoint - clears HTTP-Only cookie
+app.post('/api/auth/logout', (req, res) => {
+  res.clearCookie('token', { path: '/' });
+  res.json({ message: 'Logged out successfully' });
 });
 
 // Auth profile endpoint (matches what client expects)
@@ -402,6 +409,6 @@ app.use((err: any, req: any, res: any, next: any) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(PORT as number, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT} (0.0.0.0)`);
 });

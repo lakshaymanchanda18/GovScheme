@@ -2,6 +2,25 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { SUPPORTED_LANGUAGES } from '../locales/languages';
 
+// Map i18next language codes to BCP 47 / Intl locale tags
+const LOCALE_MAP: Record<string, string> = {
+  en: 'en-IN',
+  hi: 'hi-IN',
+  bn: 'bn-IN',
+  ta: 'ta-IN',
+  te: 'te-IN',
+  mr: 'mr-IN',
+  gu: 'gu-IN',
+  pa: 'pa-IN',
+  ml: 'ml-IN',
+  kn: 'kn-IN',
+  ur: 'ur-IN',
+  as: 'as-IN',
+  or: 'or-IN',
+};
+
+const getIntlLocale = (): string => LOCALE_MAP[i18n.language] || 'en-IN';
+
 export const useI18n = () => {
   const { t, i18n: i18nInstance } = useTranslation();
 
@@ -9,44 +28,29 @@ export const useI18n = () => {
     if (SUPPORTED_LANGUAGES.find(l => l.code === language)) {
       i18n.changeLanguage(language);
       localStorage.setItem('language', language);
+      // Set document direction for RTL languages
+      const lang = SUPPORTED_LANGUAGES.find(l => l.code === language);
+      document.documentElement.dir = lang?.rtl ? 'rtl' : 'ltr';
+      document.documentElement.lang = language;
     }
   };
 
   const formatDate = (date: Date): string => {
-    const currentLanguage = i18n.language;
-    if (currentLanguage === 'hi') {
-      return new Intl.DateTimeFormat('hi-IN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      }).format(date);
-    }
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat(getIntlLocale(), {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     }).format(date);
   };
 
   const formatNumber = (num: number): string => {
-    const currentLanguage = i18n.language;
-    if (currentLanguage === 'hi') {
-      return new Intl.NumberFormat('hi-IN').format(num);
-    }
-    return new Intl.NumberFormat('en-US').format(num);
+    return new Intl.NumberFormat(getIntlLocale()).format(num);
   };
 
   const formatCurrency = (amount: number): string => {
-    const currentLanguage = i18n.language;
-    if (currentLanguage === 'hi') {
-      return new Intl.NumberFormat('hi-IN', {
-        style: 'currency',
-        currency: 'INR'
-      }).format(amount);
-    }
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(getIntlLocale(), {
       style: 'currency',
-      currency: 'INR'
+      currency: 'INR',
     }).format(amount);
   };
 
@@ -58,6 +62,6 @@ export const useI18n = () => {
     formatNumber,
     formatCurrency,
     currentLanguage: i18n.language,
-    isHindi: i18n.language === 'hi'
+    isHindi: i18n.language === 'hi',
   };
 };
