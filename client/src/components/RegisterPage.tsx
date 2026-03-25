@@ -10,6 +10,7 @@ import {
   Phone, ArrowBack, ArrowForward
 } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
+import { useI18n } from '../hooks/useI18n';
 
 const STATES = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
@@ -21,10 +22,9 @@ const STATES = [
   'Delhi', 'Jammu and Kashmir', 'Ladakh',
 ];
 
-const STEPS = ['Account', 'Personal Info', 'Complete'];
-
 export default function RegisterPage() {
   const { register } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
@@ -43,6 +43,8 @@ export default function RegisterPage() {
     income: '',
   });
 
+  const STEPS = [t('auth.stepAccount'), t('auth.stepPersonalInfo'), t('auth.stepComplete')];
+
   const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setError('');
@@ -60,21 +62,21 @@ export default function RegisterPage() {
   const validateStep = () => {
     if (activeStep === 0) {
       if (!formData.email || !formData.password || !formData.confirmPassword) {
-        setError('Please fill in all fields');
+        setError(t('common.fillAllFields'));
         return false;
       }
       if (formData.password.length < 6) {
-        setError('Password must be at least 6 characters');
+        setError(t('auth.passwordMinLength'));
         return false;
       }
       if (formData.password !== formData.confirmPassword) {
-        setError('Passwords do not match');
+        setError(t('auth.passwordsDoNotMatch'));
         return false;
       }
     }
     if (activeStep === 1) {
       if (!formData.firstName || !formData.lastName) {
-        setError('First name and last name are required');
+        setError(t('auth.nameRequired'));
         return false;
       }
     }
@@ -109,12 +111,12 @@ export default function RegisterPage() {
         income: formData.income ? parseFloat(formData.income) : undefined,
       });
       if (result.success) {
-        navigate('/dashboard');
+        navigate('/');
       } else {
-        setError(result.error || 'Registration failed');
+        setError(result.error || t('auth.registrationFailed'));
       }
     } catch {
-      setError('Something went wrong. Please try again.');
+      setError(t('common.somethingWentWrong'));
     } finally {
       setLoading(false);
     }
@@ -153,17 +155,17 @@ export default function RegisterPage() {
             startIcon={<ArrowBack />}
             sx={{ textTransform: 'none', color: '#64748b', fontWeight: 500, mb: 3, '&:hover': { backgroundColor: 'rgba(79,70,229,0.04)' } }}
           >
-            Back to Home
+            {t('common.backToHome')}
           </Button>
 
           <Typography variant="h5" sx={{ fontWeight: 900, background: 'linear-gradient(135deg, #4f46e5, #14b8a6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', mb: 1 }}>
             SaralYojna
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', mb: 0.5 }}>
-            Create your account
+            {t('auth.registerTitle')}
           </Typography>
           <Typography sx={{ color: '#64748b', mb: 3 }}>
-            Join thousands of citizens discovering their benefits
+            {t('auth.registerSubtitle')}
           </Typography>
 
           {/* Stepper */}
@@ -192,14 +194,14 @@ export default function RegisterPage() {
             {/* Step 0: Account */}
             {activeStep === 0 && (
               <>
-                <TextField fullWidth label="Email Address" type="email" value={formData.email} onChange={e => updateField('email', e.target.value)} id="register-email" sx={inputSx}
+                <TextField fullWidth label={t('auth.email')} type="email" value={formData.email} onChange={e => updateField('email', e.target.value)} id="register-email" sx={inputSx}
                   InputProps={{ startAdornment: <InputAdornment position="start"><Email sx={{ color: '#94a3b8' }} /></InputAdornment> }} />
-                <TextField fullWidth label="Password" type={showPassword ? 'text' : 'password'} value={formData.password} onChange={e => updateField('password', e.target.value)} id="register-password" sx={inputSx}
+                <TextField fullWidth label={t('auth.password')} type={showPassword ? 'text' : 'password'} value={formData.password} onChange={e => updateField('password', e.target.value)} id="register-password" sx={inputSx}
                   InputProps={{
                     startAdornment: <InputAdornment position="start"><Lock sx={{ color: '#94a3b8' }} /></InputAdornment>,
                     endAdornment: <InputAdornment position="end"><IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">{showPassword ? <VisibilityOff /> : <Visibility />}</IconButton></InputAdornment>,
                   }} />
-                <TextField fullWidth label="Confirm Password" type={showPassword ? 'text' : 'password'} value={formData.confirmPassword} onChange={e => updateField('confirmPassword', e.target.value)} id="register-confirm-password" sx={inputSx}
+                <TextField fullWidth label={t('auth.confirmPassword')} type={showPassword ? 'text' : 'password'} value={formData.confirmPassword} onChange={e => updateField('confirmPassword', e.target.value)} id="register-confirm-password" sx={inputSx}
                   InputProps={{ startAdornment: <InputAdornment position="start"><Lock sx={{ color: '#94a3b8' }} /></InputAdornment> }} />
               </>
             )}
@@ -209,17 +211,17 @@ export default function RegisterPage() {
               <>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
-                    <TextField fullWidth label="First Name" value={formData.firstName} onChange={e => updateField('firstName', e.target.value)} id="register-first-name" sx={inputSx}
+                    <TextField fullWidth label={t('auth.firstName')} value={formData.firstName} onChange={e => updateField('firstName', e.target.value)} id="register-first-name" sx={inputSx}
                       InputProps={{ startAdornment: <InputAdornment position="start"><Person sx={{ color: '#94a3b8' }} /></InputAdornment> }} />
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField fullWidth label="Last Name" value={formData.lastName} onChange={e => updateField('lastName', e.target.value)} id="register-last-name" sx={inputSx} />
+                    <TextField fullWidth label={t('auth.lastName')} value={formData.lastName} onChange={e => updateField('lastName', e.target.value)} id="register-last-name" sx={inputSx} />
                   </Grid>
                 </Grid>
-                <TextField fullWidth label="Phone Number" value={formData.phone} onChange={e => updateField('phone', e.target.value)} id="register-phone" sx={inputSx}
+                <TextField fullWidth label={t('auth.phone')} value={formData.phone} onChange={e => updateField('phone', e.target.value)} id="register-phone" sx={inputSx}
                   InputProps={{ startAdornment: <InputAdornment position="start"><Phone sx={{ color: '#94a3b8' }} /></InputAdornment> }} />
-                <TextField fullWidth select label="State" value={formData.state} onChange={e => updateField('state', e.target.value)} id="register-state" sx={inputSx}>
-                  <MenuItem value="">Select State</MenuItem>
+                <TextField fullWidth select label={t('auth.state')} value={formData.state} onChange={e => updateField('state', e.target.value)} id="register-state" sx={inputSx}>
+                  <MenuItem value="">{t('common.selectState')}</MenuItem>
                   {STATES.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
                 </TextField>
               </>
@@ -228,9 +230,9 @@ export default function RegisterPage() {
             {/* Step 2: Complete */}
             {activeStep === 2 && (
               <>
-                <TextField fullWidth label="City" value={formData.city} onChange={e => updateField('city', e.target.value)} id="register-city" sx={inputSx} />
-                <TextField fullWidth label="Occupation" value={formData.occupation} onChange={e => updateField('occupation', e.target.value)} id="register-occupation" sx={inputSx} />
-                <TextField fullWidth label="Annual Income (₹)" type="number" value={formData.income} onChange={e => updateField('income', e.target.value)} id="register-income" sx={inputSx} />
+                <TextField fullWidth label={t('auth.city')} value={formData.city} onChange={e => updateField('city', e.target.value)} id="register-city" sx={inputSx} />
+                <TextField fullWidth label={t('auth.occupation')} value={formData.occupation} onChange={e => updateField('occupation', e.target.value)} id="register-occupation" sx={inputSx} />
+                <TextField fullWidth label={t('auth.annualIncomeLabel')} type="number" value={formData.income} onChange={e => updateField('income', e.target.value)} id="register-income" sx={inputSx} />
               </>
             )}
 
@@ -252,7 +254,7 @@ export default function RegisterPage() {
                     '&:hover': { borderColor: '#94a3b8' },
                   }}
                 >
-                  Back
+                  {t('common.back')}
                 </Button>
               )}
               <Button
@@ -281,17 +283,17 @@ export default function RegisterPage() {
                   transition: 'all 0.25s ease',
                 }}
               >
-                {loading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : activeStep === 2 ? 'Create Account' : 'Continue'}
+                {loading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : activeStep === 2 ? t('auth.registerButton') : t('common.continue')}
               </Button>
             </Box>
           </form>
 
-          <Divider sx={{ my: 3, color: '#94a3b8', fontSize: '0.85rem' }}>or</Divider>
+          <Divider sx={{ my: 3, color: '#94a3b8', fontSize: '0.85rem' }}>{t('common.or')}</Divider>
 
           <Typography sx={{ textAlign: 'center', color: '#64748b' }}>
-            Already have an account?{' '}
+            {t('auth.haveAccount')}{' '}
             <Typography component={Link} to="/login" sx={{ color: '#4f46e5', fontWeight: 600, '&:hover': { textDecoration: 'underline' } }}>
-              Sign In
+              {t('auth.loginButton')}
             </Typography>
           </Typography>
         </Box>
