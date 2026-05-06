@@ -56,6 +56,8 @@ export default function DashboardPage() {
     rejectedApplications: 0,
   });
 
+  const [recentApps, setRecentApps] = useState<any[]>([]);
+
   useEffect(() => {
     loadDashboardData();
   }, []);
@@ -63,19 +65,30 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      // Fetch stats and schemes in parallel from server
-      const [statsData, schemesData] = await Promise.all([
+      // Fetch stats, schemes, and recent applications
+      const [statsData, eligibilityData, appsData] = await Promise.all([
         api.get('/dashboard/stats').catch(() => null),
-        api.get('/schemes').catch(() => []),
+        api.post('/eligibility/check-all').catch(() => null),
+        api.get('/applications').catch(() => []),
       ]);
 
-      if (statsData) {
-        setStats(statsData);
+      if (statsData) setStats(statsData);
+      
+      if (eligibilityData?.topRecommendations) {
+        setSchemes(eligibilityData.topRecommendations.map((r: any) => ({
+          id: r.schemeId,
+          name: r.schemeName,
+          category: r.confidenceScore >= 60 ? 'High Match' : 'Recommended',
+          department: `Score: ${r.confidenceScore}%`,
+        })));
+      } else {
+        const fallbackSchemes = await api.get('/schemes').catch(() => []);
+        setSchemes(Array.isArray(fallbackSchemes) ? fallbackSchemes.slice(0, 5) : []);
       }
 
-      setSchemes(Array.isArray(schemesData) ? schemesData.slice(0, 5) : []);
+      setRecentApps(Array.isArray(appsData) ? appsData.slice(0, 5) : []);
     } catch {
-      // Stats will stay at defaults (zeros)
+      // Stats will stay at defaults
     } finally {
       setLoading(false);
     }
@@ -195,9 +208,8 @@ export default function DashboardPage() {
               ))}
             </Grid>
 
-            {/* ===== RECENT SCHEMES ===== */}
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#0f172a' }} className="animate-fade-in-up delay-400">
-              Recent Schemes
+              Top Scheme Recommendations
             </Typography>
             <Card elevation={0} className="animate-fade-in-up delay-400" sx={{ borderRadius: '18px', border: '1px solid #f1f5f9' }}>
               {loading ? (
@@ -257,6 +269,66 @@ export default function DashboardPage() {
                 </CardContent>
               )}
             </Card>
+
+            {/* ===== RECENT APPLICATIONS ===== */}
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#0f172a' }} className="animate-fade-in-up delay-400">
+                Recent Applications
+              </Typography>
+              <Card elevation={0} className="animate-fade-in-up delay-400" sx={{ borderRadius: '18px', border: '1px solid #f1f5f9' }}>
+                {loading ? (
+                  <CardContent>
+                    <Skeleton width="100%" height={60} sx={{ mb: 1 }} />
+                    <Skeleton width="100%" height={60} />
+                  </CardContent>
+                ) : recentApps.length > 0 ? (
+                  <CardContent sx={{ p: 0 }}>
+                    {recentApps.map((app, idx) => (
+                      <Box key={app.id}>
+                        <Box
+                          sx={{
+                            display: 'flex', alignItems: 'center', p: 2.5, cursor: 'pointer',
+                            '&:hover': { backgroundColor: 'rgba(79,70,229,0.03)' },
+                          }}
+                          onClick={() => navigate(`/applications/${app.id}`)}
+                        >
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#0f172a', mb: 0.5 }}>
+                              {app.scheme?.name || 'Unknown Scheme'}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#64748b' }}>
+                              Submitted on {new Date(app.submittedAt).toLocaleDateString()}
+                            </Typography>
+                          </Box>
+                          <Chip 
+                            label={app.status} 
+                            size="small" 
+                            sx={{ 
+                              fontWeight: 700, fontSize: '0.7rem',
+                              background: app.status === 'APPROVED' ? '#dcfce7' : app.status === 'REJECTED' ? '#fee2e2' : '#fef3c7',
+                              color: app.status === 'APPROVED' ? '#15803d' : app.status === 'REJECTED' ? '#b91c1c' : '#b45309'
+                            }} 
+                          />
+                        </Box>
+                        {idx < recentApps.length - 1 && <Divider />}
+                      </Box>
+                    ))}
+                    <Box sx={{ p: 2, textAlign: 'center' }}>
+                      <Button size="small" endIcon={<ArrowForward />} onClick={() => navigate('/applications')} sx={{ textTransform: 'none', fontWeight: 600, color: '#4f46e5' }}>
+                        View All Applications
+                      </Button>
+                    </Box>
+                  </CardContent>
+                ) : (
+                  <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                    <Assignment sx={{ fontSize: 48, color: '#cbd5e1', mb: 1 }} />
+                    <Typography variant="body2" color="text.secondary">
+                      You haven't submitted any applications yet.
+                    </Typography>
+                  </CardContent>
+                )}
+              </Card>
+            </Box>
           </Grid>
 
           {/* ===== SIDEBAR ===== */}

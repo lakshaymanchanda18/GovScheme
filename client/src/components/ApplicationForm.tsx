@@ -4,11 +4,13 @@ import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import { useI18n } from '../hooks/useI18n';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 
 export default function ApplicationForm() {
   const { user, loading: authLoading } = useAuth();
   const { api } = useApi();
-  const { t, i18n } = useI18n();
+  const { t } = useI18n();
+  const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const { schemeId } = useParams();
   const [scheme, setScheme] = useState(null);
@@ -92,22 +94,36 @@ export default function ApplicationForm() {
 
     try {
       setSubmitting(true);
-      const formDataWithUser = {
-        ...formData,
-        userId: user.id,
-        schemeId: schemeId,
-        documents: documents.map(doc => ({
-          name: doc.name,
-          type: doc.type,
-          size: doc.size
-        }))
+      
+      // 1. Submit application data first
+      const applicationPayload = {
+        schemeId,
+        applicationData: formData,
+        // Legacy documents field just in case
+        documents: documents.map((doc: any) => ({ name: doc.name, type: doc.type, size: doc.size }))
       };
 
-      await api.post('/applications', formDataWithUser);
-      alert('Application submitted successfully!');
+      const { applicationId } = await api.post('/applications', applicationPayload);
+
+      // 2. Upload documents linked to the application
+      if (documents.length > 0) {
+        // We use standard fetch or axios with FormData to upload files
+        for (const file of documents) {
+          const fileData = new FormData();
+          fileData.append('file', file as any);
+          fileData.append('applicationId', applicationId);
+          
+          await api.post('/documents/upload', fileData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+        }
+      }
+
+      enqueueSnackbar('Application submitted successfully!', { variant: 'success' });
       localStorage.removeItem(`applicationDraft:${schemeId}`);
       navigate('/applications');
-    } catch (err) {
+    } catch (err: any) {
+      // The useApi hook already displays an error toast
       setError(err.error || 'Failed to submit application');
     } finally {
       setSubmitting(false);

@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../server/node_modules/.prisma/client"
 }
 
 datasource db {
@@ -31,10 +32,16 @@ model User {
   updatedAt         DateTime  @updatedAt
   isActive          Boolean   @default(true)
   role              String    @default("USER")
+  twoFactorEnabled  Boolean   @default(false)
+  twoFactorSecret   String?
+  recoveryCodes     String?
   applications      Application[]
-  eligibilityChecks  EligibilityCheck[]
+  eligibilityChecks EligibilityCheck[]
   notifications     Notification[]
+  documents         Document[]
 
+  @@index([state])
+  @@index([createdAt])
   @@map("users")
 }
 
@@ -61,8 +68,11 @@ model GovernmentScheme {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   applications      Application[]
-  eligibilityChecks  EligibilityCheck[]
+  eligibilityChecks EligibilityCheck[]
 
+  @@index([category])
+  @@index([department])
+  @@index([isActive])
   @@map("government_schemes")
 }
 
@@ -81,8 +91,32 @@ model Application {
   user              User      @relation(fields: [userId], references: [id])
   scheme            GovernmentScheme @relation(fields: [schemeId], references: [id])
   statusUpdates     ApplicationStatusUpdate[]
+  uploadedDocuments Document[]
 
+  @@index([userId])
+  @@index([schemeId])
+  @@index([status])
+  @@index([submittedAt])
   @@map("applications")
+}
+
+model Document {
+  id            String    @id @default(cuid())
+  userId        String
+  applicationId String?
+  fileName      String
+  originalName  String
+  fileSize      Int
+  mimeType      String
+  storagePath   String
+  verified      Boolean   @default(false)
+  uploadedAt    DateTime  @default(now())
+  user          User      @relation(fields: [userId], references: [id])
+  application   Application? @relation(fields: [applicationId], references: [id])
+
+  @@index([userId])
+  @@index([applicationId])
+  @@map("documents")
 }
 
 model EligibilityCheck {
@@ -97,6 +131,9 @@ model EligibilityCheck {
   user              User      @relation(fields: [userId], references: [id])
   scheme            GovernmentScheme @relation(fields: [schemeId], references: [id])
 
+  @@index([userId])
+  @@index([schemeId])
+  @@index([isEligible])
   @@map("eligibility_checks")
 }
 
@@ -110,6 +147,8 @@ model Notification {
   createdAt         DateTime  @default(now())
   user              User      @relation(fields: [userId], references: [id])
 
+  @@index([userId])
+  @@index([isRead])
   @@map("notifications")
 }
 
@@ -122,6 +161,7 @@ model ApplicationStatusUpdate {
   createdAt      DateTime    @default(now())
   application    Application @relation(fields: [applicationId], references: [id])
 
+  @@index([applicationId])
   @@map("application_status_updates")
 }
 
@@ -134,5 +174,8 @@ model AuditLog {
   metadata    String?
   createdAt   DateTime @default(now())
 
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
   @@map("audit_logs")
 }

@@ -39,14 +39,7 @@ function App() {
   return (
     <Routes>
       {/* ===== PUBLIC ROUTES ===== */}
-      <Route
-        path="/"
-        element={
-          <PublicOnlyRoute>
-            <LandingPage />
-          </PublicOnlyRoute>
-        }
-      />
+      <Route path="/" element={<LandingPage />} />
       <Route
         path="/login"
         element={

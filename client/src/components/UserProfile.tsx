@@ -3,6 +3,7 @@ import { Container, Box, Typography, Grid, Card, CardContent, Chip, Button, Text
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import { useI18n } from '../hooks/useI18n';
+import { useSnackbar } from 'notistack';
 
 export default function UserProfile() {
   const { user, loading: authLoading } = useAuth();
@@ -98,14 +99,17 @@ export default function UserProfile() {
     });
   };
 
+  const { enqueueSnackbar } = useSnackbar();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setSubmitting(true);
       await api.put('/users/profile', formData);
       setEditing(false);
+      enqueueSnackbar('Profile updated successfully', { variant: 'success' });
       fetchProfile();
-    } catch (err) {
+    } catch (err: any) {
       setError(err.error || 'Failed to update profile');
     } finally {
       setSubmitting(false);

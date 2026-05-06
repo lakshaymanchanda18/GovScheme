@@ -6,9 +6,11 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff, Email, Lock, ArrowBack } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
+import { useI18n } from '../hooks/useI18n';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,7 +21,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Please fill in all fields');
+      setError(t('common.fillAllFields'));
       return;
     }
     setLoading(true);
@@ -27,12 +29,12 @@ export default function LoginPage() {
     try {
       const result = await login(email, password);
       if (result.success) {
-        navigate('/dashboard');
+        navigate('/');
       } else {
-        setError(result.error || 'Invalid credentials');
+        setError(result.error || t('auth.invalidCredentials'));
       }
     } catch {
-      setError('Something went wrong. Please try again.');
+      setError(t('common.somethingWentWrong'));
     } finally {
       setLoading(false);
     }
@@ -78,7 +80,7 @@ export default function LoginPage() {
               '&:hover': { backgroundColor: 'rgba(79,70,229,0.04)' },
             }}
           >
-            Back to Home
+            {t('common.backToHome')}
           </Button>
 
           {/* Logo */}
@@ -95,10 +97,10 @@ export default function LoginPage() {
             SaralYojna
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', mb: 0.5 }}>
-            Welcome back
+            {t('auth.welcomeBack')}
           </Typography>
           <Typography sx={{ color: '#64748b', mb: 4 }}>
-            Sign in to access your schemes and applications
+            {t('auth.loginSubtitle')}
           </Typography>
 
           {error && (
@@ -114,7 +116,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label="Email Address"
+              label={t('auth.email')}
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
@@ -137,7 +139,7 @@ export default function LoginPage() {
             />
             <TextField
               fullWidth
-              label="Password"
+              label={t('auth.password')}
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={e => setPassword(e.target.value)}
@@ -190,14 +192,14 @@ export default function LoginPage() {
                 transition: 'all 0.25s ease',
               }}
             >
-              {loading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Sign In'}
+              {loading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : t('auth.loginButton')}
             </Button>
           </form>
 
-          <Divider sx={{ my: 3, color: '#94a3b8', fontSize: '0.85rem' }}>or</Divider>
+          <Divider sx={{ my: 3, color: '#94a3b8', fontSize: '0.85rem' }}>{t('common.or')}</Divider>
 
           <Typography sx={{ textAlign: 'center', color: '#64748b' }}>
-            Don't have an account?{' '}
+            {t('auth.noAccount')}{' '}
             <Typography
               component={Link}
               to="/register"
@@ -207,7 +209,7 @@ export default function LoginPage() {
                 '&:hover': { textDecoration: 'underline' },
               }}
             >
-              Create Account
+              {t('auth.registerButton')}
             </Typography>
           </Typography>
         </Box>
