@@ -65,8 +65,16 @@ export default function RegisterPage() {
         setError(t('common.fillAllFields'));
         return false;
       }
-      if (formData.password.length < 6) {
-        setError(t('auth.passwordMinLength'));
+      if (formData.password.length < 8) {
+        setError('Password must be at least 8 characters');
+        return false;
+      }
+      if (!/[A-Z]/.test(formData.password)) {
+        setError('Password must contain at least one uppercase letter');
+        return false;
+      }
+      if (!/[0-9]/.test(formData.password)) {
+        setError('Password must contain at least one number');
         return false;
       }
       if (formData.password !== formData.confirmPassword) {
