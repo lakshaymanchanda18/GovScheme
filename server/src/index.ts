@@ -84,7 +84,7 @@ app.use(limiter);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 100,
   message: { error: 'Too many auth requests', code: 'RATE_LIMIT' },
 });
 const chatbotLimiter = rateLimit({
