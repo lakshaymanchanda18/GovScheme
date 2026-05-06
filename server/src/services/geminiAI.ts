@@ -182,7 +182,7 @@ async function generateGeminiExplanation(
     };
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-8b' });
 
   const schemeSummaries = topResults.slice(0, 3).map((r) => {
     const scheme = schemes.find((s) => s.id === r.schemeId);

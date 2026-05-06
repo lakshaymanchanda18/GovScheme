@@ -1,0 +1,11 @@
+2026-05-07 00:43:20 | INFO     | pipeline | ╔══════════════════════════════════════════════════════════╗
+2026-05-07 00:43:20 | INFO     | pipeline | ║   GovScheme RAG Dataset Pipeline                         ║
+2026-05-07 00:43:20 | INFO     | pipeline | ║   Started: 2026-05-07 00:43:20                           ║
+2026-05-07 00:43:20 | INFO     | pipeline | ╚══════════════════════════════════════════════════════════╝
+2026-05-07 00:43:20 | INFO     | pipeline | 
+▶ Phase 1: Loading seed data only (--seed-only)
+2026-05-07 00:43:25 | INFO     | pipeline |   Seed data saved → D:\GovScheme\data\raw\schemes_raw.json (10 schemes)
+2026-05-07 00:43:25 | INFO     | pipeline | 
+▶ Phase 2: Data Cleaning & Preprocessing
+2026-05-07 00:43:25 | INFO     | pipeline | 
+▶ Phase 3: Validation & Quality Checks

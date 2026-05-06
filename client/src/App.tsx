@@ -17,8 +17,8 @@ import SchemeDetails from './components/SchemeDetails';
 import EligibilityCheck from './components/EligibilityCheck';
 import ApplicationForm from './components/ApplicationForm';
 import UserProfile from './components/UserProfile';
-import UserApplications from './components/UserApplications';
-import { ChatbotPage } from './components/Chatbot';
+import ApplicationTracker from './components/ApplicationTracker';
+import { ChatbotPage } from './components/EnhancedChatbot';
 import { SettingsPage } from './components/SettingsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactElement }) {
@@ -69,7 +69,7 @@ function App() {
         <Route path="/schemes" element={<SchemeList />} />
         <Route path="/schemes/:id" element={<SchemeDetails />} />
         <Route path="/eligibility" element={<EligibilityCheck />} />
-        <Route path="/applications" element={<UserApplications />} />
+        <Route path="/applications" element={<ApplicationTracker />} />
         <Route path="/applications/:schemeId" element={<ApplicationForm />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/chatbot" element={<ChatbotPage />} />

@@ -28,10 +28,13 @@ interface Application {
 
 interface Document {
   id: string;
-  name: string;
-  type: string;
+  name?: string;
+  originalName?: string;
+  type?: string;
+  mimeType?: string;
   uploadedAt: string;
-  status: 'pending' | 'uploaded' | 'verified';
+  status?: string;
+  verified?: boolean;
 }
 
 export default function ApplicationTracker() {
@@ -63,24 +66,16 @@ export default function ApplicationTracker() {
     try {
       setLoading(true);
       const data = await api.get('/applications');
-      setApplications(data);
-      const readinessEntries = await Promise.all(
-        (data || []).map(async (app: Application) => {
-          try {
-            const r = await api.get(`/applications/${app.id}/readiness`);
-            return [app.id, r.readinessPercent] as const;
-          } catch {
-            return [app.id, 0] as const;
-          }
-        })
-      );
+      setApplications(Array.isArray(data) ? data : []);
+      
+      // Calculate a dummy readiness based on status for now
       const map: Record<string, number> = {};
-      readinessEntries.forEach(([id, percent]) => {
-        map[id] = percent;
+      (Array.isArray(data) ? data : []).forEach((app: Application) => {
+        map[app.id] = app.status === 'APPROVED' ? 100 : (app.status === 'PENDING' ? 80 : 100);
       });
       setReadinessByApp(map);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch applications');
+    } catch (err: any) {
+      setError(err.error || err.message || 'Failed to fetch applications');
     } finally {
       setLoading(false);
     }
@@ -121,7 +116,7 @@ export default function ApplicationTracker() {
       formData.append('file', file);
       formData.append('applicationId', selectedApplication!.id);
       
-      await api.post('/applications/upload', formData, {
+      await api.post('/documents/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -129,8 +124,8 @@ export default function ApplicationTracker() {
       
       // Refresh documents
       fetchDocuments(selectedApplication!.id);
-    } catch (err) {
-      setError('Failed to upload document');
+    } catch (err: any) {
+      setError(err.error || 'Failed to upload document');
     } finally {
       setUploading(false);
     }
@@ -138,12 +133,11 @@ export default function ApplicationTracker() {
 
   const fetchDocuments = async (applicationId: string) => {
     try {
-      const data = await api.get(`/applications/${applicationId}/documents`);
-      setDocuments(data);
-      const readinessData = await api.get(`/applications/${applicationId}/readiness`);
-      setReadiness(readinessData);
-    } catch (err) {
-      setError('Failed to fetch documents');
+      const data = await api.get(`/documents/application/${applicationId}`);
+      setDocuments(Array.isArray(data) ? data : []);
+      setReadiness({ readinessPercent: data.length > 0 ? 100 : 0, missingDocuments: [] });
+    } catch (err: any) {
+      setError(err.error || 'Failed to fetch documents');
     }
   };
 
@@ -156,8 +150,8 @@ export default function ApplicationTracker() {
   const openStatusDialog = async (application: Application) => {
     setSelectedApplication(application);
     try {
-      const data = await api.get(`/applications/${application.id}/status`);
-      setStatusUpdates(data);
+      const data = await api.get(`/applications/${application.id}/history`);
+      setStatusUpdates(Array.isArray(data) ? data : []);
     } catch {
       setStatusUpdates([]);
     }
@@ -365,12 +359,12 @@ export default function ApplicationTracker() {
                       <Box display="flex" alignItems="center" gap={2}>
                         <LinearProgress 
                           variant="determinate" 
-                          value={app.progress} 
-                          color={getProgressColor(app.progress) as any}
+                          value={app.progress || 0} 
+                          color={getProgressColor(app.progress || 0) as any}
                           sx={{ width: 100 }}
                         />
                         <Typography variant="body2">
-                          {app.progress}%
+                          {app.progress || 0}%
                         </Typography>
                       </Box>
                     </TableCell>
@@ -487,16 +481,16 @@ export default function ApplicationTracker() {
                   {documents.map((doc) => (
                     <ListItem key={doc.id}>
                       <ListItemIcon>
-                        {doc.status === 'uploaded' ? <UploadIcon color="success" /> : <ScheduleIcon color="action" />}
+                        {doc.verified ? <CheckCircleIcon color="success" /> : <UploadIcon color="primary" />}
                       </ListItemIcon>
                       <ListItemText
-                        primary={doc.name}
-                        secondary={`${doc.type} • ${formatDate(new Date(doc.uploadedAt))}`}
+                        primary={doc.originalName || doc.name}
+                        secondary={`${doc.mimeType || doc.type} • ${formatDate(new Date(doc.uploadedAt))}`}
                       />
                       <Chip
-                        label={t(`applications.documentStatus.${doc.status}`)}
+                        label={doc.verified ? 'Verified' : 'Uploaded'}
                         size="small"
-                        color={doc.status === 'uploaded' ? 'success' : 'default'}
+                        color={doc.verified ? 'success' : 'primary'}
                       />
                     </ListItem>
                   ))}

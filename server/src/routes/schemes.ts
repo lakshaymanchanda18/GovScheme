@@ -13,15 +13,15 @@ router.get('/', async (req, res) => {
     const { category, department, state, q } = req.query as any;
     const where: any = { isActive: true };
 
-    if (category) where.category = { contains: category as string, mode: 'insensitive' };
-    if (department) where.department = { contains: department as string, mode: 'insensitive' };
-    if (state) where.stateSpecific = { contains: state as string, mode: 'insensitive' };
+    if (category) where.category = { contains: category as string };
+    if (department) where.department = { contains: department as string };
+    if (state) where.stateSpecific = { contains: state as string };
     if (q) {
       where.OR = [
-        { name: { contains: q, mode: 'insensitive' } },
-        { description: { contains: q, mode: 'insensitive' } },
-        { benefits: { contains: q, mode: 'insensitive' } },
-        { eligibilityCriteria: { contains: q, mode: 'insensitive' } }
+        { name: { contains: q } },
+        { description: { contains: q } },
+        { benefits: { contains: q } },
+        { eligibilityCriteria: { contains: q } }
       ];
     }
 
@@ -67,15 +67,15 @@ router.get('/search', async (req, res) => {
   try {
     const { q, category, department, state } = req.query as any;
     const where: any = { isActive: true };
-    if (category) where.category = { contains: category as string, mode: 'insensitive' };
-    if (department) where.department = { contains: department as string, mode: 'insensitive' };
-    if (state) where.stateSpecific = { contains: state as string, mode: 'insensitive' };
+    if (category) where.category = { contains: category as string };
+    if (department) where.department = { contains: department as string };
+    if (state) where.stateSpecific = { contains: state as string };
     if (q) {
       where.OR = [
-        { name: { contains: q, mode: 'insensitive' } },
-        { description: { contains: q, mode: 'insensitive' } },
-        { benefits: { contains: q, mode: 'insensitive' } },
-        { eligibilityCriteria: { contains: q, mode: 'insensitive' } }
+        { name: { contains: q } },
+        { description: { contains: q } },
+        { benefits: { contains: q } },
+        { eligibilityCriteria: { contains: q } }
       ];
     }
 

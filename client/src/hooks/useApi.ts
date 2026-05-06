@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { useSnackbar } from 'notistack';
 import { useCallback, useRef } from 'react';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 
 // Axios is globally configured with withCredentials in AuthContext.tsx
 // This ensures the HTTP-Only cookie is sent with every request automatically

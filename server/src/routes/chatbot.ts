@@ -1,5 +1,12 @@
 import { Router } from 'express';
 import { prisma } from '../config/prisma';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+let genAI: GoogleGenerativeAI | null = null;
+if (GEMINI_API_KEY) {
+  genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+}
 
 const router = Router();
 
@@ -95,7 +102,7 @@ router.post('/query', async (req, res) => {
       const ranked = schemes
         .map((s, i) => ({ ...s, score: scores[i] }))
         .sort((a, b) => b.score - a.score)
-        .slice(0, 5);
+        .slice(0, 10);
 
       const maxScore = ranked[0]?.score || 0;
       const sources = ranked.filter((r) => r.score > 0).map((r) => r.id);
@@ -105,10 +112,34 @@ router.post('/query', async (req, res) => {
           id: r.id,
           confidence: maxScore > 0 ? Math.round((r.score / maxScore) * 100) : 0
         }));
-      if (ranked.length) {
-        reply = `Here are schemes that match your query: ${ranked.map(r => r.name).join(', ')}.`;
+
+      if (genAI) {
+        try {
+          const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-8b' });
+          const schemeSummaries = ranked.slice(0, 5).map(r => `- ${r.name}: ${r.benefits} (Criteria: ${r.eligibilityCriteria})`).join('\\n');
+          const prompt = `You are a helpful Indian government schemes assistant. 
+User message: "${message}"
+
+Here is the database of ALL available schemes:
+${schemeSummaries}
+
+Provide a helpful, conversational response to the user's query. Suggest checking eligibility if applicable. Do not use markdown styling. Keep it under 3 sentences. If they ask about students, mention student-related schemes from the database.`;
+          const result = await model.generateContent(prompt);
+          reply = result.response.text().trim();
+        } catch (error) {
+          console.error('Gemini chatbot error:', error);
+          if (ranked.length && ranked[0].score > 0) {
+            reply = `Here are schemes that match your query: ${ranked.filter(r => r.score > 0).map(r => r.name).join(', ')}.`;
+          } else {
+            reply = 'I can help you find schemes. Try telling me your category or department.';
+          }
+        }
       } else {
-        reply = 'I can help you find schemes. Try telling me your category or department.';
+        if (ranked.length && ranked[0].score > 0) {
+          reply = `Here are schemes that match your query: ${ranked.filter(r => r.score > 0).map(r => r.name).join(', ')}.`;
+        } else {
+          reply = 'I can help you find schemes. Try telling me your category or department.';
+        }
       }
       suggestions.push('Show me all schemes', 'Schemes for students');
       return res.json({ reply, suggestions, sources, sourceScores });

@@ -1,0 +1,102 @@
+﻿scheme_id,name,description,category,department,eligibilityCriteria,benefits,applicationProcess,requiredDocuments,incomeLimit,ageLimit,genderEligibility,occupationEligibility,stateSpecific,sourceUrl,tags,language,embedding_text,keywords,last_updated
+seed_0001,Pradhan Mantri Awas Yojana (PMAY),Housing scheme for urban poor providing financial assistance for construction of houses.,Housing,Ministry of Housing and Urban Affairs,"Annual income up to ₹6 lakh for EWS, ₹6-12 lakh for LIG, ₹12-18 lakh for MIG",Interest subsidy on home loans up to ₹2.67 lakh,Apply through PMAY portal with required documents,"Aadhaar card, Income certificate, Bank account details",1800000,18-60 years,,,All States,https://www.myscheme.gov.in/,,en,"Scheme Name: Pradhan Mantri Awas Yojana (PMAY)
+Description: Housing scheme for urban poor providing financial assistance for construction of houses.
+Category: Housing
+Department: Ministry of Housing and Urban Affairs
+Eligibility: Annual income up to ₹6 lakh for EWS, ₹6-12 lakh for LIG, ₹12-18 lakh for MIG
+Benefits: Interest subsidy on home loans up to ₹2.67 lakh
+Application Process: Apply through PMAY portal with required documents
+Required Documents: Aadhaar card, Income certificate, Bank account details
+State: All States
+Age Limit: 18-60 years
+Income Limit: 1800000","lakh, pradhan, mantri, awas, yojana, pmay, housing, urban, poor, providing",
+seed_0002,Pradhan Mantri Jan Dhan Yojana (PMJDY),Financial inclusion program to ensure access to financial services for all households.,Financial Inclusion,Ministry of Finance,Any Indian citizen above 10 years of age,"Zero balance bank account, RuPay debit card, overdraft facility",Visit any bank branch with KYC documents,"Aadhaar card, PAN card, Address proof",,10+ years,,,All States,https://www.india.gov.in/my-government/schemes,,en,"Scheme Name: Pradhan Mantri Jan Dhan Yojana (PMJDY)
+Description: Financial inclusion program to ensure access to financial services for all households.
+Category: Financial Inclusion
+Department: Ministry of Finance
+Eligibility: Any Indian citizen above 10 years of age
+Benefits: Zero balance bank account, RuPay debit card, overdraft facility
+Application Process: Visit any bank branch with KYC documents
+Required Documents: Aadhaar card, PAN card, Address proof
+State: All States
+Age Limit: 10+ years","financial, pradhan, mantri, jan, dhan, yojana, pmjdy, inclusion, program, ensure",
+seed_0003,Pradhan Mantri Kisan Samman Nidhi (PM-KISAN),Income support scheme for small and marginal farmers.,Agriculture,Ministry of Agriculture and Farmers Welfare,Small and marginal farmers owning cultivable land up to 2 hectares,"Direct income support of ₹6,000 per year in three equal installments",Register through Common Service Centers or online portal,"Land ownership documents, Aadhaar card, Bank account details",,18+ years,,,All States,https://www.myscheme.gov.in/,,en,"Scheme Name: Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)
+Description: Income support scheme for small and marginal farmers.
+Category: Agriculture
+Department: Ministry of Agriculture and Farmers Welfare
+Eligibility: Small and marginal farmers owning cultivable land up to 2 hectares
+Benefits: Direct income support of ₹6,000 per year in three equal installments
+Application Process: Register through Common Service Centers or online portal
+Required Documents: Land ownership documents, Aadhaar card, Bank account details
+State: All States
+Age Limit: 18+ years","kisan, income, support, small, marginal, farmers, pradhan, mantri, samman, nidhi",
+seed_0004,Ayushman Bharat Yojana (PM-JAY),World's largest health insurance scheme providing coverage for secondary and tertiary care hospitalization.,Healthcare,Ministry of Health and Family Welfare,Families identified as deprived rural families and selected occupational categories of urban workers,Health insurance coverage up to ₹5 lakh per family per year,Automatic enrollment based on SECC 2011 data or through e-card generation,"Aadhaar card, Ration card, Mobile number",,All ages,,,All States,https://www.india.gov.in/my-government/schemes,,en,"Scheme Name: Ayushman Bharat Yojana (PM-JAY)
+Description: World's largest health insurance scheme providing coverage for secondary and tertiary care hospitalization.
+Category: Healthcare
+Department: Ministry of Health and Family Welfare
+Eligibility: Families identified as deprived rural families and selected occupational categories of urban workers
+Benefits: Health insurance coverage up to ₹5 lakh per family per year
+Application Process: Automatic enrollment based on SECC 2011 data or through e-card generation
+Required Documents: Aadhaar card, Ration card, Mobile number
+State: All States
+Age Limit: All ages","health, insurance, coverage, per, families, ayushman, bharat, yojana, jay, world",
+seed_0005,Pradhan Mantri Ujjwala Yojana (PMUY),Clean cooking fuel scheme providing LPG connections to women from below poverty line households.,Energy,Ministry of Petroleum and Natural Gas,Women head of family from BPL households,"Free LPG connection with financial support of ₹1,600",Apply through nearest LPG distributor with required documents,"Aadhaar card, BPL certificate, Bank account details",,18+ years,,,All States,https://www.myscheme.gov.in/,,en,"Scheme Name: Pradhan Mantri Ujjwala Yojana (PMUY)
+Description: Clean cooking fuel scheme providing LPG connections to women from below poverty line households.
+Category: Energy
+Department: Ministry of Petroleum and Natural Gas
+Eligibility: Women head of family from BPL households
+Benefits: Free LPG connection with financial support of ₹1,600
+Application Process: Apply through nearest LPG distributor with required documents
+Required Documents: Aadhaar card, BPL certificate, Bank account details
+State: All States
+Age Limit: 18+ years","lpg, women, households, pradhan, mantri, ujjwala, yojana, pmuy, clean, cooking",
+seed_0006,Sukanya Samriddhi Yojana (SSY),Small savings scheme for girl child welfare and education.,Education,Ministry of Women and Child Development,Girl child below 10 years of age,"High interest rate, tax benefits under Section 80C",Open account at post office or authorized bank branches,"Birth certificate, Aadhaar card, Guardian's ID proof",,0-10 years,,,All States,https://www.india.gov.in/my-government/schemes,,en,"Scheme Name: Sukanya Samriddhi Yojana (SSY)
+Description: Small savings scheme for girl child welfare and education.
+Category: Education
+Department: Ministry of Women and Child Development
+Eligibility: Girl child below 10 years of age
+Benefits: High interest rate, tax benefits under Section 80C
+Application Process: Open account at post office or authorized bank branches
+Required Documents: Birth certificate, Aadhaar card, Guardian's ID proof
+State: All States
+Age Limit: 0-10 years","girl, child, sukanya, samriddhi, yojana, ssy, small, savings, welfare, education",
+seed_0007,Pradhan Mantri Mudra Yojana (PMMY),"Business loan scheme for non-corporate, non-farm small/micro enterprises.",Business & Enterprise,"Ministry of Micro, Small and Medium Enterprises",Indian citizen with business plan for non-farm income generating activity,"Loans up to ₹10 lakh under Shishu, Kishore, and Tarun categories",Apply through MUDRA affiliated banks or NBFCs,"Business proof, Identity proof, Address proof",,18-65 years,,,All States,https://www.myscheme.gov.in/,,en,"Scheme Name: Pradhan Mantri Mudra Yojana (PMMY)
+Description: Business loan scheme for non-corporate, non-farm small/micro enterprises.
+Category: Business & Enterprise
+Department: Ministry of Micro, Small and Medium Enterprises
+Eligibility: Indian citizen with business plan for non-farm income generating activity
+Benefits: Loans up to ₹10 lakh under Shishu, Kishore, and Tarun categories
+Application Process: Apply through MUDRA affiliated banks or NBFCs
+Required Documents: Business proof, Identity proof, Address proof
+State: All States
+Age Limit: 18-65 years","non, business, farm, pradhan, mantri, mudra, yojana, pmmy, loan, corporate",
+seed_0008,National Rural Employment Guarantee Act (NREGA),Social security measure guaranteeing 100 days of wage employment in a financial year.,Employment,Ministry of Rural Development,Adult members of any rural household,100 days of guaranteed wage employment per financial year,Register at Gram Panchayat with job card application,"Aadhaar card, Address proof, Bank account details",,18+ years,,,Rural Areas,https://www.india.gov.in/my-government/schemes,,en,"Scheme Name: National Rural Employment Guarantee Act (NREGA)
+Description: Social security measure guaranteeing 100 days of wage employment in a financial year.
+Category: Employment
+Department: Ministry of Rural Development
+Eligibility: Adult members of any rural household
+Benefits: 100 days of guaranteed wage employment per financial year
+Application Process: Register at Gram Panchayat with job card application
+Required Documents: Aadhaar card, Address proof, Bank account details
+State: Rural Areas
+Age Limit: 18+ years","employment, rural, days, wage, financial, year, national, guarantee, act, nrega",
+seed_0009,Pradhan Mantri Matru Vandana Yojana (PMMVY),Maternity benefit program for pregnant women and lactating mothers.,Women & Child Development,Ministry of Women and Child Development,Pregnant women and lactating mothers for first two live births,"Cash incentive of ₹5,000 in three installments",Register at Anganwadi center or online portal,"Aadhaar card, Bank account details, Pregnancy proof",,19+ years,,,All States,https://www.myscheme.gov.in/,,en,"Scheme Name: Pradhan Mantri Matru Vandana Yojana (PMMVY)
+Description: Maternity benefit program for pregnant women and lactating mothers.
+Category: Women & Child Development
+Department: Ministry of Women and Child Development
+Eligibility: Pregnant women and lactating mothers for first two live births
+Benefits: Cash incentive of ₹5,000 in three installments
+Application Process: Register at Anganwadi center or online portal
+Required Documents: Aadhaar card, Bank account details, Pregnancy proof
+State: All States
+Age Limit: 19+ years","pregnant, women, lactating, mothers, pradhan, mantri, matru, vandana, yojana, pmmvy",
+seed_0010,National Scholarship Portal (NSP),Single platform for students to apply for various government scholarships.,Education,Ministry of Education,Students from Class 1 to PhD level based on specific scheme criteria,Financial assistance for education expenses,Register and apply online through National Scholarship Portal,"Aadhaar card, Educational certificates, Income certificate",,Varies by scheme,,,All States,https://www.india.gov.in/my-government/schemes,,en,"Scheme Name: National Scholarship Portal (NSP)
+Description: Single platform for students to apply for various government scholarships.
+Category: Education
+Department: Ministry of Education
+Eligibility: Students from Class 1 to PhD level based on specific scheme criteria
+Benefits: Financial assistance for education expenses
+Application Process: Register and apply online through National Scholarship Portal
+Required Documents: Aadhaar card, Educational certificates, Income certificate
+State: All States
+Age Limit: Varies by scheme","students, national, scholarship, portal, nsp, single, platform, various, scholarships, financial",

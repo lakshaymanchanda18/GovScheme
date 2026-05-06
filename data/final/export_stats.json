@@ -1,0 +1,22 @@
+{
+  "exported_at": "2026-05-07T00:44:26.737528",
+  "total_schemes": 10,
+  "categories": [
+    "Agriculture",
+    "Business & Enterprise",
+    "Education",
+    "Employment",
+    "Energy",
+    "Financial Inclusion",
+    "Healthcare",
+    "Housing",
+    "Women & Child Development"
+  ],
+  "avg_embedding_text_length": 542.1,
+  "files_generated": [
+    "schemes_final.json",
+    "schemes_final.csv",
+    "schemes_pinecone.json",
+    "schemes_chunks.json"
+  ]
+}
