@@ -3,6 +3,7 @@ import { Container, Box, Typography, Grid, Card, CardContent, Chip, Button, Text
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import { useI18n } from '../hooks/useI18n';
+import { useSnackbar } from 'notistack';
 
 export default function UserProfile() {
   const { user, loading: authLoading } = useAuth();
@@ -98,15 +99,19 @@ export default function UserProfile() {
     });
   };
 
+  const { enqueueSnackbar } = useSnackbar();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setSubmitting(true);
       await api.put('/users/profile', formData);
       setEditing(false);
+      enqueueSnackbar('Profile updated successfully', { variant: 'success' });
       fetchProfile();
-    } catch (err) {
-      setError(err.error || 'Failed to update profile');
+    } catch (err: any) {
+      const errorMessage = err.error || (err.errors ? JSON.stringify(err.errors) : 'Failed to update profile');
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -120,7 +125,7 @@ export default function UserProfile() {
     <Container maxWidth="lg">
       <Box py={4}>
         <Typography variant="h4" gutterBottom>
-          {t('profile')}
+          {t('profile.title')}
         </Typography>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
@@ -128,13 +133,13 @@ export default function UserProfile() {
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                    {t('personalInformation')}
+                    {t('profile.personalDetails')}
                   </Typography>
                   <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label={t('firstName')}
+                        label={t('auth.firstName')}
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleInputChange}
@@ -145,7 +150,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label={t('lastName')}
+                        label={t('auth.lastName')}
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleInputChange}
@@ -156,7 +161,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label={t('phone')}
+                        label={t('auth.phone')}
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
@@ -167,7 +172,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label={t('email')}
+                        label={t('auth.email')}
                         name="email"
                         type="email"
                         value={formData.email}
@@ -179,7 +184,7 @@ export default function UserProfile() {
                     <Grid item xs={12}>
                       <TextField
                         fullWidth
-                        label={t('address')}
+                        label={t('auth.address')}
                         name="address"
                         value={formData.address}
                         onChange={handleInputChange}
@@ -192,7 +197,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={4}>
                       <TextField
                         fullWidth
-                        label={t('city')}
+                        label={t('auth.city')}
                         name="city"
                         value={formData.city}
                         onChange={handleInputChange}
@@ -203,7 +208,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={4}>
                       <TextField
                         fullWidth
-                        label={t('state')}
+                        label={t('auth.state')}
                         name="state"
                         value={formData.state}
                         onChange={handleInputChange}
@@ -214,7 +219,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={4}>
                       <TextField
                         fullWidth
-                        label={t('pincode')}
+                        label={t('auth.pincode')}
                         name="pincode"
                         value={formData.pincode}
                         onChange={handleInputChange}
@@ -231,13 +236,13 @@ export default function UserProfile() {
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                    {t('additionalInformation')}
+                    {t('profile.additionalDetails')}
                   </Typography>
                   <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label={t('aadharNumber')}
+                        label={t('auth.aadharNumber')}
                         name="aadharNumber"
                         value={formData.aadharNumber}
                         onChange={handleInputChange}
@@ -248,7 +253,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label={t('panNumber')}
+                        label={t('auth.panNumber')}
                         name="panNumber"
                         value={formData.panNumber}
                         onChange={handleInputChange}
@@ -258,7 +263,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label={t('income')}
+                        label={t('auth.income')}
                         name="income"
                         type="number"
                         value={formData.income}
@@ -270,7 +275,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label={t('occupation')}
+                        label={t('auth.occupation')}
                         name="occupation"
                         value={formData.occupation}
                         onChange={handleInputChange}
@@ -281,7 +286,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label={t('education')}
+                        label={t('auth.education')}
                         name="education"
                         value={formData.education}
                         onChange={handleInputChange}
@@ -292,7 +297,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label={t('familySize')}
+                        label={t('auth.familySize')}
                         name="familySize"
                         type="number"
                         value={formData.familySize}
@@ -304,7 +309,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label={t('disability')}
+                        label={t('auth.disability')}
                         name="disability"
                         value={formData.disability}
                         onChange={handleInputChange}
@@ -314,7 +319,7 @@ export default function UserProfile() {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label={t('veteranStatus')}
+                        label={t('auth.veteranStatus')}
                         name="veteranStatus"
                         value={formData.veteranStatus}
                         onChange={handleInputChange}
@@ -334,7 +339,7 @@ export default function UserProfile() {
                     color="secondary"
                     onClick={handleEdit}
                   >
-                    {t('editProfile')}
+                    {t('common.edit')}
                   </Button>
                 )}
                 {editing && (
@@ -344,7 +349,7 @@ export default function UserProfile() {
                       color="secondary"
                       onClick={handleCancel}
                     >
-                      {t('cancel')}
+                      {t('common.cancel')}
                     </Button>
                     <Button
                       type="submit"
@@ -352,7 +357,7 @@ export default function UserProfile() {
                       color="primary"
                       disabled={submitting}
                     >
-                      {submitting ? t('updating') : t('update')}
+                      {submitting ? t('common.loading') : t('profile.updateProfile')}
                     </Button>
                   </>
                 )}

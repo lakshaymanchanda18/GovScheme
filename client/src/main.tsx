@@ -9,6 +9,7 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import './i18n'; // Canonical i18n init — must be imported before App
 import App from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
 
@@ -125,7 +126,9 @@ createRoot(document.getElementById('root')!).render(
           <Provider store={store}>
             <BrowserRouter>
               <AuthProvider>
-                <App />
+                <ErrorBoundary>
+                  <App />
+                </ErrorBoundary>
               </AuthProvider>
             </BrowserRouter>
           </Provider>

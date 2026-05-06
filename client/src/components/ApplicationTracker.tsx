@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Box, Typography, Grid, Card, CardContent, Chip, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Tabs, Tab, TextField, Select, MenuItem, InputLabel, FormControl, Alert, LinearProgress, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
+import { 
+  Container, Box, Typography, Grid, Card, CardContent, Chip, Button, 
+  Tabs, Tab, TextField, Select, MenuItem, InputLabel, FormControl, Alert, 
+  LinearProgress, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, 
+  List, ListItem, ListItemText, ListItemIcon, Fade, Stepper, Step, StepLabel,
+  InputAdornment, Avatar
+} from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import { useI18n } from '../hooks/useI18n';
 import { useNavigate } from 'react-router-dom';
-import { Upload as UploadIcon, Download as DownloadIcon, Notifications as NotificationsIcon, CheckCircle as CheckCircleIcon, Error as ErrorIcon, Schedule as ScheduleIcon } from '@mui/icons-material';
+import { 
+  Upload as UploadIcon, Notifications as NotificationsIcon, 
+  CheckCircle as CheckCircleIcon, Error as ErrorIcon, 
+  Schedule as ScheduleIcon, Search as SearchIcon, 
+  FilterList as FilterListIcon, Description as DescriptionIcon,
+  Timeline as TimelineIcon, CloudUpload as CloudUploadIcon
+} from '@mui/icons-material';
 
 interface Application {
   id: string;
@@ -28,16 +40,21 @@ interface Application {
 
 interface Document {
   id: string;
-  name: string;
-  type: string;
+  name?: string;
+  originalName?: string;
+  type?: string;
+  mimeType?: string;
   uploadedAt: string;
-  status: 'pending' | 'uploaded' | 'verified';
+  status?: string;
+  verified?: boolean;
 }
+
+const statusSteps = ['SUBMITTED', 'PENDING', 'REVIEWED', 'APPROVED'];
 
 export default function ApplicationTracker() {
   const { user } = useAuth();
   const { api } = useApi();
-  const { t, i18n, formatDate } = useI18n();
+  const { t, formatDate } = useI18n();
   const navigate = useNavigate();
   
   const [applications, setApplications] = useState<Application[]>([]);
@@ -63,31 +80,19 @@ export default function ApplicationTracker() {
     try {
       setLoading(true);
       const data = await api.get('/applications');
-      setApplications(data);
-      const readinessEntries = await Promise.all(
-        (data || []).map(async (app: Application) => {
-          try {
-            const r = await api.get(`/applications/${app.id}/readiness`);
-            return [app.id, r.readinessPercent] as const;
-          } catch {
-            return [app.id, 0] as const;
-          }
-        })
-      );
+      const apps = Array.isArray(data) ? data : [];
+      setApplications(apps);
+      
       const map: Record<string, number> = {};
-      readinessEntries.forEach(([id, percent]) => {
-        map[id] = percent;
+      apps.forEach((app: Application) => {
+        map[app.id] = app.status === 'APPROVED' ? 100 : (app.status === 'PENDING' ? 80 : 100);
       });
       setReadinessByApp(map);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch applications');
+    } catch (err: any) {
+      setError(err.error || err.message || 'Failed to fetch applications');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleStatusFilter = (status: string) => {
-    setStatusFilter(status);
   };
 
   const filteredApplications = applications.filter(app => {
@@ -103,15 +108,8 @@ export default function ApplicationTracker() {
       case 'REJECTED': return 'error';
       case 'REVIEWED': return 'info';
       case 'SUBMITTED': return 'warning';
-      default: return 'default';
+      default: return 'warning';
     }
-  };
-
-  const getProgressColor = (progress: number) => {
-    if (progress >= 90) return 'success';
-    if (progress >= 50) return 'info';
-    if (progress >= 25) return 'warning';
-    return 'error';
   };
 
   const handleUploadDocument = async (file: File) => {
@@ -121,16 +119,13 @@ export default function ApplicationTracker() {
       formData.append('file', file);
       formData.append('applicationId', selectedApplication!.id);
       
-      await api.post('/applications/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+      await api.post('/documents/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       
-      // Refresh documents
       fetchDocuments(selectedApplication!.id);
-    } catch (err) {
-      setError('Failed to upload document');
+    } catch (err: any) {
+      setError(err.error || 'Failed to upload document');
     } finally {
       setUploading(false);
     }
@@ -138,12 +133,11 @@ export default function ApplicationTracker() {
 
   const fetchDocuments = async (applicationId: string) => {
     try {
-      const data = await api.get(`/applications/${applicationId}/documents`);
-      setDocuments(data);
-      const readinessData = await api.get(`/applications/${applicationId}/readiness`);
-      setReadiness(readinessData);
-    } catch (err) {
-      setError('Failed to fetch documents');
+      const data = await api.get(`/documents/application/${applicationId}`);
+      setDocuments(Array.isArray(data) ? data : []);
+      setReadiness({ readinessPercent: data.length > 0 ? 100 : 0, missingDocuments: [] });
+    } catch (err: any) {
+      setError(err.error || 'Failed to fetch documents');
     }
   };
 
@@ -156,383 +150,335 @@ export default function ApplicationTracker() {
   const openStatusDialog = async (application: Application) => {
     setSelectedApplication(application);
     try {
-      const data = await api.get(`/applications/${application.id}/status`);
-      setStatusUpdates(data);
+      const data = await api.get(`/applications/${application.id}/history`);
+      setStatusUpdates(Array.isArray(data) ? data : []);
     } catch {
       setStatusUpdates([]);
     }
     setStatusDialog(true);
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'APPROVED': return <CheckCircleIcon color="success" />;
-      case 'REJECTED': return <ErrorIcon color="error" />;
-      case 'REVIEWED': return <ScheduleIcon color="info" />;
-      default: return <ScheduleIcon color="action" />;
-    }
-  };
-
   return (
-    <Container maxWidth="lg">
-      <Box py={4}>
-        <Typography variant="h4" gutterBottom>
-          {t('applications.title')}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" gutterBottom>
-          {t('applications.subtitle')}
-        </Typography>
+    <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)', pb: 8 }}>
+      {/* Hero Section */}
+      <Box sx={{ 
+        background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)', 
+        pt: { xs: 8, md: 10 }, pb: { xs: 10, md: 12 }, px: 2,
+        color: 'white', position: 'relative', overflow: 'hidden'
+      }}>
+        {/* Decorative elements */}
+        <Box sx={{ position: 'absolute', top: -50, right: -50, width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', filter: 'blur(40px)' }} />
+        
+        <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
+          <Grid container spacing={4} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <Typography variant="h2" fontWeight="800" sx={{ mb: 2, fontFamily: "'Outfit', sans-serif" }}>
+                My Applications
+              </Typography>
+              <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300, fontFamily: "'Inter', sans-serif" }}>
+                Track the status of your government scheme applications in real-time.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: { md: 'flex-end' } }}>
+                <Button 
+                  variant="contained" 
+                  onClick={() => navigate('/schemes')}
+                  sx={{ 
+                    borderRadius: '12px', px: 4, py: 1.5,
+                    background: 'rgba(255,255,255,0.2)',
+                    backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)',
+                    color: 'white', '&:hover': { background: 'rgba(255,255,255,0.3)' }
+                  }}
+                >
+                  Discover New Schemes
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Dashboard Overview */}
+      <Container maxWidth="xl" sx={{ mt: -6, position: 'relative', zIndex: 2 }}>
+        
+        {/* Analytics Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
+          {[
+            { title: 'Total Applications', count: applications.length, icon: <NotificationsIcon sx={{fontSize: 40, color: '#4f46e5'}} />, bg: '#fff' },
+            { title: 'Pending Review', count: applications.filter(a => a.status === 'PENDING').length, icon: <ScheduleIcon sx={{fontSize: 40, color: '#f59e0b'}} />, bg: '#fff' },
+            { title: 'Approved', count: applications.filter(a => a.status === 'APPROVED').length, icon: <CheckCircleIcon sx={{fontSize: 40, color: '#10b981'}} />, bg: '#fff' },
+            { title: 'Rejected', count: applications.filter(a => a.status === 'REJECTED').length, icon: <ErrorIcon sx={{fontSize: 40, color: '#ef4444'}} />, bg: '#fff' },
+          ].map((stat, i) => (
+            <Grid item xs={12} sm={6} md={3} key={i}>
+              <Card sx={{ 
+                borderRadius: '20px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', 
+                transition: 'transform 0.3s', '&:hover': { transform: 'translateY(-5px)' }
+              }}>
+                <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 3 }}>
                   <Box>
-                    <Typography variant="h6" color="text.secondary">
-                      {t('applications.total')}
+                    <Typography variant="body2" color="text.secondary" fontWeight="bold" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                      {stat.title}
                     </Typography>
-                    <Typography variant="h4" color="primary">
-                      {applications.length}
+                    <Typography variant="h3" fontWeight="800" sx={{ mt: 1, fontFamily: "'Outfit', sans-serif" }}>
+                      {stat.count}
                     </Typography>
                   </Box>
-                  <NotificationsIcon color="primary" sx={{ fontSize: 40 }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="h6" color="text.secondary">
-                      {t('applications.pending')}
-                    </Typography>
-                    <Typography variant="h4" color="warning.main">
-                      {applications.filter(a => a.status === 'PENDING').length}
-                    </Typography>
+                  <Box sx={{ p: 2, borderRadius: '16px', background: 'rgba(0,0,0,0.04)' }}>
+                    {stat.icon}
                   </Box>
-                  <ScheduleIcon color="warning" sx={{ fontSize: 40 }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="h6" color="text.secondary">
-                      {t('applications.approved')}
-                    </Typography>
-                    <Typography variant="h4" color="success.main">
-                      {applications.filter(a => a.status === 'APPROVED').length}
-                    </Typography>
-                  </Box>
-                  <CheckCircleIcon color="success" sx={{ fontSize: 40 }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="h6" color="text.secondary">
-                      {t('applications.rejected')}
-                    </Typography>
-                    <Typography variant="h4" color="error.main">
-                      {applications.filter(a => a.status === 'REJECTED').length}
-                    </Typography>
-                  </Box>
-                  <ErrorIcon color="error" sx={{ fontSize: 40 }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
 
-        {/* Filters and Search */}
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={6} md={4}>
+        {/* Filters */}
+        <Card sx={{ borderRadius: '20px', mb: 4, boxShadow: '0 10px 40px rgba(0,0,0,0.03)' }}>
+          <CardContent sx={{ p: 3 }}>
+            <Grid container spacing={3} alignItems="center">
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label={t('common.search')}
+                  placeholder="Search applications by scheme name or category..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  variant="outlined"
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>,
+                    sx: { borderRadius: '12px', background: '#f8fafc' }
+                  }}
                 />
               </Grid>
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid item xs={12} md={4}>
                 <FormControl fullWidth>
-                  <InputLabel>{t('common.filter')}</InputLabel>
                   <Select
                     value={statusFilter}
-                    label={t('common.filter')}
                     onChange={(e) => setStatusFilter(e.target.value)}
+                    displayEmpty
+                    sx={{ borderRadius: '12px', background: '#f8fafc' }}
+                    renderValue={(val) => {
+                      if (val === 'all') return <Box display="flex" alignItems="center" gap={1}><FilterListIcon/> All Statuses</Box>;
+                      return <Box display="flex" alignItems="center" gap={1}><FilterListIcon/> {val}</Box>;
+                    }}
                   >
-                    <MenuItem value="all">{t('common.all')}</MenuItem>
-                    <MenuItem value="PENDING">{t('applications.status.pending')}</MenuItem>
-                    <MenuItem value="REVIEWED">{t('applications.status.reviewed')}</MenuItem>
-                    <MenuItem value="APPROVED">{t('applications.status.approved')}</MenuItem>
-                    <MenuItem value="REJECTED">{t('applications.status.rejected')}</MenuItem>
-                    <MenuItem value="SUBMITTED">{t('applications.status.submitted')}</MenuItem>
+                    <MenuItem value="all">All Statuses</MenuItem>
+                    <MenuItem value="PENDING">Pending</MenuItem>
+                    <MenuItem value="REVIEWED">Reviewed</MenuItem>
+                    <MenuItem value="APPROVED">Approved</MenuItem>
+                    <MenuItem value="REJECTED">Rejected</MenuItem>
+                    <MenuItem value="SUBMITTED">Submitted</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={4}>
-                <Box display="flex" gap={1}>
-                  <Button
-                    variant={activeTab === 0 ? "contained" : "outlined"}
-                    onClick={() => setActiveTab(0)}
-                  >
-                    {t('applications.allSchemes')}
-                  </Button>
-                  <Button
-                    variant={activeTab === 1 ? "contained" : "outlined"}
-                    onClick={() => setActiveTab(1)}
-                  >
-                    {t('applications.newApplication')}
-                  </Button>
-                </Box>
+              <Grid item xs={12} md={2}>
+                <Button 
+                  fullWidth variant="contained" 
+                  sx={{ borderRadius: '12px', py: 1.5, background: '#4f46e5', '&:hover': { background: '#4338ca' } }}
+                  onClick={fetchApplications}
+                >
+                  Refresh
+                </Button>
               </Grid>
             </Grid>
           </CardContent>
         </Card>
 
-        {/* Applications Table */}
+        {error && <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }} onClose={() => setError(null)}>{error}</Alert>}
+
+        {/* Application Cards List */}
         {loading ? (
-          <Box sx={{ width: '100%', mt: 3 }}>
-            <LinearProgress />
-          </Box>
+          <Box sx={{ width: '100%', mt: 3 }}><LinearProgress /></Box>
         ) : filteredApplications.length === 0 ? (
-          <Alert severity="info" sx={{ mt: 3 }}>
-            {t('applications.noApplications')}
-          </Alert>
+          <Box textAlign="center" py={10}>
+            <Box 
+              sx={{ 
+                width: 120, height: 120, borderRadius: '50%', 
+                background: 'rgba(79, 70, 229, 0.05)', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                mx: 'auto', mb: 2 
+              }}
+            >
+              <DescriptionIcon sx={{ fontSize: 64, color: 'rgba(79, 70, 229, 0.3)' }} />
+            </Box>
+            <Typography variant="h5" color="text.secondary" fontFamily="'Outfit', sans-serif" mt={3}>No applications found.</Typography>
+            <Button variant="outlined" sx={{ mt: 2, borderRadius: '12px' }} onClick={() => navigate('/schemes')}>Browse Schemes</Button>
+          </Box>
         ) : (
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t('applications.schemeName')}</TableCell>
-                  <TableCell>{t('applications.category')}</TableCell>
-                  <TableCell>{t('applications.status')}</TableCell>
-                  <TableCell>{t('applications.submittedDate')}</TableCell>
-                  <TableCell>{t('applications.progress')}</TableCell>
-                  <TableCell>Doc Readiness</TableCell>
-                  <TableCell>{t('applications.actions')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredApplications.map((app) => (
-                  <TableRow key={app.id}>
-                    <TableCell>
-                      <Typography variant="body1" fontWeight="medium">
-                        {app.scheme.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {app.scheme.department}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip label={app.scheme.category} size="small" variant="outlined" />
-                    </TableCell>
-                    <TableCell>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        {getStatusIcon(app.status)}
-                        <Chip
-                          label={t(`applications.status.${app.status.toLowerCase()}`)}
-                          size="small"
-                          color={getStatusColor(app.status) as any}
-                        />
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(new Date(app.submittedAt))}
-                    </TableCell>
-                    <TableCell>
-                      <Box display="flex" alignItems="center" gap={2}>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={app.progress} 
-                          color={getProgressColor(app.progress) as any}
-                          sx={{ width: 100 }}
-                        />
-                        <Typography variant="body2">
-                          {app.progress}%
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <LinearProgress
-                          variant="determinate"
-                          value={readinessByApp[app.id] || 0}
-                          sx={{ width: 80 }}
-                          color={(readinessByApp[app.id] || 0) >= 80 ? 'success' : 'info'}
-                        />
-                        <Typography variant="body2">
-                          {readinessByApp[app.id] || 0}%
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box display="flex" gap={1}>
-                        <Button
-                          size="small"
-                          color="primary"
-                          onClick={() => navigate(`/schemes/${app.scheme.id}`)}
-                        >
-                          {t('schemes.viewDetails')}
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => openDocumentsDialog(app)}
-                        >
-                          {t('applications.uploadDocuments')}
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => openStatusDialog(app)}
-                        >
-                          Status Updates
-                        </Button>
-                        {app.rejectionReason && (
-                          <Button
-                            size="small"
-                            color="error"
-                            onClick={() => alert(`${t('applications.rejectionReason')}: ${app.rejectionReason}`)}
-                          >
-                            {t('applications.viewReason')}
-                          </Button>
-                        )}
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <Grid container spacing={3}>
+            {filteredApplications.map((app, idx) => {
+              const currentStepIndex = statusSteps.indexOf(app.status);
+              const activeStep = currentStepIndex === -1 ? 0 : currentStepIndex;
+
+              return (
+                <Grid item xs={12} key={app.id}>
+                  <Fade in={true} style={{ transitionDelay: `${idx * 100}ms` }}>
+                    <Card sx={{ 
+                      borderRadius: '24px', overflow: 'visible',
+                      boxShadow: '0 10px 40px rgba(0,0,0,0.05)',
+                      border: '1px solid rgba(0,0,0,0.05)'
+                    }}>
+                      <CardContent sx={{ p: { xs: 3, md: 4 } }}>
+                        <Grid container spacing={4} alignItems="center">
+                          <Grid item xs={12} md={4}>
+                            <Box display="flex" gap={2} alignItems="center" mb={1}>
+                              <Avatar sx={{ bgcolor: 'rgba(79, 70, 229, 0.1)', color: '#4f46e5', width: 56, height: 56 }}>
+                                <DescriptionIcon />
+                              </Avatar>
+                              <Box>
+                                <Typography variant="h6" fontWeight="bold" fontFamily="'Outfit', sans-serif">
+                                  {app.scheme.name}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {app.scheme.department} • Applied {formatDate(new Date(app.submittedAt))}
+                                </Typography>
+                              </Box>
+                            </Box>
+                            <Box mt={2}>
+                              <Chip label={app.scheme.category} size="small" sx={{ mr: 1, background: '#f1f5f9' }} />
+                              <Chip 
+                                label={app.status} 
+                                size="small" 
+                                color={getStatusColor(app.status) as any} 
+                                sx={{ fontWeight: 'bold' }} 
+                              />
+                            </Box>
+                          </Grid>
+                          
+                          <Grid item xs={12} md={5}>
+                            <Box sx={{ width: '100%', py: 2 }}>
+                              <Stepper activeStep={app.status === 'REJECTED' ? 1 : activeStep} alternativeLabel>
+                                {statusSteps.map((label, index) => {
+                                  const stepProps: { completed?: boolean; error?: boolean } = {};
+                                  if (app.status === 'REJECTED' && index === 1) {
+                                    stepProps.error = true;
+                                  }
+                                  return (
+                                    <Step key={label} {...stepProps}>
+                                      <StepLabel error={stepProps.error}>
+                                        {label}
+                                        {stepProps.error && <Typography variant="caption" color="error" display="block">Rejected</Typography>}
+                                      </StepLabel>
+                                    </Step>
+                                  );
+                                })}
+                              </Stepper>
+                            </Box>
+                          </Grid>
+
+                          <Grid item xs={12} md={3}>
+                            <Box display="flex" flexDirection="column" gap={1.5}>
+                              <Button 
+                                variant="contained" 
+                                fullWidth
+                                startIcon={<CloudUploadIcon />}
+                                onClick={() => openDocumentsDialog(app)}
+                                sx={{ borderRadius: '12px', background: '#4f46e5', '&:hover': { background: '#4338ca' } }}
+                              >
+                                Manage Documents
+                              </Button>
+                              <Button 
+                                variant="outlined" 
+                                fullWidth
+                                startIcon={<TimelineIcon />}
+                                onClick={() => openStatusDialog(app)}
+                                sx={{ borderRadius: '12px' }}
+                              >
+                                View Timeline
+                              </Button>
+                              {app.rejectionReason && (
+                                <Alert severity="error" sx={{ mt: 1, borderRadius: '12px', py: 0 }}>
+                                  {app.rejectionReason}
+                                </Alert>
+                              )}
+                            </Box>
+                          </Grid>
+                        </Grid>
+                      </CardContent>
+                    </Card>
+                  </Fade>
+                </Grid>
+              );
+            })}
+          </Grid>
         )}
 
         {/* Documents Dialog */}
-        <Dialog open={documentsDialog} onClose={() => setDocumentsDialog(false)} maxWidth="md" fullWidth>
-          <DialogTitle>
-            {selectedApplication?.scheme.name} - {t('applications.documentsRequired')}
+        <Dialog open={documentsDialog} onClose={() => setDocumentsDialog(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}>
+          <DialogTitle sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 'bold' }}>
+            Document Vault
           </DialogTitle>
           <DialogContent>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle1" gutterBottom>
-                  {t('applications.uploadDocuments')}
-                </Typography>
-                <Box border="2px dashed" borderColor="grey.300" borderRadius={2} p={3} textAlign="center">
-                  <UploadIcon sx={{ fontSize: 40, color: 'grey.500', mb: 1 }} />
-                  <Typography variant="body2" color="text.secondary">
-                    {t('applications.dragDrop')}
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    component="label"
-                    sx={{ mt: 2 }}
-                    disabled={uploading}
-                  >
-                    {uploading ? t('common.uploading') : t('common.upload')}
-                    <input type="file" hidden onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        handleUploadDocument(e.target.files[0]);
-                      }
-                    }} />
-                  </Button>
-                </Box>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle1" gutterBottom>
-                  {t('applications.uploadedDocuments')}
-                </Typography>
-                {readiness && (
-                  <Box mb={2}>
-                    <Typography variant="body2" color="text.secondary">
-                      Document readiness: {readiness.readinessPercent}%
-                    </Typography>
-                    <LinearProgress
-                      variant="determinate"
-                      value={readiness.readinessPercent}
-                      sx={{ mt: 1 }}
-                      color={readiness.readinessPercent >= 80 ? 'success' : 'info'}
-                    />
-                    {readiness.missingDocuments && readiness.missingDocuments.length > 0 && (
-                      <Box mt={1}>
-                        <Typography variant="caption" color="text.secondary">
-                          Missing: {readiness.missingDocuments.join(', ')}
-                        </Typography>
-                      </Box>
-                    )}
-                  </Box>
-                )}
-                <List>
-                  {documents.map((doc) => (
-                    <ListItem key={doc.id}>
-                      <ListItemIcon>
-                        {doc.status === 'uploaded' ? <UploadIcon color="success" /> : <ScheduleIcon color="action" />}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={doc.name}
-                        secondary={`${doc.type} • ${formatDate(new Date(doc.uploadedAt))}`}
-                      />
-                      <Chip
-                        label={t(`applications.documentStatus.${doc.status}`)}
-                        size="small"
-                        color={doc.status === 'uploaded' ? 'success' : 'default'}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDocumentsDialog(false)}>{t('common.close')}</Button>
-          </DialogActions>
-        </Dialog>
+            <Box mb={4} p={3} sx={{ background: '#f8fafc', borderRadius: '16px', border: '2px dashed #cbd5e1', textAlign: 'center' }}>
+              <CloudUploadIcon sx={{ fontSize: 48, color: '#94a3b8', mb: 1 }} />
+              <Typography variant="h6" color="text.secondary" fontFamily="'Outfit', sans-serif">Upload Required Documents</Typography>
+              <Typography variant="body2" color="text.secondary" mb={2}>PDF, JPG or PNG (Max 5MB)</Typography>
+              <Button variant="contained" component="label" disabled={uploading} sx={{ borderRadius: '12px', px: 4, py: 1.5 }}>
+                {uploading ? 'Uploading...' : 'Browse Files'}
+                <input type="file" hidden onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) handleUploadDocument(e.target.files[0]);
+                }} />
+              </Button>
+            </Box>
 
-        {/* Status Updates Dialog */}
-        <Dialog open={statusDialog} onClose={() => setStatusDialog(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>Status Updates</DialogTitle>
-          <DialogContent>
-            {statusUpdates.length === 0 ? (
-              <Alert severity="info">No status updates found.</Alert>
+            <Typography variant="h6" fontFamily="'Outfit', sans-serif" mb={2}>Uploaded Files</Typography>
+            {documents.length === 0 ? (
+              <Typography color="text.secondary" variant="body2">No documents uploaded yet.</Typography>
             ) : (
-              <List>
-                {statusUpdates.map((u) => (
-                  <ListItem key={u.id}>
+              <List sx={{ gap: 2, display: 'flex', flexDirection: 'column' }}>
+                {documents.map((doc) => (
+                  <ListItem key={doc.id} sx={{ background: '#f1f5f9', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                    <ListItemIcon>
+                      {doc.verified ? <CheckCircleIcon color="success" /> : <DescriptionIcon color="primary" />}
+                    </ListItemIcon>
                     <ListItemText
-                      primary={`${u.status} (${u.source})`}
-                      secondary={new Date(u.createdAt).toLocaleString()}
+                      primary={doc.originalName || doc.name}
+                      secondary={formatDate(new Date(doc.uploadedAt))}
+                      primaryTypographyProps={{ fontWeight: 'bold' }}
                     />
+                    <Chip label={doc.verified ? 'Verified' : 'Pending Review'} size="small" color={doc.verified ? 'success' : 'warning'} />
                   </ListItem>
                 ))}
               </List>
             )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setStatusDialog(false)}>{t('common.close')}</Button>
+          <DialogActions sx={{ p: 3 }}>
+            <Button onClick={() => setDocumentsDialog(false)} sx={{ borderRadius: '12px' }}>Close Vault</Button>
           </DialogActions>
         </Dialog>
-      </Box>
-    </Container>
+
+        {/* Status Updates Dialog */}
+        <Dialog open={statusDialog} onClose={() => setStatusDialog(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}>
+          <DialogTitle sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 'bold' }}>Application Timeline</DialogTitle>
+          <DialogContent>
+            {statusUpdates.length === 0 ? (
+              <Alert severity="info" sx={{ borderRadius: '12px' }}>No timeline events found.</Alert>
+            ) : (
+              <List>
+                {statusUpdates.map((u, i) => (
+                  <ListItem key={u.id} sx={{ position: 'relative', pb: 4 }}>
+                    {/* Line connector */}
+                    {i !== statusUpdates.length - 1 && (
+                      <Box sx={{ position: 'absolute', left: 28, top: 40, bottom: -10, width: 2, background: '#e2e8f0' }} />
+                    )}
+                    <ListItemIcon>
+                      <Avatar sx={{ bgcolor: '#4f46e5', width: 32, height: 32 }}>
+                        <CheckCircleIcon sx={{ fontSize: 20 }} />
+                      </Avatar>
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={<Typography fontWeight="bold">{u.status}</Typography>}
+                      secondary={new Date(u.createdAt).toLocaleString()}
+                    />
+                    <Chip label={u.source} size="small" variant="outlined" />
+                  </ListItem>
+                ))}
+              </List>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ p: 3 }}>
+            <Button onClick={() => setStatusDialog(false)} sx={{ borderRadius: '12px' }}>Close</Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
+    </Box>
   );
 }

@@ -1,0 +1,29 @@
+2026-05-07 00:44:25 | INFO     | pipeline | ╔══════════════════════════════════════════════════════════╗
+2026-05-07 00:44:25 | INFO     | pipeline | ║   GovScheme RAG Dataset Pipeline                         ║
+2026-05-07 00:44:25 | INFO     | pipeline | ║   Started: 2026-05-07 00:44:25                           ║
+2026-05-07 00:44:25 | INFO     | pipeline | ╚══════════════════════════════════════════════════════════╝
+2026-05-07 00:44:25 | INFO     | pipeline | 
+▶ Phase 1: Loading seed data only (--seed-only)
+2026-05-07 00:44:26 | INFO     | pipeline |   Seed data saved → D:\GovScheme\data\raw\schemes_raw.json (10 schemes)
+2026-05-07 00:44:26 | INFO     | pipeline | 
+▶ Phase 2: Data Cleaning & Preprocessing
+2026-05-07 00:44:26 | INFO     | pipeline | 
+▶ Phase 3: Validation & Quality Checks
+2026-05-07 00:44:26 | INFO     | pipeline | 
+▶ Phase 4: Final Export
+2026-05-07 00:44:26 | INFO     | pipeline | 
+2026-05-07 00:44:26 | INFO     | pipeline | ╔══════════════════════════════════════════════════════════╗
+2026-05-07 00:44:26 | INFO     | pipeline | ║   Pipeline Complete ✅                                    ║
+2026-05-07 00:44:26 | INFO     | pipeline | ║   Duration: 1.0s                                         ║
+2026-05-07 00:44:26 | INFO     | pipeline | ╚══════════════════════════════════════════════════════════╝
+2026-05-07 00:44:26 | INFO     | pipeline | 
+Output files:
+2026-05-07 00:44:26 | INFO     | pipeline |   data\raw\schemes_raw.json (8.5 KB)
+2026-05-07 00:44:26 | INFO     | pipeline |   data\processed\schemes_chunks.json (7.6 KB)
+2026-05-07 00:44:26 | INFO     | pipeline |   data\processed\schemes_cleaned.csv (11.0 KB)
+2026-05-07 00:44:26 | INFO     | pipeline |   data\processed\schemes_cleaned.json (15.5 KB)
+2026-05-07 00:44:26 | INFO     | pipeline |   data\final\export_stats.json (477.0 B)
+2026-05-07 00:44:26 | INFO     | pipeline |   data\final\schemes_chunks.json (7.6 KB)
+2026-05-07 00:44:26 | INFO     | pipeline |   data\final\schemes_final.csv (11.0 KB)
+2026-05-07 00:44:26 | INFO     | pipeline |   data\final\schemes_final.json (15.5 KB)
+2026-05-07 00:44:26 | INFO     | pipeline |   data\final\schemes_pinecone.json (10.8 KB)

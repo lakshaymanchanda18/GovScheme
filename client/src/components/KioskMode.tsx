@@ -407,7 +407,7 @@ export const KioskMode: React.FC = () => {
                         {...getLargeTouchTargetButton({
                           variant: 'outlined',
                           startIcon: <HomeIcon />,
-                          onClick: () => navigate('/')}
+                          onClick: () => navigate('/')
                         })}
                       >
                         {t('kiosk.features.home', 'Home')}
