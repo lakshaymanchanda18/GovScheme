@@ -1,9 +1,0 @@
-2026-05-07 00:44:26 | INFO     | cleaner | ============================================================
-2026-05-07 00:44:26 | INFO     | cleaner | Starting data cleaning pipeline
-2026-05-07 00:44:26 | INFO     | cleaner | ============================================================
-2026-05-07 00:44:26 | INFO     | cleaner | Starting cleaning pipeline on 10 schemes
-2026-05-07 00:44:26 | INFO     | cleaner | Cleaning complete: 10 → 10 schemes
-2026-05-07 00:44:26 | INFO     | cleaner | Cleaned JSON → D:\GovScheme\data\processed\schemes_cleaned.json
-2026-05-07 00:44:26 | INFO     | cleaner | Cleaned CSV → D:\GovScheme\data\processed\schemes_cleaned.csv
-2026-05-07 00:44:26 | INFO     | cleaner | Chunks → D:\GovScheme\data\processed\schemes_chunks.json (18 chunks from 10 schemes)
-2026-05-07 00:44:26 | INFO     | cleaner | Cleaning pipeline complete ✅

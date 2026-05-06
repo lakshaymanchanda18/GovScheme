@@ -48,3 +48,11 @@ next-env.d.ts
 # Data pipeline
 data/raw/
 data/final/
+
+# Docs & Logs (generated/internal)
+docs/
+logs/
+
+# Misc
+check_db.py
+server/clearDb.ts

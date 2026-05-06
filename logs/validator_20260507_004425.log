@@ -1,6 +1,0 @@
-2026-05-07 00:44:26 | INFO     | validator | ============================================================
-2026-05-07 00:44:26 | INFO     | validator | Starting validation pipeline
-2026-05-07 00:44:26 | INFO     | validator | ============================================================
-2026-05-07 00:44:26 | INFO     | validator | Running validation on 10 schemes
-2026-05-07 00:44:26 | INFO     | validator | Validation report → D:\GovScheme\logs\validation_report.md
-2026-05-07 00:44:26 | INFO     | validator | Validation pipeline complete
