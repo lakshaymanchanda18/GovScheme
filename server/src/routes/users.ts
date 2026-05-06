@@ -49,14 +49,19 @@ router.put('/profile',
   body('firstName').optional().isString(),
   body('lastName').optional().isString(),
   body('phone').optional().isString(),
+  body('email').optional().isEmail(),
   body('address').optional().isString(),
   body('city').optional().isString(),
   body('state').optional().isString(),
   body('pincode').optional().isString(),
-  body('income').optional().isNumeric(),
+  body('income').optional({ checkFalsy: true }).isNumeric(),
   body('occupation').optional().isString(),
   body('education').optional().isString(),
-  body('familySize').optional().isInt(),
+  body('familySize').optional({ checkFalsy: true }).isInt(),
+  body('aadharNumber').optional().isString(),
+  body('panNumber').optional().isString(),
+  body('disability').optional().isString(),
+  body('veteranStatus').optional().isString(),
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -69,13 +74,39 @@ router.put('/profile',
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
+      // Explicitly extract allowed fields to prevent arbitrary data updates
+      const allowedFields = [
+        'firstName', 'lastName', 'phone', 'email', 'address', 'city', 
+        'state', 'pincode', 'aadharNumber', 'panNumber', 'income', 
+        'occupation', 'education', 'familySize', 'disability', 'veteranStatus'
+      ];
+      
+      const updateData: any = {};
+      
+      allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) {
+          updateData[field] = req.body[field];
+        }
+      });
+      
+      // Handle numeric conversions for Prisma
+      if ('income' in updateData) {
+        updateData.income = updateData.income === '' ? null : Number(updateData.income);
+      }
+      if ('familySize' in updateData) {
+        updateData.familySize = updateData.familySize === '' ? null : Number(updateData.familySize);
+      }
+
       const updatedUser = await prisma.user.update({
         where: { id: userId },
-        data: req.body
+        data: updateData
       });
 
       res.json(updatedUser);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        return res.status(400).json({ error: 'Email is already in use' });
+      }
       res.status(500).json({ error: 'Failed to update profile' });
     }
   }

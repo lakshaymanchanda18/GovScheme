@@ -11,31 +11,32 @@ const router = Router();
 router.get('/', async (req, res) => {
   try {
     const { category, department, state, q } = req.query as any;
-    const where: any = { isActive: true };
+    const userId = req.user?.userId;
+    const cacheKey = `schemes:${category || ''}:${department || ''}:${state || ''}`;
 
-    if (category) where.category = { contains: category as string };
-    if (department) where.department = { contains: department as string };
-    if (state) where.stateSpecific = { contains: state as string };
+    if (!userId && !q) {
+      const cached = cacheGet<any[]>(cacheKey);
+      if (cached) return res.json(cached);
+    }
+
+    const whereClause: any = { isActive: true };
+    
+    if (category) whereClause.category = { contains: category as string, mode: 'insensitive' };
+    if (department) whereClause.department = { contains: department as string, mode: 'insensitive' };
+    if (state) whereClause.stateSpecific = { contains: state as string, mode: 'insensitive' };
     if (q) {
-      where.OR = [
-        { name: { contains: q } },
-        { description: { contains: q } },
-        { benefits: { contains: q } },
-        { eligibilityCriteria: { contains: q } }
+      whereClause.OR = [
+        { name: { contains: q as string, mode: 'insensitive' } },
+        { description: { contains: q as string, mode: 'insensitive' } },
+        { benefits: { contains: q as string, mode: 'insensitive' } },
+        { eligibilityCriteria: { contains: q as string, mode: 'insensitive' } },
+        { category: { contains: q as string, mode: 'insensitive' } },
+        { department: { contains: q as string, mode: 'insensitive' } }
       ];
     }
 
-    const userId = req.user?.userId;
-    const cacheKey = `schemes:${category || ''}:${department || ''}:${state || ''}`;
-    if (!userId) {
-      const cached = cacheGet<any[]>(cacheKey);
-      if (cached) {
-        return res.json(cached);
-      }
-    }
-
     const schemes = await prisma.governmentScheme.findMany({
-      where,
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
       include: {
         eligibilityChecks: {
@@ -52,10 +53,7 @@ router.get('/', async (req, res) => {
       isStale: Date.now() - new Date(s.updatedAt).getTime() > 1000 * 60 * 60 * 24 * 180
     }));
 
-    if (!userId) {
-      cacheSet(cacheKey, withMeta, 60 * 1000);
-    }
-
+    if (!userId && !q) cacheSet(cacheKey, withMeta, 60 * 1000);
     res.json(withMeta);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch schemes' });
@@ -66,20 +64,28 @@ router.get('/', async (req, res) => {
 router.get('/search', async (req, res) => {
   try {
     const { q, category, department, state } = req.query as any;
-    const where: any = { isActive: true };
-    if (category) where.category = { contains: category as string };
-    if (department) where.department = { contains: department as string };
-    if (state) where.stateSpecific = { contains: state as string };
+    
+    const whereClause: any = { isActive: true };
+    
+    if (category) whereClause.category = { contains: category as string, mode: 'insensitive' };
+    if (department) whereClause.department = { contains: department as string, mode: 'insensitive' };
+    if (state) whereClause.stateSpecific = { contains: state as string, mode: 'insensitive' };
     if (q) {
-      where.OR = [
-        { name: { contains: q } },
-        { description: { contains: q } },
-        { benefits: { contains: q } },
-        { eligibilityCriteria: { contains: q } }
+      whereClause.OR = [
+        { name: { contains: q as string, mode: 'insensitive' } },
+        { description: { contains: q as string, mode: 'insensitive' } },
+        { benefits: { contains: q as string, mode: 'insensitive' } },
+        { eligibilityCriteria: { contains: q as string, mode: 'insensitive' } },
+        { category: { contains: q as string, mode: 'insensitive' } },
+        { department: { contains: q as string, mode: 'insensitive' } }
       ];
     }
 
-    const schemes = await prisma.governmentScheme.findMany({ where, orderBy: { createdAt: 'desc' } });
+    const schemes = await prisma.governmentScheme.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' }
+    });
+
     res.json(schemes.map((s) => ({
       ...s,
       lastUpdated: s.updatedAt,

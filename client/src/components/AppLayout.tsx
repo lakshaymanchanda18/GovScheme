@@ -3,7 +3,8 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Box, AppBar, Toolbar, Typography, IconButton, Button, Avatar,
   Drawer, List, ListItem, ListItemIcon, ListItemText, Divider,
-  useMediaQuery, useTheme, Tooltip, Badge, Switch, FormControlLabel
+  useMediaQuery, useTheme, Tooltip, Badge, Switch, FormControlLabel,
+  Fade
 } from '@mui/material';
 import {
   Dashboard, MenuBook, Search, Assignment, AccountCircle,
@@ -287,7 +288,11 @@ export default function AppLayout() {
 
       {/* Main Content */}
       <Box component="main" sx={{ flexGrow: 1, minHeight: 0 }}>
-        <Outlet />
+        <Fade key={location.pathname} in={true} timeout={400}>
+          <Box sx={{ minHeight: '100%' }}>
+            <Outlet />
+          </Box>
+        </Fade>
       </Box>
 
       {/* Footer */}
