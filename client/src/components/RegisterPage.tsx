@@ -65,6 +65,11 @@ export default function RegisterPage() {
         setError(t('common.fillAllFields'));
         return false;
       }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email.trim())) {
+        setError('Please enter a valid email address');
+        return false;
+      }
       if (formData.password.length < 8) {
         setError('Password must be at least 8 characters');
         return false;

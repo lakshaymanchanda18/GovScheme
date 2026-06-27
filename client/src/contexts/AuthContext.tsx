@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Configure axios globally to send cookies with every request
 axios.defaults.withCredentials = true;
@@ -134,7 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: true, user: response.data.user };
     } catch (error: any) {
       console.error('Login error:', error);
-      const msg = error.response?.data?.error || error.message || 'Login failed';
+      const msg = error.response?.data?.details?.[0]?.message || error.response?.data?.error || error.message || 'Login failed';
       return { success: false, error: msg };
     }
   };
@@ -147,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: true, user: response.data.user };
     } catch (error: any) {
       console.error('Registration error:', error);
-      const msg = error.response?.data?.error || error.message || 'Registration failed';
+      const msg = error.response?.data?.details?.[0]?.message || error.response?.data?.error || error.message || 'Registration failed';
       return { success: false, error: msg };
     }
   };

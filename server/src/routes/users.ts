@@ -89,6 +89,11 @@ router.put('/profile',
         }
       });
       
+      // Normalize email if updated
+      if ('email' in updateData && typeof updateData.email === 'string') {
+        updateData.email = updateData.email.trim().toLowerCase();
+      }
+      
       // Handle numeric conversions for Prisma
       if ('income' in updateData) {
         updateData.income = updateData.income === '' ? null : Number(updateData.income);

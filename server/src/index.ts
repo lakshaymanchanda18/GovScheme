@@ -1,7 +1,10 @@
+import dotenv from 'dotenv';
+// Load environment variables before any other imports
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { sign } from 'jsonwebtoken';
 import { hash, compare } from 'bcryptjs';
@@ -29,8 +32,6 @@ import { sendWelcomeEmail } from './services/email';
 import { importSchemes, loadJsonFile } from './services/schemeImport';
 import { setupSwagger } from './swagger';
 import path from 'path';
-
-dotenv.config();
 
 const app = express();
 
