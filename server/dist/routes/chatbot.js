@@ -1,0 +1,55 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const pineconeRAG_1 = require("../services/pineconeRAG");
+const router = (0, express_1.Router)();
+router.get('/health', (_req, res) => {
+    const status = (0, pineconeRAG_1.getRagStatus)();
+    res.status(status.geminiClientReady && status.pineconeClientReady ? 200 : 503).json(status);
+});
+router.post('/query', async (req, res) => {
+    try {
+        const { message, filters } = req.body || {};
+        if (!message || typeof message !== 'string' || message.trim().length === 0) {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+        const userQuery = message.trim();
+        // Build optional metadata filters from request
+        const ragFilters = filters
+            ? {
+                category: filters.category || undefined,
+                state: filters.state || undefined,
+                income: filters.income ? Number(filters.income) : undefined,
+                occupation: filters.occupation || undefined,
+            }
+            : undefined;
+        // Run the full RAG pipeline
+        const ragResponse = await (0, pineconeRAG_1.querySchemes)(userQuery, ragFilters);
+        // Build backward-compatible sources array for frontend
+        const sources = ragResponse.schemes.map((s) => s.id);
+        const sourceScores = ragResponse.schemes.map((s) => ({
+            id: s.id,
+            confidence: s.relevanceScore,
+        }));
+        res.json({
+            reply: ragResponse.reply,
+            schemes: ragResponse.schemes,
+            suggestions: ragResponse.suggestions,
+            noSchemesFound: ragResponse.noSchemesFound,
+            sources,
+            sourceScores,
+            debugInfo: process.env.NODE_ENV !== 'production' ? ragResponse.debugInfo : undefined,
+        });
+    }
+    catch (error) {
+        console.error('[Chatbot] Route error:', error);
+        res.status(500).json({
+            error: 'Chatbot failed to respond',
+            reply: 'I am experiencing technical difficulties. Please try again.',
+            schemes: [],
+            suggestions: ['Try asking about farmer schemes', 'Healthcare schemes', 'Education scholarships'],
+            noSchemesFound: true,
+        });
+    }
+});
+exports.default = router;
