@@ -1,7 +1,12 @@
 import { Router } from 'express';
-import { querySchemes, RAGFilters } from '../services/pineconeRAG';
+import { getRagStatus, querySchemes, RAGFilters } from '../services/pineconeRAG';
 
 const router = Router();
+
+router.get('/health', (_req, res) => {
+  const status = getRagStatus();
+  res.status(status.geminiClientReady && status.pineconeClientReady ? 200 : 503).json(status);
+});
 
 router.post('/query', async (req, res) => {
   try {

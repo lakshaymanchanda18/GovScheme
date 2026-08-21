@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getRagStatus = getRagStatus;
 exports.querySchemes = querySchemes;
 /**
  * Pinecone RAG Service — Real Retrieval-Augmented Generation for Government Schemes.
@@ -17,6 +18,16 @@ const PINECONE_API_KEY = process.env.PINECONE_API_KEY || '';
 const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME || 'gov-schemes';
 let pineconeIndex = null;
 let genAI = null;
+function getRagStatus() {
+    initClients();
+    return {
+        geminiConfigured: Boolean(GEMINI_API_KEY),
+        pineconeConfigured: Boolean(PINECONE_API_KEY),
+        pineconeIndexName: PINECONE_INDEX_NAME,
+        geminiClientReady: Boolean(genAI),
+        pineconeClientReady: Boolean(pineconeIndex),
+    };
+}
 function initClients() {
     if (!genAI && GEMINI_API_KEY) {
         genAI = new generative_ai_1.GoogleGenerativeAI(GEMINI_API_KEY);

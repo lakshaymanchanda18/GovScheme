@@ -57,6 +57,18 @@ const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME || 'gov-schemes';
 let pineconeIndex: ReturnType<Pinecone['index']> | null = null;
 let genAI: GoogleGenerativeAI | null = null;
 
+export function getRagStatus() {
+  initClients();
+
+  return {
+    geminiConfigured: Boolean(GEMINI_API_KEY),
+    pineconeConfigured: Boolean(PINECONE_API_KEY),
+    pineconeIndexName: PINECONE_INDEX_NAME,
+    geminiClientReady: Boolean(genAI),
+    pineconeClientReady: Boolean(pineconeIndex),
+  };
+}
+
 function initClients() {
   if (!genAI && GEMINI_API_KEY) {
     genAI = new GoogleGenerativeAI(GEMINI_API_KEY);

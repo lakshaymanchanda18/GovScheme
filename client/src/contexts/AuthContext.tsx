@@ -1,7 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+import { getApiUrl } from '../config/api';
 
 // Configure axios globally to send cookies with every request
 axios.defaults.withCredentials = true;
@@ -45,30 +44,16 @@ export interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-/**
- * Decode a JWT token's payload (without verification — that's server's job).
- */
-function decodeJWTPayload(token: string): { exp?: number; userId?: string } | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(atob(parts[1]));
-    return payload;
-  } catch {
-    return null;
-  }
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [sessionExpiringWarning, setSessionExpiringWarning] = useState(false);
   const sessionCheckInterval = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch the current user profile using the HTTP-Only cookie (sent automatically by browser)
+  // Fetch the current user profile using the HTTP-Only cookie
   const fetchUser = useCallback(async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/auth/profile`);
+      const response = await axios.get(getApiUrl('/auth/profile'));
       setUser(response.data);
     } catch {
       setUser(null);
@@ -85,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Token refresh
   const refreshToken = useCallback(async (): Promise<boolean> => {
     try {
-      await axios.post(`${API_BASE_URL}/auth/refresh`);
+      await axios.post(getApiUrl('/auth/refresh'));
       setSessionExpiringWarning(false);
       return true;
     } catch {
@@ -103,11 +88,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Check every 30 seconds if session is about to expire
     sessionCheckInterval.current = setInterval(() => {
-      // We can't read httpOnly cookies from JS, but we can try a lightweight profile check
-      // If the check fails with 401/403, the session has expired
-      axios.get(`${API_BASE_URL}/auth/profile`)
+      axios.get(getApiUrl('/auth/profile'))
         .then(() => {
           // Session still valid
         })
@@ -128,35 +110,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
-      // Cookie is set automatically by the browser from the Set-Cookie header
+      const response = await axios.post(getApiUrl('/auth/login'), { email, password });
       setUser(response.data.user);
       return { success: true, user: response.data.user };
     } catch (error: any) {
       console.error('Login error:', error);
-      const msg = error.response?.data?.details?.[0]?.message || error.response?.data?.error || error.message || 'Login failed';
+      let msg = error.response?.data?.details?.[0]?.message || error.response?.data?.error;
+      if (!msg) {
+        if (error.message === 'Network Error' || !error.response) {
+          msg = 'Unable to connect to the backend server. Please start the backend server at http://localhost:5001.';
+        } else {
+          msg = error.message || 'Login failed';
+        }
+      }
       return { success: false, error: msg };
     }
   };
 
   const register = async (userData: any) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/register`, userData);
-      // Cookie is set automatically by the browser from the Set-Cookie header
+      const response = await axios.post(getApiUrl('/auth/register'), userData);
       setUser(response.data.user);
       return { success: true, user: response.data.user };
     } catch (error: any) {
       console.error('Registration error:', error);
-      const msg = error.response?.data?.details?.[0]?.message || error.response?.data?.error || error.message || 'Registration failed';
+      let msg = error.response?.data?.details?.[0]?.message || error.response?.data?.error;
+      if (!msg) {
+        if (error.message === 'Network Error' || !error.response) {
+          msg = 'Unable to connect to the backend server. Please start the backend server at http://localhost:5001.';
+        } else {
+          msg = error.message || 'Registration failed';
+        }
+      }
       return { success: false, error: msg };
     }
   };
 
   const logout = async () => {
     try {
-      await axios.post(`${API_BASE_URL}/auth/logout`);
+      await axios.post(getApiUrl('/auth/logout'));
     } catch {
-      // Even if server logout fails, clear client state
+      // Clear client state
     }
     setUser(null);
     setSessionExpiringWarning(false);

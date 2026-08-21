@@ -1,8 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { useSnackbar } from 'notistack';
 import { useCallback, useRef } from 'react';
-
-const API_BASE_URL = '/api';
+import { getApiUrl } from '../config/api';
 
 // Axios is globally configured with withCredentials in AuthContext.tsx
 // This ensures the HTTP-Only cookie is sent with every request automatically
@@ -70,9 +69,9 @@ export const useApi = () => {
 
         let response;
         if (method === 'get' || method === 'delete') {
-          response = await axios[method](`${API_BASE_URL}${endpoint}`, axiosConfig);
+          response = await axios[method](getApiUrl(endpoint), axiosConfig);
         } else {
-          response = await axios[method](`${API_BASE_URL}${endpoint}`, data, axiosConfig);
+          response = await axios[method](getApiUrl(endpoint), data, axiosConfig);
         }
 
         return response.data;

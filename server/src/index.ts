@@ -38,12 +38,38 @@ const app = express();
 // API Documentation (Swagger UI at /api-docs)
 setupSwagger(app);
 const PORT = process.env.PORT || 5000;
+const isProduction = process.env.NODE_ENV === 'production';
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.CORS_ORIGIN,
+]
+  .flatMap((value) => (value || '').split(','))
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+function isAllowedOrigin(origin: string) {
+  if (allowedOrigins.includes(origin)) return true;
+  if (/\.vercel\.app$/.test(origin)) return true;
+  if (!isProduction && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  return false;
+}
 
 // Security middleware
 app.use(helmet());
 app.use(cors({
   origin: (origin, callback) => {
-    callback(null, origin || true);
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+
+    if (isAllowedOrigin(origin)) {
+      callback(null, origin);
+      return;
+    }
+
+    callback(new Error(`CORS blocked origin: ${origin}`));
   },
   credentials: true
 }));
@@ -53,8 +79,8 @@ app.use(cookieParser());
 // Cookie configuration for JWT tokens
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
+  secure: isProduction,
+  sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   path: '/',
 };
@@ -522,8 +548,12 @@ app.use((err: any, req: any, res: any, _next: any) => {
 
 // ─── START SERVER ─────────────────────────────────────────────
 
-app.listen(PORT as number, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT} (0.0.0.0)`);
-  console.log(`📋 API docs: http://localhost:${PORT}/api-docs`);
-  console.log(`💊 Health:   http://localhost:${PORT}/api/health`);
-});
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+  app.listen(PORT as number, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT} (0.0.0.0)`);
+    console.log(`📋 API docs: http://localhost:${PORT}/api-docs`);
+    console.log(`💊 Health:   http://localhost:${PORT}/api/health`);
+  });
+}
+
+export default app;

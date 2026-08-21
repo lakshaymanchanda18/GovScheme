@@ -3,6 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const pineconeRAG_1 = require("../services/pineconeRAG");
 const router = (0, express_1.Router)();
+router.get('/health', (_req, res) => {
+    const status = (0, pineconeRAG_1.getRagStatus)();
+    res.status(status.geminiClientReady && status.pineconeClientReady ? 200 : 503).json(status);
+});
 router.post('/query', async (req, res) => {
     try {
         const { message, filters } = req.body || {};

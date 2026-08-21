@@ -121,7 +121,7 @@ export default function RegisterPage() {
         state: formData.state || undefined,
         city: formData.city || undefined,
         occupation: formData.occupation || undefined,
-        income: formData.income ? parseFloat(formData.income) : undefined,
+        income: formData.income !== '' && !isNaN(Number(formData.income)) ? Number(formData.income) : undefined,
       });
       if (result.success) {
         navigate('/');

@@ -40,11 +40,34 @@ const app = (0, express_1.default)();
 // API Documentation (Swagger UI at /api-docs)
 (0, swagger_1.setupSwagger)(app);
 const PORT = process.env.PORT || 5000;
+const isProduction = process.env.NODE_ENV === 'production';
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    process.env.CORS_ORIGIN,
+]
+    .flatMap((value) => (value || '').split(','))
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+function isAllowedOrigin(origin) {
+    if (allowedOrigins.includes(origin))
+        return true;
+    if (!isProduction && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))
+        return true;
+    return false;
+}
 // Security middleware
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
-        callback(null, origin || true);
+        if (!origin) {
+            callback(null, true);
+            return;
+        }
+        if (isAllowedOrigin(origin)) {
+            callback(null, origin);
+            return;
+        }
+        callback(new Error(`CORS blocked origin: ${origin}`));
     },
     credentials: true
 }));
@@ -53,8 +76,8 @@ app.use((0, cookie_parser_1.default)());
 // Cookie configuration for JWT tokens
 const COOKIE_OPTIONS = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: isProduction,
+    sameSite: (isProduction ? 'none' : 'lax'),
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     path: '/',
 };
