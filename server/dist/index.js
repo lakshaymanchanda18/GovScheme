@@ -30,12 +30,8 @@ const validation_1 = require("./middleware/validation");
 const csrf_1 = require("./middleware/csrf");
 const errors_1 = require("./utils/errors");
 const encryption_1 = require("./services/encryption");
-const queue_1 = require("./services/queue");
-const cache_1 = require("./services/cache");
 const email_1 = require("./services/email");
-const schemeImport_1 = require("./services/schemeImport");
 const swagger_1 = require("./swagger");
-const path_1 = __importDefault(require("path"));
 const app = (0, express_1.default)();
 // API Documentation (Swagger UI at /api-docs)
 (0, swagger_1.setupSwagger)(app);
@@ -361,101 +357,9 @@ app.use('/api/chatbot', chatbot_1.default);
 app.use('/api/eligibility', eligibility_1.default);
 app.use('/api/integrations', integrations_1.default);
 app.use('/api/voice', voice_1.default);
-// ─── BACKGROUND JOB HANDLERS ─────────────────────────────────
-(0, queue_1.registerHandler)('UPLOAD_PROCESSED', async (payload) => {
-    await prisma_1.prisma.notification.create({
-        data: {
-            userId: payload.userId,
-            title: 'Document uploaded',
-            message: `Your document "${payload.documentName}" was uploaded successfully.`,
-            type: 'INFO'
-        }
-    });
-});
-(0, queue_1.registerHandler)('ANALYTICS_REFRESH', async () => {
-    const [totalUsers, totalApplications, approvedApplications, rejectedApplications, mostPopularSchemes, appsForSeg] = await Promise.all([
-        prisma_1.prisma.user.count(),
-        prisma_1.prisma.application.count(),
-        prisma_1.prisma.application.count({ where: { status: 'APPROVED' } }),
-        prisma_1.prisma.application.count({ where: { status: 'REJECTED' } }),
-        prisma_1.prisma.governmentScheme.findMany({
-            select: {
-                id: true,
-                name: true,
-                applications: { select: { id: true } }
-            }
-        }),
-        prisma_1.prisma.application.findMany({
-            include: {
-                user: { select: { state: true } },
-                scheme: { select: { category: true } }
-            }
-        })
-    ]);
-    const popular = mostPopularSchemes
-        .map((scheme) => ({
-        id: scheme.id,
-        name: scheme.name,
-        applicationCount: scheme.applications.length
-    }))
-        .sort((a, b) => b.applicationCount - a.applicationCount)
-        .slice(0, 6);
-    const statusDistribution = {};
-    const categoryBreakdown = {};
-    const stateBreakdown = {};
-    appsForSeg.forEach((app) => {
-        statusDistribution[app.status] = (statusDistribution[app.status] || 0) + 1;
-        const category = app.scheme?.category || 'Unknown';
-        categoryBreakdown[category] = (categoryBreakdown[category] || 0) + 1;
-        const state = app.user?.state || 'Unknown';
-        stateBreakdown[state] = (stateBreakdown[state] || 0) + 1;
-    });
-    (0, cache_1.cacheSet)('admin:analytics', {
-        totalUsers,
-        totalApplications,
-        approvedApplications,
-        rejectedApplications,
-        mostPopularSchemes: popular,
-        statusDistribution,
-        categoryBreakdown,
-        stateBreakdown
-    }, 60 * 1000);
-});
-(0, queue_1.startQueueWorker)(1000);
-// Periodic analytics refresh
-setInterval(() => {
-    (0, queue_1.enqueueJob)('ANALYTICS_REFRESH', {});
-}, 60000);
-// Periodic scheme validation (staleness check)
-(0, queue_1.registerHandler)('SCHEME_VALIDATE', async () => {
-    const schemes = await prisma_1.prisma.governmentScheme.findMany();
-    const stale = schemes.filter((s) => Date.now() - new Date(s.updatedAt).getTime() > 1000 * 60 * 60 * 24 * 180);
-    if (stale.length > 0) {
-        console.log(`[WARN] Stale schemes detected: ${stale.length}`);
-    }
-});
-setInterval(() => {
-    (0, queue_1.enqueueJob)('SCHEME_VALIDATE', {});
-}, 1000 * 60 * 60 * 24);
-// Periodic scheme refresh from local seed file
-(0, queue_1.registerHandler)('SCHEME_REFRESH', async () => {
-    const seedPath = path_1.default.resolve(process.cwd(), '../data/schemes.seed.json');
-    try {
-        const schemes = (0, schemeImport_1.loadJsonFile)(seedPath);
-        await (0, schemeImport_1.importSchemes)(schemes);
-        console.log('[INFO] Scheme refresh completed');
-    }
-    catch (error) {
-        console.error('[ERROR] Scheme refresh failed', error);
-    }
-});
-setInterval(() => {
-    (0, queue_1.enqueueJob)('SCHEME_REFRESH', {});
-}, 1000 * 60 * 60 * 24 * 7);
 // ─── GLOBAL ERROR HANDLER ─────────────────────────────────────
 app.use((err, req, res, _next) => {
     console.error(`[ERROR] [${req.requestId}]`, err.stack || err.message);
-    // Handle known AppError types
     if (err instanceof errors_1.AppError) {
         return res.status(err.statusCode).json({
             error: err.message,
@@ -464,22 +368,6 @@ app.use((err, req, res, _next) => {
             requestId: req.requestId,
         });
     }
-    // Handle Prisma errors
-    if (err.code === 'P2002') {
-        return res.status(409).json({
-            error: 'A record with this value already exists',
-            code: 'CONFLICT',
-            requestId: req.requestId,
-        });
-    }
-    if (err.code === 'P2025') {
-        return res.status(404).json({
-            error: 'Record not found',
-            code: 'NOT_FOUND',
-            requestId: req.requestId,
-        });
-    }
-    // Default 500
     const status = err.status || err.statusCode || 500;
     res.status(status).json({
         error: process.env.NODE_ENV === 'production' ? 'Something went wrong' : (err.message || 'Internal server error'),

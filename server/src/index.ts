@@ -401,116 +401,11 @@ app.use('/api/eligibility', eligibilityRoutes);
 app.use('/api/integrations', integrationsRoutes);
 app.use('/api/voice', voiceRoutes);
 
-// ─── BACKGROUND JOB HANDLERS ─────────────────────────────────
-
-registerHandler('UPLOAD_PROCESSED', async (payload) => {
-  await prisma.notification.create({
-    data: {
-      userId: payload.userId,
-      title: 'Document uploaded',
-      message: `Your document "${payload.documentName}" was uploaded successfully.`,
-      type: 'INFO'
-    }
-  });
-});
-
-registerHandler('ANALYTICS_REFRESH', async () => {
-  const [totalUsers, totalApplications, approvedApplications, rejectedApplications, mostPopularSchemes, appsForSeg] =
-    await Promise.all([
-      prisma.user.count(),
-      prisma.application.count(),
-      prisma.application.count({ where: { status: 'APPROVED' } }),
-      prisma.application.count({ where: { status: 'REJECTED' } }),
-      prisma.governmentScheme.findMany({
-        select: {
-          id: true,
-          name: true,
-          applications: { select: { id: true } }
-        }
-      }),
-      prisma.application.findMany({
-        include: {
-          user: { select: { state: true } },
-          scheme: { select: { category: true } }
-        }
-      })
-    ]);
-
-  const popular = mostPopularSchemes
-    .map((scheme) => ({
-      id: scheme.id,
-      name: scheme.name,
-      applicationCount: scheme.applications.length
-    }))
-    .sort((a, b) => b.applicationCount - a.applicationCount)
-    .slice(0, 6);
-
-  const statusDistribution: Record<string, number> = {};
-  const categoryBreakdown: Record<string, number> = {};
-  const stateBreakdown: Record<string, number> = {};
-
-  appsForSeg.forEach((app) => {
-    statusDistribution[app.status] = (statusDistribution[app.status] || 0) + 1;
-    const category = app.scheme?.category || 'Unknown';
-    categoryBreakdown[category] = (categoryBreakdown[category] || 0) + 1;
-    const state = app.user?.state || 'Unknown';
-    stateBreakdown[state] = (stateBreakdown[state] || 0) + 1;
-  });
-
-  cacheSet('admin:analytics', {
-    totalUsers,
-    totalApplications,
-    approvedApplications,
-    rejectedApplications,
-    mostPopularSchemes: popular,
-    statusDistribution,
-    categoryBreakdown,
-    stateBreakdown
-  }, 60 * 1000);
-});
-
-startQueueWorker(1000);
-
-// Periodic analytics refresh
-setInterval(() => {
-  enqueueJob('ANALYTICS_REFRESH', {});
-}, 60000);
-
-// Periodic scheme validation (staleness check)
-registerHandler('SCHEME_VALIDATE', async () => {
-  const schemes = await prisma.governmentScheme.findMany();
-  const stale = schemes.filter((s) => Date.now() - new Date(s.updatedAt).getTime() > 1000 * 60 * 60 * 24 * 180);
-  if (stale.length > 0) {
-    console.log(`[WARN] Stale schemes detected: ${stale.length}`);
-  }
-});
-
-setInterval(() => {
-  enqueueJob('SCHEME_VALIDATE', {});
-}, 1000 * 60 * 60 * 24);
-
-// Periodic scheme refresh from local seed file
-registerHandler('SCHEME_REFRESH', async () => {
-  const seedPath = path.resolve(process.cwd(), '../data/schemes.seed.json');
-  try {
-    const schemes = loadJsonFile(seedPath);
-    await importSchemes(schemes);
-    console.log('[INFO] Scheme refresh completed');
-  } catch (error) {
-    console.error('[ERROR] Scheme refresh failed', error);
-  }
-});
-
-setInterval(() => {
-  enqueueJob('SCHEME_REFRESH', {});
-}, 1000 * 60 * 60 * 24 * 7);
-
 // ─── GLOBAL ERROR HANDLER ─────────────────────────────────────
 
 app.use((err: any, req: any, res: any, _next: any) => {
   console.error(`[ERROR] [${(req as any).requestId}]`, err.stack || err.message);
 
-  // Handle known AppError types
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       error: err.message,
@@ -520,24 +415,6 @@ app.use((err: any, req: any, res: any, _next: any) => {
     });
   }
 
-  // Handle Prisma errors
-  if (err.code === 'P2002') {
-    return res.status(409).json({
-      error: 'A record with this value already exists',
-      code: 'CONFLICT',
-      requestId: (req as any).requestId,
-    });
-  }
-
-  if (err.code === 'P2025') {
-    return res.status(404).json({
-      error: 'Record not found',
-      code: 'NOT_FOUND',
-      requestId: (req as any).requestId,
-    });
-  }
-
-  // Default 500
   const status = err.status || err.statusCode || 500;
   res.status(status).json({
     error: process.env.NODE_ENV === 'production' ? 'Something went wrong' : (err.message || 'Internal server error'),
