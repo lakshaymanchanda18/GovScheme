@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       let msg = error.response?.data?.details?.[0]?.message || error.response?.data?.error;
       if (!msg) {
         if (error.message === 'Network Error' || !error.response) {
-          msg = 'Unable to connect to the backend server. Please start the backend server at http://localhost:5001.';
+          msg = 'Unable to connect to the backend server. Please try again in a few seconds.';
         } else {
           msg = error.message || 'Login failed';
         }
@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       let msg = error.response?.data?.details?.[0]?.message || error.response?.data?.error;
       if (!msg) {
         if (error.message === 'Network Error' || !error.response) {
-          msg = 'Unable to connect to the backend server. Please start the backend server at http://localhost:5001.';
+          msg = 'Unable to connect to the backend server. Please try again in a few seconds.';
         } else {
           msg = error.message || 'Registration failed';
         }
