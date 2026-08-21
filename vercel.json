@@ -1,6 +1,11 @@
 {
   "buildCommand": "npx prisma generate && cd server && npm run build && cd ../client && npm run build",
   "outputDirectory": "client/dist",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "server/dist/**, prisma/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
