@@ -1,3 +1,4 @@
-const app = require('../server/dist/src/index').default;
+const serverModule = require('../server/dist/index');
+const app = serverModule.default || serverModule;
 
 module.exports = app;
