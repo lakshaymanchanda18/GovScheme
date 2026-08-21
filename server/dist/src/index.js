@@ -51,6 +51,8 @@ const allowedOrigins = [
 function isAllowedOrigin(origin) {
     if (allowedOrigins.includes(origin))
         return true;
+    if (/\.vercel\.app$/.test(origin))
+        return true;
     if (!isProduction && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))
         return true;
     return false;
@@ -486,8 +488,11 @@ app.use((err, req, res, _next) => {
     });
 });
 // ─── START SERVER ─────────────────────────────────────────────
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT} (0.0.0.0)`);
-    console.log(`📋 API docs: http://localhost:${PORT}/api-docs`);
-    console.log(`💊 Health:   http://localhost:${PORT}/api/health`);
-});
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 Server running on port ${PORT} (0.0.0.0)`);
+        console.log(`📋 API docs: http://localhost:${PORT}/api-docs`);
+        console.log(`💊 Health:   http://localhost:${PORT}/api/health`);
+    });
+}
+exports.default = app;
