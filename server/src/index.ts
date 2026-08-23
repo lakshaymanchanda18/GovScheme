@@ -34,9 +34,14 @@ import { setupSwagger } from './swagger';
 import path from 'path';
 
 const app = express();
+app.set('trust proxy', 1);
 
 // API Documentation (Swagger UI at /api-docs)
-setupSwagger(app);
+try {
+  setupSwagger(app);
+} catch (e) {
+  console.warn('Swagger setup skipped or failed:', e);
+}
 const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -55,10 +60,8 @@ function isAllowedOrigin(origin: string) {
   return false;
 }
 
-// Security middleware
-app.use(helmet());
-app.use(cors({
-  origin: (origin, callback) => {
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean | string) => void) => {
     if (!origin) {
       callback(null, true);
       return;
@@ -71,8 +74,24 @@ app.use(cors({
 
     callback(new Error(`CORS blocked origin: ${origin}`));
   },
-  credentials: true
-}));
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token', 'X-Request-Id', 'Accept'],
+};
+
+// Security & CORS middleware
+app.use(helmet());
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+// URL normalization for Vercel serverless rewrites
+app.use((req, _res, next) => {
+  if (!req.url.startsWith('/api') && req.originalUrl && req.originalUrl.startsWith('/api')) {
+    req.url = req.originalUrl;
+  }
+  next();
+});
+
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 
@@ -127,7 +146,7 @@ const uploadLimiter = rateLimit({
 
 // ─── HEALTH CHECK ─────────────────────────────────────────────
 
-app.get('/api/health', (_req, res) => {
+app.get(['/api/health', '/health', '/'], (_req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -137,16 +156,16 @@ app.get('/api/health', (_req, res) => {
 });
 
 // Targeted rate limits
-app.use('/api/auth', authLimiter);
-app.use('/api/chatbot', chatbotLimiter);
-app.use('/api/documents/upload', uploadLimiter);
+app.use(['/api/auth', '/auth'], authLimiter);
+app.use(['/api/chatbot', '/chatbot'], chatbotLimiter);
+app.use(['/api/documents/upload', '/documents/upload'], uploadLimiter);
 
 // CSRF token endpoint (before CSRF protection middleware)
-app.get('/api/auth/csrf-token', csrfTokenHandler);
+app.get(['/api/auth/csrf-token', '/auth/csrf-token'], csrfTokenHandler);
 
 // ─── AUTH ROUTES (with Zod validation) ────────────────────────
 
-app.post('/api/auth/register', validate(registerSchema), async (req, res) => {
+app.post(['/api/auth/register', '/auth/register'], validate(registerSchema), async (req, res) => {
   try {
     const { email, password, firstName, lastName, phone, state, city, occupation, income } = req.body;
 
@@ -214,7 +233,7 @@ app.post('/api/auth/register', validate(registerSchema), async (req, res) => {
   }
 });
 
-app.post('/api/auth/login', validate(loginSchema), async (req, res) => {
+app.post(['/api/auth/login', '/auth/login'], validate(loginSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -276,13 +295,13 @@ app.post('/api/auth/login', validate(loginSchema), async (req, res) => {
 });
 
 // Logout endpoint - clears HTTP-Only cookie
-app.post('/api/auth/logout', (_req, res) => {
+app.post(['/api/auth/logout', '/auth/logout'], (_req, res) => {
   res.clearCookie('token', { path: '/' });
   res.json({ message: 'Logged out successfully' });
 });
 
 // Auth profile endpoint
-app.get('/api/auth/profile', authenticateToken, async (req, res) => {
+app.get(['/api/auth/profile', '/auth/profile'], authenticateToken, async (req, res) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
@@ -328,7 +347,7 @@ app.get('/api/auth/profile', authenticateToken, async (req, res) => {
 });
 
 // Token refresh endpoint
-app.post('/api/auth/refresh', authenticateToken, async (req, res) => {
+app.post(['/api/auth/refresh', '/auth/refresh'], authenticateToken, async (req, res) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
@@ -352,7 +371,7 @@ app.post('/api/auth/refresh', authenticateToken, async (req, res) => {
 });
 
 // Dashboard stats endpoint
-app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
+app.get(['/api/dashboard/stats', '/dashboard/stats'], authenticateToken, async (req, res) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
@@ -390,16 +409,16 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
 
 // ─── MOUNT ROUTES ─────────────────────────────────────────────
 
-app.use('/api/schemes', schemesRoutes);
-app.use('/api/applications', authenticateToken, applicationsRoutes);
-app.use('/api/documents', documentsRoutes);
-app.use('/api/users', authenticateToken, usersRoutes);
-app.use('/api/notifications', authenticateToken, notificationsRoutes);
-app.use('/api/admin', authenticateToken, adminRoutes);
-app.use('/api/chatbot', chatbotRoutes);
-app.use('/api/eligibility', eligibilityRoutes);
-app.use('/api/integrations', integrationsRoutes);
-app.use('/api/voice', voiceRoutes);
+app.use(['/api/schemes', '/schemes'], schemesRoutes);
+app.use(['/api/applications', '/applications'], authenticateToken, applicationsRoutes);
+app.use(['/api/documents', '/documents'], documentsRoutes);
+app.use(['/api/users', '/users'], authenticateToken, usersRoutes);
+app.use(['/api/notifications', '/notifications'], authenticateToken, notificationsRoutes);
+app.use(['/api/admin', '/admin'], authenticateToken, adminRoutes);
+app.use(['/api/chatbot', '/chatbot'], chatbotRoutes);
+app.use(['/api/eligibility', '/eligibility'], eligibilityRoutes);
+app.use(['/api/integrations', '/integrations'], integrationsRoutes);
+app.use(['/api/voice', '/voice'], voiceRoutes);
 
 // ─── GLOBAL ERROR HANDLER ─────────────────────────────────────
 

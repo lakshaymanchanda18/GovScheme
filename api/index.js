@@ -23274,13 +23274,13 @@ var require_lib3 = __commonJS({
             if (err) {
               next(err);
             } else {
-              var corsOptions = assign({}, defaults, options2);
+              var corsOptions2 = assign({}, defaults, options2);
               var originCallback = null;
-              if (corsOptions.origin && typeof corsOptions.origin === "function") {
-                originCallback = corsOptions.origin;
-              } else if (corsOptions.origin) {
+              if (corsOptions2.origin && typeof corsOptions2.origin === "function") {
+                originCallback = corsOptions2.origin;
+              } else if (corsOptions2.origin) {
                 originCallback = function(origin, cb) {
-                  cb(null, corsOptions.origin);
+                  cb(null, corsOptions2.origin);
                 };
               }
               if (originCallback) {
@@ -23288,8 +23288,8 @@ var require_lib3 = __commonJS({
                   if (err2 || !origin) {
                     next(err2);
                   } else {
-                    corsOptions.origin = origin;
-                    cors2(corsOptions, req, res, next);
+                    corsOptions2.origin = origin;
+                    cors2(corsOptions2, req, res, next);
                   }
                 });
               } else {
@@ -141929,7 +141929,12 @@ function setupSwagger(app2) {
 // server/src/index.ts
 import_dotenv.default.config();
 var app = (0, import_express11.default)();
-setupSwagger(app);
+app.set("trust proxy", 1);
+try {
+  setupSwagger(app);
+} catch (e) {
+  console.warn("Swagger setup skipped or failed:", e);
+}
 var PORT = process.env.PORT || 5e3;
 var isProduction = process.env.NODE_ENV === "production";
 var allowedOrigins = [
@@ -141942,8 +141947,7 @@ function isAllowedOrigin(origin) {
   if (!isProduction && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
   return false;
 }
-app.use(helmet());
-app.use((0, import_cors.default)({
+var corsOptions = {
   origin: (origin, callback) => {
     if (!origin) {
       callback(null, true);
@@ -141955,8 +141959,19 @@ app.use((0, import_cors.default)({
     }
     callback(new Error(`CORS blocked origin: ${origin}`));
   },
-  credentials: true
-}));
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-CSRF-Token", "X-Request-Id", "Accept"]
+};
+app.use(helmet());
+app.use((0, import_cors.default)(corsOptions));
+app.options("*", (0, import_cors.default)(corsOptions));
+app.use((req, _res, next) => {
+  if (!req.url.startsWith("/api") && req.originalUrl && req.originalUrl.startsWith("/api")) {
+    req.url = req.originalUrl;
+  }
+  next();
+});
 app.use(import_express11.default.json({ limit: "10mb" }));
 app.use((0, import_cookie_parser.default)());
 var COOKIE_OPTIONS = {
@@ -142002,7 +142017,7 @@ var uploadLimiter = lib_default({
   max: 10,
   message: { error: "Too many upload requests", code: "RATE_LIMIT" }
 });
-app.get("/api/health", (_req, res) => {
+app.get(["/api/health", "/health", "/"], (_req, res) => {
   res.json({
     status: "ok",
     timestamp: (/* @__PURE__ */ new Date()).toISOString(),
@@ -142010,11 +142025,11 @@ app.get("/api/health", (_req, res) => {
     uptime: process.uptime()
   });
 });
-app.use("/api/auth", authLimiter);
-app.use("/api/chatbot", chatbotLimiter);
-app.use("/api/documents/upload", uploadLimiter);
-app.get("/api/auth/csrf-token", csrfTokenHandler);
-app.post("/api/auth/register", validate(registerSchema), async (req, res) => {
+app.use(["/api/auth", "/auth"], authLimiter);
+app.use(["/api/chatbot", "/chatbot"], chatbotLimiter);
+app.use(["/api/documents/upload", "/documents/upload"], uploadLimiter);
+app.get(["/api/auth/csrf-token", "/auth/csrf-token"], csrfTokenHandler);
+app.post(["/api/auth/register", "/auth/register"], validate(registerSchema), async (req, res) => {
   try {
     const { email: email3, password, firstName, lastName, phone, state, city, occupation, income } = req.body;
     const existingUser = await prisma.user.findUnique({
@@ -142070,7 +142085,7 @@ app.post("/api/auth/register", validate(registerSchema), async (req, res) => {
     });
   }
 });
-app.post("/api/auth/login", validate(loginSchema), async (req, res) => {
+app.post(["/api/auth/login", "/auth/login"], validate(loginSchema), async (req, res) => {
   try {
     const { email: email3, password } = req.body;
     const user = await prisma.user.findUnique({
@@ -142122,11 +142137,11 @@ app.post("/api/auth/login", validate(loginSchema), async (req, res) => {
     });
   }
 });
-app.post("/api/auth/logout", (_req, res) => {
+app.post(["/api/auth/logout", "/auth/logout"], (_req, res) => {
   res.clearCookie("token", { path: "/" });
   res.json({ message: "Logged out successfully" });
 });
-app.get("/api/auth/profile", authenticateToken, async (req, res) => {
+app.get(["/api/auth/profile", "/auth/profile"], authenticateToken, async (req, res) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
@@ -142167,7 +142182,7 @@ app.get("/api/auth/profile", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Failed to fetch profile", code: "INTERNAL_ERROR" });
   }
 });
-app.post("/api/auth/refresh", authenticateToken, async (req, res) => {
+app.post(["/api/auth/refresh", "/auth/refresh"], authenticateToken, async (req, res) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
@@ -142186,7 +142201,7 @@ app.post("/api/auth/refresh", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Token refresh failed" });
   }
 });
-app.get("/api/dashboard/stats", authenticateToken, async (req, res) => {
+app.get(["/api/dashboard/stats", "/dashboard/stats"], authenticateToken, async (req, res) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
@@ -142218,16 +142233,16 @@ app.get("/api/dashboard/stats", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Failed to fetch dashboard stats" });
   }
 });
-app.use("/api/schemes", schemes_default);
-app.use("/api/applications", authenticateToken, applications_default);
-app.use("/api/documents", documents_default);
-app.use("/api/users", authenticateToken, users_default);
-app.use("/api/notifications", authenticateToken, notifications_default);
-app.use("/api/admin", authenticateToken, admin_default);
-app.use("/api/chatbot", chatbot_default);
-app.use("/api/eligibility", eligibility_default);
-app.use("/api/integrations", integrations_default);
-app.use("/api/voice", voice_default);
+app.use(["/api/schemes", "/schemes"], schemes_default);
+app.use(["/api/applications", "/applications"], authenticateToken, applications_default);
+app.use(["/api/documents", "/documents"], documents_default);
+app.use(["/api/users", "/users"], authenticateToken, users_default);
+app.use(["/api/notifications", "/notifications"], authenticateToken, notifications_default);
+app.use(["/api/admin", "/admin"], authenticateToken, admin_default);
+app.use(["/api/chatbot", "/chatbot"], chatbot_default);
+app.use(["/api/eligibility", "/eligibility"], eligibility_default);
+app.use(["/api/integrations", "/integrations"], integrations_default);
+app.use(["/api/voice", "/voice"], voice_default);
 app.use((err, req, res, _next) => {
   console.error(`[ERROR] [${req.requestId}]`, err.stack || err.message);
   if (err instanceof AppError) {
