@@ -433,4 +433,4 @@ if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   });
 }
 
-export default app;
+export = app;

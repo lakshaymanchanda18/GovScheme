@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "postinstall": "prisma generate",
-    "build": "npx prisma@5.22.0 generate --schema=./prisma/schema.prisma && npx esbuild server/src/index.ts --bundle --platform=node --target=node18 --outfile=api/index.js --external:@prisma/client --external:prisma && cd client && vite build"
+    "build": "npx prisma@5.22.0 generate --schema=./prisma/schema.prisma && npx esbuild server/src/index.ts --bundle --platform=node --format=cjs --target=node18 --outfile=api/index.js --external:@prisma/client --external:prisma && cd client && vite build"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

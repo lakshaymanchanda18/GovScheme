@@ -27,7 +27,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // node_modules/dotenv/package.json
 var require_package = __commonJS({
@@ -120614,11 +120613,6 @@ window.onload = function() {
 });
 
 // server/src/index.ts
-var index_exports = {};
-__export(index_exports, {
-  default: () => index_default
-});
-module.exports = __toCommonJS(index_exports);
 var import_dotenv = __toESM(require_main());
 var import_express11 = __toESM(require_express2());
 var import_cors = __toESM(require_lib3());
@@ -142258,7 +142252,7 @@ if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
     console.log(`\u{1F48A} Health:   http://localhost:${PORT}/api/health`);
   });
 }
-var index_default = app;
+module.exports = app;
 /*! Bundled license information:
 
 depd/index.js:
