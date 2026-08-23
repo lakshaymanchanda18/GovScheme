@@ -142268,6 +142268,7 @@ if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
   });
 }
 module.exports = app;
+module.exports.default = app;
 /*! Bundled license information:
 
 depd/index.js:
@@ -142745,3 +142746,4 @@ lodash/lodash.js:
    * limitations under the License.
    *)
 */
+module.exports = app; module.exports.default = app;

@@ -452,4 +452,6 @@ if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   });
 }
 
-export = app;
+declare var module: any;
+module.exports = app;
+module.exports.default = app;
