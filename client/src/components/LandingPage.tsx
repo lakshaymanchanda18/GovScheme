@@ -7,7 +7,7 @@ import {
 import {
   Search, Assignment, Verified, Speed, Translate, Security,
   ArrowForward, MenuBook, SmartToy, TrendingUp,
-  CheckCircleOutline, Groups, AccountBalance
+  CheckCircleOutline, Groups, AccountBalance, Public
 } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useI18n } from '../hooks/useI18n';
@@ -59,7 +59,7 @@ export default function LandingPage() {
 
   const STATS = [
     { value: '500+', label: t('landing.statSchemes'), icon: <AccountBalance /> },
-    { value: '10L+', label: t('landing.statCitizens'), icon: <Groups /> },
+    { value: '28+', label: t('landing.statStates'), icon: <Public /> },
     { value: '98%', label: t('landing.statAccuracy'), icon: <TrendingUp /> },
     { value: '24/7', label: t('landing.statSupport'), icon: <Speed /> },
   ];
