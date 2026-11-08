@@ -26,7 +26,7 @@ export const enqueueJob = (type: string, payload: any) => {
 };
 
 export const startQueueWorker = (intervalMs = 1000) => {
-  setInterval(async () => {
+  const timer = setInterval(async () => {
     const job = queue.shift();
     if (!job) return;
     const handler = handlers[job.type];
@@ -37,4 +37,7 @@ export const startQueueWorker = (intervalMs = 1000) => {
       console.error(`Job failed: ${job.type}`, error);
     }
   }, intervalMs);
+  if (timer && typeof timer.unref === 'function') {
+    timer.unref();
+  }
 };

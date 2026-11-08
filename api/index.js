@@ -101,7 +101,7 @@ var require_main = __commonJS({
   "node_modules/dotenv/lib/main.js"(exports2, module2) {
     var fs2 = require("fs");
     var path2 = require("path");
-    var os = require("os");
+    var os2 = require("os");
     var crypto3 = require("crypto");
     var packageJson = require_package();
     var version2 = packageJson.version;
@@ -224,7 +224,7 @@ var require_main = __commonJS({
       return null;
     }
     function _resolveHome(envPath) {
-      return envPath[0] === "~" ? path2.join(os.homedir(), envPath.slice(1)) : envPath;
+      return envPath[0] === "~" ? path2.join(os2.homedir(), envPath.slice(1)) : envPath;
     }
     function _configVault(options2) {
       const debug = Boolean(options2 && options2.debug);
@@ -43568,11 +43568,11 @@ var require_shared = __commonJS({
     var nmfetch = require_fetch();
     var dns = require("dns");
     var net = require("net");
-    var os = require("os");
+    var os2 = require("os");
     var DNS_TTL = 5 * 60 * 1e3;
     var networkInterfaces;
     try {
-      networkInterfaces = os.networkInterfaces();
+      networkInterfaces = os2.networkInterfaces();
     } catch (err) {
     }
     module2.exports.networkInterfaces = networkInterfaces;
@@ -50291,7 +50291,7 @@ var require_smtp_connection = __commonJS({
     var EventEmitter = require("events").EventEmitter;
     var net = require("net");
     var tls = require("tls");
-    var os = require("os");
+    var os2 = require("os");
     var crypto3 = require("crypto");
     var DataStream = require_data_stream2();
     var PassThrough = require("stream").PassThrough;
@@ -51684,7 +51684,7 @@ var require_smtp_connection = __commonJS({
       _getHostname() {
         let defaultHostname;
         try {
-          defaultHostname = os.hostname() || "";
+          defaultHostname = os2.hostname() || "";
         } catch (err) {
           defaultHostname = "localhost";
         }
@@ -64374,7 +64374,7 @@ var require_make_middleware = __commonJS({
 var require_disk = __commonJS({
   "node_modules/multer/storage/disk.js"(exports2, module2) {
     var fs2 = require("fs");
-    var os = require("os");
+    var os2 = require("os");
     var path2 = require("path");
     var crypto3 = require("crypto");
     function getFilename(req, file2, cb) {
@@ -64383,7 +64383,7 @@ var require_disk = __commonJS({
       });
     }
     function getDestination(req, file2, cb) {
-      cb(null, os.tmpdir());
+      cb(null, os2.tmpdir());
     }
     function DiskStorage(opts) {
       this.getFilename = opts.filename || getFilename;
@@ -121990,9 +121990,29 @@ var lib_default = rateLimit;
 // server/src/config/prisma.ts
 var import_client = require("@prisma/client");
 var dbUrl = process.env.DATABASE_URL;
-var prisma = new import_client.PrismaClient(
-  dbUrl ? { datasources: { db: { url: dbUrl } } } : void 0
-);
+var prisma;
+try {
+  prisma = new import_client.PrismaClient(
+    dbUrl ? { datasources: { db: { url: dbUrl } } } : void 0
+  );
+} catch (error51) {
+  console.error("[PRISMA] Failed to initialize PrismaClient:", error51);
+  prisma = new Proxy({}, {
+    get(_target, prop) {
+      if (prop === "$connect" || prop === "$disconnect") {
+        return async () => {
+        };
+      }
+      return new Proxy({}, {
+        get() {
+          return async () => {
+            throw new Error("Database is not initialized. Please configure DATABASE_URL in environment variables.");
+          };
+        }
+      });
+    }
+  });
+}
 
 // server/src/routes/schemes.ts
 var import_express = __toESM(require_express2());
@@ -141329,11 +141349,17 @@ var voice_default = router9;
 var import_express10 = __toESM(require_express2());
 var import_path = __toESM(require("path"));
 var import_fs = __toESM(require("fs"));
+var import_os = __toESM(require("os"));
 var import_multer2 = __toESM(require_multer());
 var router10 = (0, import_express10.Router)();
-var uploadsDir = import_path.default.join(process.cwd(), "uploads");
-if (!import_fs.default.existsSync(uploadsDir)) {
-  import_fs.default.mkdirSync(uploadsDir, { recursive: true });
+var isVercel = Boolean(process.env.VERCEL);
+var uploadsDir = isVercel ? import_path.default.join(import_os.default.tmpdir(), "govscheme-uploads") : import_path.default.join(process.cwd(), "uploads");
+try {
+  if (!import_fs.default.existsSync(uploadsDir)) {
+    import_fs.default.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn("Could not initialize uploads directory:", err);
 }
 var storage = import_multer2.default.diskStorage({
   destination: (_req, _file2, cb) => cb(null, uploadsDir),
@@ -141508,7 +141534,7 @@ var import_crypto3 = require("crypto");
 var CSRF_COOKIE = "csrf-token";
 var TOKEN_LENGTH = 32;
 var tokenStore = /* @__PURE__ */ new Map();
-setInterval(() => {
+var csrfCleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [key, value] of tokenStore.entries()) {
     if (now > value.expiresAt) {
@@ -141516,6 +141542,9 @@ setInterval(() => {
     }
   }
 }, 60 * 1e3);
+if (csrfCleanupTimer && typeof csrfCleanupTimer.unref === "function") {
+  csrfCleanupTimer.unref();
+}
 function csrfTokenHandler(req, res) {
   const token = (0, import_crypto3.randomBytes)(TOKEN_LENGTH).toString("hex");
   res.cookie(CSRF_COOKIE, token, {
@@ -141942,22 +141971,25 @@ var allowedOrigins = [
   process.env.CORS_ORIGIN
 ].flatMap((value) => (value || "").split(",")).map((origin) => origin.trim()).filter(Boolean);
 function isAllowedOrigin(origin) {
+  if (!origin) return true;
   if (allowedOrigins.includes(origin)) return true;
-  if (/\.vercel\.app$/.test(origin)) return true;
-  if (!isProduction && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  try {
+    const parsed = new URL(origin);
+    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") return true;
+    if (parsed.hostname.endsWith(".vercel.app")) return true;
+  } catch {
+    if (/\.vercel\.app$/.test(origin)) return true;
+    if (!isProduction && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  }
   return false;
 }
 var corsOptions = {
   origin: (origin, callback) => {
-    if (!origin) {
-      callback(null, true);
+    if (!origin || isAllowedOrigin(origin)) {
+      callback(null, origin || true);
       return;
     }
-    if (isAllowedOrigin(origin)) {
-      callback(null, origin);
-      return;
-    }
-    callback(new Error(`CORS blocked origin: ${origin}`));
+    callback(null, false);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -141967,8 +141999,9 @@ app.use(helmet());
 app.use((0, import_cors.default)(corsOptions));
 app.options("*", (0, import_cors.default)(corsOptions));
 app.use((req, _res, next) => {
-  if (!req.url.startsWith("/api") && req.originalUrl && req.originalUrl.startsWith("/api")) {
-    req.url = req.originalUrl;
+  const targetUrl = req.originalUrl || req.headers["x-matched-path"] || req.url;
+  if (targetUrl && targetUrl.startsWith("/api") && req.url !== targetUrl) {
+    req.url = targetUrl;
   }
   next();
 });
@@ -141999,25 +142032,29 @@ var limiter = lib_default({
   max: 200,
   message: { error: "Too many requests from this IP", code: "RATE_LIMIT" },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  validate: false
 });
 app.use(limiter);
 var authLimiter = lib_default({
   windowMs: 15 * 60 * 1e3,
   max: 100,
-  message: { error: "Too many auth requests", code: "RATE_LIMIT" }
+  message: { error: "Too many auth requests", code: "RATE_LIMIT" },
+  validate: false
 });
 var chatbotLimiter = lib_default({
   windowMs: 60 * 1e3,
   max: 30,
-  message: { error: "Too many chatbot requests", code: "RATE_LIMIT" }
+  message: { error: "Too many chatbot requests", code: "RATE_LIMIT" },
+  validate: false
 });
 var uploadLimiter = lib_default({
   windowMs: 60 * 1e3,
   max: 10,
-  message: { error: "Too many upload requests", code: "RATE_LIMIT" }
+  message: { error: "Too many upload requests", code: "RATE_LIMIT" },
+  validate: false
 });
-app.get(["/api/health", "/health", "/"], (_req, res) => {
+app.get(["/api/health", "/health", "/api", "/api/", "/"], (_req, res) => {
   res.json({
     status: "ok",
     timestamp: (/* @__PURE__ */ new Date()).toISOString(),
@@ -142130,9 +142167,11 @@ app.post(["/api/auth/login", "/auth/login"], validate(loginSchema), async (req, 
     });
   } catch (error51) {
     console.error("Login error:", error51);
+    const errorMsg = error51?.message?.toLowerCase() || "";
+    const isDbError = error51?.name?.includes("Prisma") || errorMsg.includes("database") || errorMsg.includes("prisma") || errorMsg.includes("can't reach database");
     res.status(500).json({
-      error: "Login failed",
-      code: "INTERNAL_ERROR",
+      error: isDbError ? "Database connection error. Please verify DATABASE_URL configuration." : process.env.NODE_ENV === "production" ? "Login failed" : error51?.message || "Login failed",
+      code: isDbError ? "DATABASE_ERROR" : "INTERNAL_ERROR",
       requestId: req.requestId
     });
   }
@@ -142243,6 +142282,13 @@ app.use(["/api/chatbot", "/chatbot"], chatbot_default);
 app.use(["/api/eligibility", "/eligibility"], eligibility_default);
 app.use(["/api/integrations", "/integrations"], integrations_default);
 app.use(["/api/voice", "/voice"], voice_default);
+app.use(["/api", "/api/*"], (req, res) => {
+  res.status(404).json({
+    error: `API route not found: ${req.method} ${req.originalUrl || req.url}`,
+    code: "NOT_FOUND",
+    requestId: req.requestId
+  });
+});
 app.use((err, req, res, _next) => {
   console.error(`[ERROR] [${req.requestId}]`, err.stack || err.message);
   if (err instanceof AppError) {

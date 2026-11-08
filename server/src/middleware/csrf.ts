@@ -9,7 +9,7 @@ const TOKEN_LENGTH = 32;
 const tokenStore = new Map<string, { token: string; expiresAt: number }>();
 
 // Clean up expired tokens periodically
-setInterval(() => {
+const csrfCleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [key, value] of tokenStore.entries()) {
     if (now > value.expiresAt) {
@@ -17,6 +17,10 @@ setInterval(() => {
     }
   }
 }, 60 * 1000);
+
+if (csrfCleanupTimer && typeof csrfCleanupTimer.unref === 'function') {
+  csrfCleanupTimer.unref();
+}
 
 /**
  * Generate a CSRF token and set it as a cookie.

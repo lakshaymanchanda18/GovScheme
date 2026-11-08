@@ -115,10 +115,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: true, user: response.data.user };
     } catch (error: any) {
       console.error('Login error:', error);
-      let msg = error.response?.data?.details?.[0]?.message || error.response?.data?.error;
+      let msg = error.response?.data?.details?.[0]?.message || error.response?.data?.error || error.response?.data?.message;
       if (!msg) {
-        if (error.message === 'Network Error' || !error.response) {
+        if (typeof error.response?.data === 'string' && error.response.data.length > 0 && error.response.data.length < 200 && !error.response.data.includes('<')) {
+          msg = error.response.data;
+        } else if (error.message === 'Network Error' || !error.response) {
           msg = 'Unable to connect to the backend server. Please try again in a few seconds.';
+        } else if (error.response?.status === 404) {
+          msg = 'Login service endpoint not found (404). Please verify API routing configuration.';
+        } else if (error.response?.status >= 500) {
+          msg = 'Backend server error. Please try again shortly.';
         } else {
           msg = error.message || 'Login failed';
         }
@@ -134,10 +140,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: true, user: response.data.user };
     } catch (error: any) {
       console.error('Registration error:', error);
-      let msg = error.response?.data?.details?.[0]?.message || error.response?.data?.error;
+      let msg = error.response?.data?.details?.[0]?.message || error.response?.data?.error || error.response?.data?.message;
       if (!msg) {
-        if (error.message === 'Network Error' || !error.response) {
+        if (typeof error.response?.data === 'string' && error.response.data.length > 0 && error.response.data.length < 200 && !error.response.data.includes('<')) {
+          msg = error.response.data;
+        } else if (error.message === 'Network Error' || !error.response) {
           msg = 'Unable to connect to the backend server. Please try again in a few seconds.';
+        } else if (error.response?.status === 404) {
+          msg = 'Registration service endpoint not found (404). Please verify API routing configuration.';
+        } else if (error.response?.status >= 500) {
+          msg = 'Backend server error. Please try again shortly.';
         } else {
           msg = error.message || 'Registration failed';
         }

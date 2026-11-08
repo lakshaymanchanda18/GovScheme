@@ -54,25 +54,27 @@ const allowedOrigins = [
   .filter(Boolean);
 
 function isAllowedOrigin(origin: string) {
+  if (!origin) return true;
   if (allowedOrigins.includes(origin)) return true;
-  if (/\.vercel\.app$/.test(origin)) return true;
-  if (!isProduction && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  try {
+    const parsed = new URL(origin);
+    if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') return true;
+    if (parsed.hostname.endsWith('.vercel.app')) return true;
+  } catch {
+    if (/\.vercel\.app$/.test(origin)) return true;
+    if (!isProduction && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  }
   return false;
 }
 
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean | string) => void) => {
-    if (!origin) {
-      callback(null, true);
+    if (!origin || isAllowedOrigin(origin)) {
+      callback(null, origin || true);
       return;
     }
 
-    if (isAllowedOrigin(origin)) {
-      callback(null, origin);
-      return;
-    }
-
-    callback(new Error(`CORS blocked origin: ${origin}`));
+    callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -86,8 +88,9 @@ app.options('*', cors(corsOptions));
 
 // URL normalization for Vercel serverless rewrites
 app.use((req, _res, next) => {
-  if (!req.url.startsWith('/api') && req.originalUrl && req.originalUrl.startsWith('/api')) {
-    req.url = req.originalUrl;
+  const targetUrl = req.originalUrl || (req.headers['x-matched-path'] as string) || req.url;
+  if (targetUrl && targetUrl.startsWith('/api') && req.url !== targetUrl) {
+    req.url = targetUrl;
   }
   next();
 });
@@ -125,6 +128,7 @@ const limiter = rateLimit({
   message: { error: 'Too many requests from this IP', code: 'RATE_LIMIT' },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
 });
 app.use(limiter);
 
@@ -132,21 +136,24 @@ const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: 'Too many auth requests', code: 'RATE_LIMIT' },
+  validate: false,
 });
 const chatbotLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 30,
   message: { error: 'Too many chatbot requests', code: 'RATE_LIMIT' },
+  validate: false,
 });
 const uploadLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
   message: { error: 'Too many upload requests', code: 'RATE_LIMIT' },
+  validate: false,
 });
 
 // ─── HEALTH CHECK ─────────────────────────────────────────────
 
-app.get(['/api/health', '/health', '/'], (_req, res) => {
+app.get(['/api/health', '/health', '/api', '/api/', '/'], (_req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -284,11 +291,15 @@ app.post(['/api/auth/login', '/auth/login'], validate(loginSchema), async (req, 
       message: 'Login successful',
       user: safeUser,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error);
+    const errorMsg = error?.message?.toLowerCase() || '';
+    const isDbError = error?.name?.includes('Prisma') || errorMsg.includes('database') || errorMsg.includes('prisma') || errorMsg.includes('can\'t reach database');
     res.status(500).json({
-      error: 'Login failed',
-      code: 'INTERNAL_ERROR',
+      error: isDbError
+        ? 'Database connection error. Please verify DATABASE_URL configuration.'
+        : (process.env.NODE_ENV === 'production' ? 'Login failed' : (error?.message || 'Login failed')),
+      code: isDbError ? 'DATABASE_ERROR' : 'INTERNAL_ERROR',
       requestId: (req as any).requestId,
     });
   }
@@ -419,6 +430,16 @@ app.use(['/api/chatbot', '/chatbot'], chatbotRoutes);
 app.use(['/api/eligibility', '/eligibility'], eligibilityRoutes);
 app.use(['/api/integrations', '/integrations'], integrationsRoutes);
 app.use(['/api/voice', '/voice'], voiceRoutes);
+
+// ─── API 404 HANDLER ──────────────────────────────────────────
+
+app.use(['/api', '/api/*'], (req, res) => {
+  res.status(404).json({
+    error: `API route not found: ${req.method} ${req.originalUrl || req.url}`,
+    code: 'NOT_FOUND',
+    requestId: (req as any).requestId,
+  });
+});
 
 // ─── GLOBAL ERROR HANDLER ─────────────────────────────────────
 

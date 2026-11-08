@@ -5,16 +5,24 @@
 import { Router } from 'express';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import multer from 'multer';
 import { prisma } from '../config/prisma';
 import { auditLog } from '../services/audit';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
-const uploadsDir = path.join(process.cwd(), 'uploads');
+const isVercel = Boolean(process.env.VERCEL);
+const uploadsDir = isVercel
+  ? path.join(os.tmpdir(), 'govscheme-uploads')
+  : path.join(process.cwd(), 'uploads');
 
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn('Could not initialize uploads directory:', err);
 }
 
 const storage = multer.diskStorage({
