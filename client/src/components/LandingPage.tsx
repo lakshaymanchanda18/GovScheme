@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Button, Container, Grid, Card, CardContent,
-  IconButton, Chip, Avatar, Stack
+  IconButton, Chip, Stack, Drawer, List, ListItem, ListItemText,
+  ListItemIcon, Divider, useMediaQuery, useTheme
 } from '@mui/material';
 import {
-  Search, Assignment, Verified, Speed, Translate, Security,
-  ArrowForward, MenuBook, SmartToy, TrendingUp,
-  CheckCircleOutline, Groups, AccountBalance, Public
+  Search, Assignment, VerifiedUser, Translate, Security,
+  ArrowForward, Menu as MenuIcon, Close as CloseIcon,
+  School, HealthAndSafety, NaturePeople, AccountBalance,
+  HomeWork, WorkOutline, CheckCircle
 } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useI18n } from '../hooks/useI18n';
@@ -17,526 +19,507 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { t } = useI18n();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const FEATURES = [
+  const CATEGORIES = [
     {
-      icon: <Search sx={{ fontSize: 32, color: '#4f46e5' }} />,
-      title: t('landing.featureSmartDiscovery'),
-      description: t('landing.featureSmartDiscoveryDesc'),
-      color: '#eef2ff',
+      name: 'Agriculture & Farmers',
+      description: 'Income support, crop insurance, irrigation, and agricultural credit schemes.',
+      icon: <NaturePeople sx={{ fontSize: 28, color: '#047857' }} />,
+      category: 'Agriculture',
     },
     {
-      icon: <Verified sx={{ fontSize: 32, color: '#0d9488' }} />,
-      title: t('landing.featureEligibility'),
-      description: t('landing.featureEligibilityDesc'),
-      color: '#f0fdfa',
+      name: 'Health & Medical Care',
+      description: 'Comprehensive health coverage, diagnostic support, and maternity assistance.',
+      icon: <HealthAndSafety sx={{ fontSize: 28, color: '#0284c7' }} />,
+      category: 'Healthcare',
     },
     {
-      icon: <Assignment sx={{ fontSize: 32, color: '#7c3aed' }} />,
-      title: t('landing.featureEasyApps'),
-      description: t('landing.featureEasyAppsDesc'),
-      color: '#f5f3ff',
+      name: 'Education & Scholarships',
+      description: 'Pre-matric and post-matric scholarships, skill training, and higher education fellowships.',
+      icon: <School sx={{ fontSize: 28, color: '#b45309' }} />,
+      category: 'Education',
     },
     {
-      icon: <Translate sx={{ fontSize: 32, color: '#d97706' }} />,
-      title: t('landing.featureMultilingual'),
-      description: t('landing.featureMultilingualDesc'),
-      color: '#fffbeb',
+      name: 'Financial Inclusion & Credit',
+      description: 'Micro-loans, zero-balance banking, subsidized insurance, and pension accounts.',
+      icon: <AccountBalance sx={{ fontSize: 28, color: '#0c2340' }} />,
+      category: 'Financial Inclusion',
     },
     {
-      icon: <SmartToy sx={{ fontSize: 32, color: '#0891b2' }} />,
-      title: t('landing.featureAI'),
-      description: t('landing.featureAIDesc'),
-      color: '#ecfeff',
+      name: 'Housing & Rural Amenities',
+      description: 'Affordable pucca housing grants, clean tap water connections, and sanitation facilities.',
+      icon: <HomeWork sx={{ fontSize: 28, color: '#475569' }} />,
+      category: 'Housing',
     },
     {
-      icon: <Security sx={{ fontSize: 32, color: '#059669' }} />,
-      title: t('landing.featureSecure'),
-      description: t('landing.featureSecureDesc'),
-      color: '#ecfdf5',
+      name: 'Employment & Livelihood',
+      description: 'Guaranteed rural wage employment, self-help groups, and startup incubation grants.',
+      icon: <WorkOutline sx={{ fontSize: 28, color: '#0f766e' }} />,
+      category: 'Employment',
     },
-  ];
-
-  const STATS = [
-    { value: '500+', label: t('landing.statSchemes'), icon: <AccountBalance /> },
-    { value: '28+', label: t('landing.statStates'), icon: <Public /> },
-    { value: '98%', label: t('landing.statAccuracy'), icon: <TrendingUp /> },
-    { value: '24/7', label: t('landing.statSupport'), icon: <Speed /> },
   ];
 
   const STEPS = [
-    { step: '01', title: t('landing.step1Title'), description: t('landing.step1Desc') },
-    { step: '02', title: t('landing.step2Title'), description: t('landing.step2Desc') },
-    { step: '03', title: t('landing.step3Title'), description: t('landing.step3Desc') },
+    {
+      num: '01',
+      title: 'Find Schemes',
+      description: 'Browse central and state initiatives organized by your occupation, age, and state.',
+    },
+    {
+      num: '02',
+      title: 'Check Eligibility',
+      description: 'Review transparent criteria including income limits, required documents, and family quotas.',
+    },
+    {
+      num: '03',
+      title: 'Apply Directly',
+      description: 'Access official nodal portals with step-by-step guidance and document checklists.',
+    },
   ];
 
   return (
-    <Box sx={{ minHeight: '100vh', overflow: 'hidden' }}>
-      {/* ===== NAVBAR ===== */}
+    <Box sx={{ minHeight: '100vh', background: '#f8fafc', color: '#0f172a' }}>
+      {/* ===== TOP OFFICIAL ANNOUNCEMENT BAR ===== */}
+      <Box sx={{ background: '#081726', color: '#94a3b8', py: 0.75, px: 2, fontSize: '0.78rem', textAlign: 'center', borderBottom: '1px solid #1e293b' }}>
+        <Container maxWidth="lg">
+          <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 500 }}>
+            Official Citizen Facilitation Portal for Central & State Welfare Schemes · Free Public Access
+          </Typography>
+        </Container>
+      </Box>
+
+      {/* ===== RESPONSIVE NAVBAR ===== */}
       <Box
         component="nav"
         sx={{
-          position: 'fixed',
+          position: 'sticky',
           top: 0,
-          left: 0,
-          right: 0,
           zIndex: 1100,
           py: 1.5,
-          px: { xs: 2, md: 6 },
-          background: 'rgba(255,255,255,0.85)',
-          backdropFilter: 'blur(24px)',
-          borderBottom: '1px solid rgba(226,232,240,0.6)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          px: { xs: 2, md: 4 },
+          background: '#ffffff',
+          borderBottom: '1px solid #e2e8f0',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
         }}
       >
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 900,
-            background: 'linear-gradient(135deg, #4f46e5, #14b8a6)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.02em',
-          }}
-        >
-          SaralYojna
-        </Typography>
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          <LanguageSwitcher />
+        <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: { xs: 0, md: 2 } }}>
+          {/* Brand Logo */}
+          <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none' }}>
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: '6px',
+                background: '#0c2340',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#ffffff',
+                fontWeight: 800,
+                fontSize: '1rem',
+              }}
+            >
+              SY
+            </Box>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 800,
+                color: '#0c2340',
+                letterSpacing: '-0.02em',
+                fontSize: { xs: '1.15rem', md: '1.35rem' },
+              }}
+            >
+              SaralYojna
+            </Typography>
+          </Box>
+
+          {/* Desktop Navigation Links */}
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ display: { xs: 'none', md: 'flex' } }}>
+            <Button
+              component={Link}
+              to="/schemes"
+              sx={{ color: '#334155', textTransform: 'none', fontWeight: 500, px: 1.5, '&:hover': { color: '#0c2340', background: '#f1f5f9' } }}
+            >
+              All Schemes
+            </Button>
+            <Button
+              component={Link}
+              to="/eligibility"
+              sx={{ color: '#334155', textTransform: 'none', fontWeight: 500, px: 1.5, '&:hover': { color: '#0c2340', background: '#f1f5f9' } }}
+            >
+              Check Eligibility
+            </Button>
+            <Button
+              component={Link}
+              to="/chatbot"
+              sx={{ color: '#334155', textTransform: 'none', fontWeight: 500, px: 1.5, '&:hover': { color: '#0c2340', background: '#f1f5f9' } }}
+            >
+              Scheme Assistant
+            </Button>
+          </Stack>
+
+          {/* Right Action Stack */}
+          <Stack direction="row" spacing={1} alignItems="center">
+            <LanguageSwitcher />
+
+            {/* Desktop Auth Buttons */}
+            {user ? (
+              <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+                <Button
+                  component={Link}
+                  to="/dashboard"
+                  variant="contained"
+                  size="small"
+                  sx={{ textTransform: 'none', background: '#0c2340', color: '#fff', borderRadius: '6px', px: 2 }}
+                >
+                  Dashboard
+                </Button>
+                <Button
+                  onClick={() => { logout(); navigate('/'); }}
+                  variant="outlined"
+                  size="small"
+                  sx={{ textTransform: 'none', color: '#dc2626', borderColor: '#fca5a5', borderRadius: '6px' }}
+                >
+                  Logout
+                </Button>
+              </Box>
+            ) : (
+              <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+                <Button
+                  component={Link}
+                  to="/login"
+                  size="small"
+                  sx={{ textTransform: 'none', color: '#0c2340', fontWeight: 600, px: 2 }}
+                >
+                  Sign In
+                </Button>
+                <Button
+                  component={Link}
+                  to="/register"
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    textTransform: 'none',
+                    background: '#0c2340',
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    borderRadius: '6px',
+                    px: 2.2,
+                    '&:hover': { background: '#102a43' },
+                  }}
+                >
+                  Create Account
+                </Button>
+              </Box>
+            )}
+
+            {/* Mobile Hamburger Toggle Button */}
+            <IconButton
+              onClick={() => setMobileMenuOpen(true)}
+              sx={{ display: { xs: 'inline-flex', md: 'none' }, color: '#0c2340', p: 0.75 }}
+              aria-label="Open navigation menu"
+            >
+              <MenuIcon />
+            </IconButton>
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* ===== MOBILE NAVIGATION DRAWER ===== */}
+      <Drawer
+        anchor="right"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        PaperProps={{
+          sx: { width: 280, p: 2, background: '#ffffff', display: 'flex', flexDirection: 'column' },
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 2, borderBottom: '1px solid #e2e8f0' }}>
+          <Typography variant="h6" fontWeight="800" color="#0c2340">
+            SaralYojna
+          </Typography>
+          <IconButton onClick={() => setMobileMenuOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <List sx={{ pt: 2, flexGrow: 1 }}>
+          <ListItem button component={Link} to="/schemes" onClick={() => setMobileMenuOpen(false)} sx={{ borderRadius: '6px', mb: 0.5 }}>
+            <ListItemIcon sx={{ minWidth: 36, color: '#0c2340' }}><Search fontSize="small" /></ListItemIcon>
+            <ListItemText primary="All Schemes" primaryTypographyProps={{ fontWeight: 600, color: '#0c2340' }} />
+          </ListItem>
+          <ListItem button component={Link} to="/eligibility" onClick={() => setMobileMenuOpen(false)} sx={{ borderRadius: '6px', mb: 0.5 }}>
+            <ListItemIcon sx={{ minWidth: 36, color: '#047857' }}><VerifiedUser fontSize="small" /></ListItemIcon>
+            <ListItemText primary="Check Eligibility" primaryTypographyProps={{ fontWeight: 600, color: '#0c2340' }} />
+          </ListItem>
+          <ListItem button component={Link} to="/chatbot" onClick={() => setMobileMenuOpen(false)} sx={{ borderRadius: '6px', mb: 0.5 }}>
+            <ListItemIcon sx={{ minWidth: 36, color: '#0284c7' }}><Assignment fontSize="small" /></ListItemIcon>
+            <ListItemText primary="Scheme Assistant" primaryTypographyProps={{ fontWeight: 600, color: '#0c2340' }} />
+          </ListItem>
+          
+          <Divider sx={{ my: 2 }} />
+
+          <ListItem button component={Link} to="/privacy" onClick={() => setMobileMenuOpen(false)} sx={{ borderRadius: '6px' }}>
+            <ListItemText primary="Privacy Policy" primaryTypographyProps={{ fontSize: '0.9rem', color: '#475569' }} />
+          </ListItem>
+          <ListItem button component={Link} to="/terms" onClick={() => setMobileMenuOpen(false)} sx={{ borderRadius: '6px' }}>
+            <ListItemText primary="Terms of Service" primaryTypographyProps={{ fontSize: '0.9rem', color: '#475569' }} />
+          </ListItem>
+        </List>
+
+        <Box sx={{ pt: 2, borderTop: '1px solid #e2e8f0' }}>
           {user ? (
-            <>
-              <Button
-                component={Link}
-                to="/schemes"
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  color: '#64748b',
-                  borderRadius: '10px',
-                  px: 2,
-                  display: { xs: 'none', sm: 'inline-flex' },
-                  '&:hover': { backgroundColor: 'rgba(79,70,229,0.06)', color: '#4f46e5' },
-                }}
-              >
-                {t('landing.schemes')}
-              </Button>
-              <Button
-                component={Link}
-                to="/eligibility"
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  color: '#64748b',
-                  borderRadius: '10px',
-                  px: 2,
-                  display: { xs: 'none', md: 'inline-flex' },
-                  '&:hover': { backgroundColor: 'rgba(79,70,229,0.06)', color: '#4f46e5' },
-                }}
-              >
-                {t('landing.eligibility')}
-              </Button>
-              <Button
-                component={Link}
-                to="/chatbot"
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  color: '#64748b',
-                  borderRadius: '10px',
-                  px: 2,
-                  display: { xs: 'none', md: 'inline-flex' },
-                  '&:hover': { backgroundColor: 'rgba(79,70,229,0.06)', color: '#4f46e5' },
-                }}
-              >
-                {t('landing.assistant')}
-              </Button>
+            <Stack spacing={1}>
               <Button
                 component={Link}
                 to="/dashboard"
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  color: '#14b8a6',
-                  backgroundColor: 'rgba(20,184,166,0.08)',
-                  borderRadius: '10px',
-                  px: 2.5,
-                  '&:hover': { backgroundColor: 'rgba(20,184,166,0.15)' },
-                }}
+                fullWidth
+                variant="contained"
+                onClick={() => setMobileMenuOpen(false)}
+                sx={{ textTransform: 'none', background: '#0c2340', borderRadius: '6px' }}
               >
-                {t('landing.dashboard')}
+                Go to Dashboard
               </Button>
               <Button
-                onClick={() => {
-                  logout();
-                  navigate('/login');
-                }}
+                fullWidth
                 variant="outlined"
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  color: '#ef4444',
-                  borderColor: 'rgba(239,68,68,0.5)',
-                  borderRadius: '10px',
-                  px: 2.5,
-                  '&:hover': {
-                    backgroundColor: 'rgba(239,68,68,0.04)',
-                    borderColor: '#ef4444',
-                  },
-                }}
+                onClick={() => { logout(); setMobileMenuOpen(false); navigate('/'); }}
+                sx={{ textTransform: 'none', color: '#dc2626', borderColor: '#fca5a5', borderRadius: '6px' }}
               >
-                {t('landing.logout')}
+                Logout
               </Button>
-            </>
+            </Stack>
           ) : (
-            <>
+            <Stack spacing={1.5}>
               <Button
                 component={Link}
                 to="/login"
-                id="landing-login-btn"
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  color: '#4f46e5',
-                  borderRadius: '10px',
-                  px: 2.5,
-                  '&:hover': { backgroundColor: 'rgba(79,70,229,0.06)' },
-                }}
+                fullWidth
+                variant="outlined"
+                onClick={() => setMobileMenuOpen(false)}
+                sx={{ textTransform: 'none', color: '#0c2340', borderColor: '#cbd5e1', borderRadius: '6px' }}
               >
-                {t('landing.signIn')}
+                Sign In
               </Button>
               <Button
                 component={Link}
                 to="/register"
+                fullWidth
                 variant="contained"
-                id="landing-register-btn"
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                  borderRadius: '10px',
-                  px: 3,
-                  boxShadow: '0 4px 14px rgba(79,70,229,0.3)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #4338ca, #6d28d9)',
-                    boxShadow: '0 6px 20px rgba(79,70,229,0.4)',
-                    transform: 'translateY(-1px)',
-                  },
-                  transition: 'all 0.25s ease',
-                }}
+                onClick={() => setMobileMenuOpen(false)}
+                sx={{ textTransform: 'none', background: '#0c2340', color: '#ffffff', borderRadius: '6px' }}
               >
-                {t('landing.getStarted')}
+                Create Account
               </Button>
-            </>
+            </Stack>
           )}
-        </Stack>
-      </Box>
+        </Box>
+      </Drawer>
 
       {/* ===== HERO SECTION ===== */}
-      <Box
-        sx={{
-          pt: { xs: 14, md: 18 },
-          pb: { xs: 8, md: 14 },
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'linear-gradient(160deg, #f8fafc 0%, #eef2ff 40%, #f0fdfa 70%, #f8fafc 100%)',
-        }}
-      >
-        {/* Decorative Shapes */}
-        <Box sx={{
-          position: 'absolute', top: -80, right: -80, width: 400, height: 400,
-          borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)',
-          animation: 'float 6s ease-in-out infinite',
-        }} />
-        <Box sx={{
-          position: 'absolute', bottom: -100, left: -100, width: 500, height: 500,
-          borderRadius: '50%', background: 'radial-gradient(circle, rgba(20,184,166,0.06) 0%, transparent 70%)',
-          animation: 'float 8s ease-in-out infinite',
-          animationDelay: '2s',
-        }} />
-        <Box sx={{
-          position: 'absolute', top: '40%', left: '60%', width: 200, height: 200,
-          borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.05) 0%, transparent 70%)',
-          animation: 'float 7s ease-in-out infinite',
-          animationDelay: '4s',
-        }} />
-
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <Grid container spacing={6} alignItems="center">
+      <Box sx={{ pt: { xs: 5, md: 8 }, pb: { xs: 6, md: 10 }, background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+        <Container maxWidth="lg">
+          <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={7}>
-              <Box className="animate-fade-in-up">
-                <Chip
-                  label={t('landing.portalChip')}
-                  sx={{
-                    mb: 3,
-                    fontWeight: 600,
-                    fontSize: '0.85rem',
-                    background: 'rgba(79,70,229,0.08)',
-                    color: '#4f46e5',
-                    borderRadius: '10px',
-                    py: 0.5,
-                    px: 0.5,
-                  }}
-                />
-                <Typography
-                  variant="h1"
-                  sx={{
-                    fontWeight: 900,
-                    fontSize: { xs: '2.5rem', sm: '3.2rem', md: '3.8rem' },
-                    lineHeight: 1.1,
-                    letterSpacing: '-0.03em',
-                    mb: 3,
-                    color: '#0f172a',
-                  }}
-                >
-                  {t('landing.heroTitle1')}{' '}
-                  <Box component="span" sx={{ background: 'linear-gradient(135deg, #4f46e5, #14b8a6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                    {t('landing.heroTitle2')}
-                  </Box>
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 400,
-                    color: '#64748b',
-                    lineHeight: 1.7,
-                    maxWidth: 520,
-                    mb: 4,
-                    fontSize: { xs: '1rem', md: '1.15rem' },
-                  }}
-                >
-                  {t('landing.heroSubtitle')}
-                </Typography>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    endIcon={user ? <Search /> : <ArrowForward />}
-                    onClick={() => navigate(user ? '/eligibility' : '/register')}
-                    id="hero-cta-btn"
-                    sx={{
-                      textTransform: 'none',
-                      fontWeight: 700,
-                      fontSize: '1.05rem',
-                      borderRadius: '14px',
-                      px: 4,
-                      py: 1.8,
-                      background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                      boxShadow: '0 8px 30px rgba(79,70,229,0.35)',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #4338ca, #6d28d9)',
-                        boxShadow: '0 12px 40px rgba(79,70,229,0.45)',
-                        transform: 'translateY(-2px)',
-                      },
-                      transition: 'all 0.3s ease',
-                    }}
-                  >
-                    {user ? t('landing.findMySchemes') : t('landing.exploreSchemes')}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    startIcon={user ? <SmartToy /> : <Search />}
-                    onClick={() => navigate(user ? '/chatbot' : '/login')}
-                    id="hero-secondary-btn"
-                    sx={{
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      fontSize: '1.05rem',
-                      borderRadius: '14px',
-                      px: 4,
-                      py: 1.8,
-                      borderColor: '#e2e8f0',
-                      color: '#334155',
-                      borderWidth: 2,
-                      '&:hover': {
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79,70,229,0.04)',
-                        borderWidth: 2,
-                      },
-                      transition: 'all 0.3s ease',
-                    }}
-                  >
-                    {user ? t('landing.talkToAssistant') : t('landing.checkEligibility')}
-                  </Button>
-                </Stack>
-              </Box>
-            </Grid>
-            <Grid item xs={12} md={5}>
-              <Box
-                className="animate-fade-in-up delay-300"
+              <Chip
+                label="National Citizen Facilitation Portal"
+                size="small"
                 sx={{
-                  position: 'relative',
-                  display: { xs: 'none', md: 'block' },
+                  mb: 2.5,
+                  fontWeight: 700,
+                  fontSize: '0.8rem',
+                  background: '#f1f5f9',
+                  color: '#0c2340',
+                  borderRadius: '4px',
+                  border: '1px solid #cbd5e1',
+                  px: 0.5,
+                }}
+              />
+              <Typography
+                variant="h1"
+                sx={{
+                  fontWeight: 800,
+                  fontSize: { xs: '2.1rem', sm: '2.8rem', md: '3.4rem' },
+                  lineHeight: 1.15,
+                  letterSpacing: '-0.03em',
+                  mb: 2.5,
+                  color: '#0c2340',
                 }}
               >
-                {/* Decorative illustration using layered cards */}
-                <Box sx={{ position: 'relative', height: 400 }}>
-                  {/* Background card */}
-                  <Box sx={{
-                    position: 'absolute', top: 30, left: 40, right: 0, bottom: 30,
-                    borderRadius: '24px',
-                    background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                    transform: 'rotate(3deg)',
-                    opacity: 0.12,
-                  }} />
-                  {/* Main card */}
-                  <Box sx={{
-                    position: 'absolute', top: 0, left: 20, right: 20, bottom: 0,
-                    borderRadius: '24px',
-                    background: '#fff',
-                    boxShadow: '0 20px 60px rgba(79,70,229,0.12)',
-                    p: 4,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2.5,
-                  }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Avatar sx={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', width: 48, height: 48 }}>
-                        <CheckCircleOutline />
-                      </Avatar>
-                      <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>{t('landing.eligibilityMatched')}</Typography>
-                        <Typography variant="caption" sx={{ color: '#64748b' }}>PM Kisan Samman Nidhi</Typography>
-                      </Box>
-                      <Chip label="98% Match" size="small" sx={{ ml: 'auto', fontWeight: 700, background: '#dcfce7', color: '#15803d' }} />
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Avatar sx={{ background: 'linear-gradient(135deg, #0d9488, #14b8a6)', width: 48, height: 48 }}>
-                        <Assignment />
-                      </Avatar>
-                      <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>{t('landing.applicationApproved')}</Typography>
-                        <Typography variant="caption" sx={{ color: '#64748b' }}>Ayushman Bharat Yojana</Typography>
-                      </Box>
-                      <Chip label={t('applications.status.approved')} size="small" sx={{ ml: 'auto', fontWeight: 700, background: '#dbeafe', color: '#1d4ed8' }} />
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Avatar sx={{ background: 'linear-gradient(135deg, #d97706, #f59e0b)', width: 48, height: 48 }}>
-                        <TrendingUp />
-                      </Avatar>
-                      <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>{t('landing.newSchemeAvailable')}</Typography>
-                        <Typography variant="caption" sx={{ color: '#64748b' }}>Startup India Initiative</Typography>
-                      </Box>
-                      <Chip label={t('common.next')} size="small" sx={{ ml: 'auto', fontWeight: 700, background: '#fef3c7', color: '#b45309' }} />
-                    </Box>
-                    {/* Progress bar */}
-                    <Box sx={{ mt: 'auto' }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="caption" sx={{ fontWeight: 600, color: '#334155' }}>{t('landing.profileCompleteness')}</Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 700, color: '#4f46e5' }}>85%</Typography>
-                      </Box>
-                      <Box sx={{ height: 8, borderRadius: 4, background: '#f1f5f9', overflow: 'hidden' }}>
-                        <Box sx={{ height: '100%', width: '85%', borderRadius: 4, background: 'linear-gradient(90deg, #4f46e5, #14b8a6)', transition: 'width 1.5s ease' }} />
-                      </Box>
-                    </Box>
+                Find Government Schemes You Are Eligible For
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: '#475569',
+                  fontSize: { xs: '1rem', md: '1.15rem' },
+                  lineHeight: 1.7,
+                  maxWidth: 580,
+                  mb: 4,
+                }}
+              >
+                Search official central and state initiatives, verify qualification criteria transparently, and follow clear step-by-step application instructions.
+              </Typography>
+
+              {/* Action Buttons - Stacked on mobile, side-by-side on desktop */}
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <Button
+                  component={Link}
+                  to="/schemes"
+                  variant="contained"
+                  size="large"
+                  endIcon={<ArrowForward />}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    borderRadius: '6px',
+                    px: 3.5,
+                    py: 1.5,
+                    background: '#0c2340',
+                    color: '#ffffff',
+                    '&:hover': { background: '#102a43' },
+                  }}
+                >
+                  Explore All Schemes
+                </Button>
+                <Button
+                  component={Link}
+                  to={user ? '/eligibility' : '/login'}
+                  variant="outlined"
+                  size="large"
+                  startIcon={<VerifiedUser />}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    borderRadius: '6px',
+                    px: 3.5,
+                    py: 1.5,
+                    borderColor: '#cbd5e1',
+                    color: '#0c2340',
+                    '&:hover': { borderColor: '#0c2340', background: '#f8fafc' },
+                  }}
+                >
+                  Check Your Eligibility
+                </Button>
+              </Stack>
+            </Grid>
+
+            {/* Right Column: Verified Spotlight Card */}
+            <Grid item xs={12} md={5}>
+              <Card
+                elevation={0}
+                sx={{
+                  borderRadius: '8px',
+                  border: '1px solid #cbd5e1',
+                  boxShadow: '0 4px 16px rgba(12, 35, 64, 0.08)',
+                  background: '#ffffff',
+                  p: 3,
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Chip
+                    label="Official Welfare Scheme"
+                    size="small"
+                    sx={{ borderRadius: '4px', background: '#dcfce7', color: '#15803d', fontWeight: 700, fontSize: '0.75rem' }}
+                  />
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                    Ministry of Agriculture
+                  </Typography>
+                </Box>
+
+                <Typography variant="h6" fontWeight="700" color="#0c2340" sx={{ mb: 1, lineHeight: 1.3 }}>
+                  PM Kisan Samman Nidhi
+                </Typography>
+                <Typography variant="body2" color="#475569" sx={{ mb: 2.5, lineHeight: 1.6 }}>
+                  Direct income support of ₹6,000 per year in three equal installments to eligible small and marginal farmer families nationwide.
+                </Typography>
+
+                <Box sx={{ background: '#f8fafc', p: 2, borderRadius: '6px', border: '1px solid #e2e8f0', mb: 2.5 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#0c2340', display: 'block', mb: 1 }}>
+                    Key Eligibility Guidelines:
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                    <CheckCircle sx={{ fontSize: 16, color: '#047857' }} />
+                    <Typography variant="caption" color="#334155">Cultivable landholding in applicant or family name</Typography>
                   </Box>
-                  {/* Floating badge */}
-                  <Box sx={{
-                    position: 'absolute', top: -10, right: 0, px: 2, py: 1,
-                    borderRadius: '12px', background: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                    display: 'flex', alignItems: 'center', gap: 1,
-                    animation: 'float 4s ease-in-out infinite',
-                  }}>
-                    <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: '#22c55e' }} />
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#15803d' }}>{t('landing.liveTracking')}</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircle sx={{ fontSize: 16, color: '#047857' }} />
+                    <Typography variant="caption" color="#334155">Aadhaar-seeded active bank account</Typography>
                   </Box>
                 </Box>
-              </Box>
+
+                <Button
+                  component={Link}
+                  to="/schemes"
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  sx={{ textTransform: 'none', color: '#0c2340', borderColor: '#cbd5e1', borderRadius: '6px' }}
+                >
+                  View Scheme Guidelines & Details
+                </Button>
+              </Card>
             </Grid>
           </Grid>
         </Container>
       </Box>
 
-      {/* ===== STATS BAR ===== */}
-      <Box sx={{ py: 5, background: 'linear-gradient(135deg, #0f172a, #1e293b)' }}>
+      {/* ===== FUNCTIONAL SCHEME CATEGORIES (REPLACES FAKE COUNTERS) ===== */}
+      <Box sx={{ py: { xs: 6, md: 8 }, background: '#f8fafc' }}>
         <Container maxWidth="lg">
-          <Grid container spacing={4} justifyContent="center">
-            {STATS.map((stat, idx) => (
-              <Grid item xs={6} sm={3} key={idx}>
-                <Box
-                  className="animate-fade-in-up"
-                  sx={{
-                    textAlign: 'center',
-                    animationDelay: `${idx * 100}ms`,
-                  }}
-                >
-                  <Box sx={{ color: '#818cf8', mb: 1, display: 'flex', justifyContent: 'center' }}>
-                    {stat.icon}
-                  </Box>
-                  <Typography variant="h3" sx={{ fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', mb: 0.5 }}>
-                    {stat.value}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 500 }}>
-                    {stat.label}
-                  </Typography>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
-
-      {/* ===== FEATURES ===== */}
-      <Box sx={{ py: { xs: 8, md: 12 }, background: '#fff' }}>
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center', mb: 8 }} className="animate-fade-in-up">
-            <Chip label={t('landing.featuresChip')} sx={{ mb: 2, fontWeight: 600, background: 'rgba(79,70,229,0.08)', color: '#4f46e5' }} />
-            <Typography variant="h3" sx={{ fontWeight: 800, letterSpacing: '-0.02em', color: '#0f172a', mb: 2 }}>
-              {t('landing.featuresTitle1')}{' '}
-              <Box component="span" sx={{ background: 'linear-gradient(135deg, #4f46e5, #14b8a6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                {t('landing.featuresTitle2')}
-              </Box>
+          <Box sx={{ textAlign: 'center', mb: 5 }}>
+            <Typography variant="h4" fontWeight="800" color="#0c2340" sx={{ mb: 1, letterSpacing: '-0.02em' }}>
+              Welfare Categories
             </Typography>
-            <Typography sx={{ color: '#64748b', maxWidth: 560, mx: 'auto', fontSize: '1.1rem' }}>
-              {t('landing.featuresSubtitle')}
+            <Typography variant="body1" color="#64748b" sx={{ maxWidth: 540, mx: 'auto' }}>
+              Explore schemes curated by welfare sector to find benefits matching your circumstances.
             </Typography>
           </Box>
+
           <Grid container spacing={3}>
-            {FEATURES.map((feat, idx) => (
+            {CATEGORIES.map((cat, idx) => (
               <Grid item xs={12} sm={6} md={4} key={idx}>
                 <Card
-                  className="animate-fade-in-up"
                   elevation={0}
+                  component={Link}
+                  to={`/schemes?category=${encodeURIComponent(cat.category)}`}
                   sx={{
                     height: '100%',
-                    borderRadius: '20px',
-                    border: '1px solid #f1f5f9',
-                    p: 1,
-                    animationDelay: `${idx * 100}ms`,
-                    transition: 'all 0.35s ease',
-                    cursor: 'default',
+                    p: 2.5,
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    background: '#ffffff',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    textDecoration: 'none',
+                    transition: 'all 0.2s ease',
                     '&:hover': {
-                      transform: 'translateY(-6px)',
-                      boxShadow: '0 16px 48px rgba(79,70,229,0.08)',
-                      borderColor: '#e0e7ff',
+                      borderColor: '#0c2340',
+                      boxShadow: '0 4px 12px rgba(12, 35, 64, 0.08)',
+                      transform: 'translateY(-2px)',
                     },
                   }}
                 >
-                  <CardContent sx={{ p: 3 }}>
-                    <Box
-                      sx={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: feat.color,
-                        mb: 2.5,
-                      }}
-                    >
-                      {feat.icon}
+                  <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ p: 1, borderRadius: '6px', background: '#f1f5f9' }}>
+                      {cat.icon}
                     </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#0f172a' }}>
-                      {feat.title}
+                    <Typography variant="subtitle1" fontWeight="700" color="#0c2340">
+                      {cat.name}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: '#64748b', lineHeight: 1.7 }}>
-                      {feat.description}
-                    </Typography>
-                  </CardContent>
+                  </Box>
+                  <Typography variant="body2" color="#64748b" sx={{ lineHeight: 1.6, flexGrow: 1 }}>
+                    {cat.description}
+                  </Typography>
+                  <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 0.5, color: '#0c2340', fontWeight: 600, fontSize: '0.85rem' }}>
+                    Browse category <ArrowForward sx={{ fontSize: 14 }} />
+                  </Box>
                 </Card>
               </Grid>
             ))}
@@ -544,45 +527,29 @@ export default function LandingPage() {
         </Container>
       </Box>
 
-      {/* ===== HOW IT WORKS ===== */}
-      <Box sx={{ py: { xs: 8, md: 12 }, background: 'linear-gradient(160deg, #f8fafc, #eef2ff, #f0fdfa)' }}>
+      {/* ===== HOW IT WORKS (AUTHENTIC CIVIC STEPS) ===== */}
+      <Box sx={{ py: { xs: 6, md: 8 }, background: '#ffffff', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
         <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center', mb: 8 }} className="animate-fade-in-up">
-            <Chip label={t('landing.howItWorksChip')} sx={{ mb: 2, fontWeight: 600, background: 'rgba(20,184,166,0.08)', color: '#0d9488' }} />
-            <Typography variant="h3" sx={{ fontWeight: 800, letterSpacing: '-0.02em', color: '#0f172a', mb: 2 }}>
-              {t('landing.howItWorksTitle')}
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Typography variant="h4" fontWeight="800" color="#0c2340" sx={{ mb: 1, letterSpacing: '-0.02em' }}>
+              How to Access Benefits
             </Typography>
-            <Typography sx={{ color: '#64748b', maxWidth: 480, mx: 'auto', fontSize: '1.1rem' }}>
-              {t('landing.howItWorksSubtitle')}
+            <Typography variant="body1" color="#64748b">
+              Follow these three straightforward steps to navigate welfare initiatives.
             </Typography>
           </Box>
+
           <Grid container spacing={4}>
             {STEPS.map((step, idx) => (
               <Grid item xs={12} md={4} key={idx}>
-                <Box
-                  className="animate-fade-in-up"
-                  sx={{
-                    textAlign: 'center',
-                    animationDelay: `${idx * 150}ms`,
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontSize: '4rem',
-                      fontWeight: 900,
-                      background: 'linear-gradient(135deg, rgba(79,70,229,0.15), rgba(20,184,166,0.15))',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      mb: 2,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {step.step}
+                <Box sx={{ p: 3, borderRadius: '8px', border: '1px solid #e2e8f0', background: '#f8fafc', height: '100%' }}>
+                  <Typography variant="h4" fontWeight="800" color="#047857" sx={{ mb: 1.5 }}>
+                    {step.num}
                   </Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 1.5, color: '#0f172a' }}>
+                  <Typography variant="h6" fontWeight="700" color="#0c2340" sx={{ mb: 1 }}>
                     {step.title}
                   </Typography>
-                  <Typography variant="body1" sx={{ color: '#64748b', maxWidth: 320, mx: 'auto', lineHeight: 1.7 }}>
+                  <Typography variant="body2" color="#475569" sx={{ lineHeight: 1.6 }}>
                     {step.description}
                   </Typography>
                 </Box>
@@ -592,85 +559,49 @@ export default function LandingPage() {
         </Container>
       </Box>
 
-      {/* ===== CTA ===== */}
-      <Box
-        sx={{
-          py: { xs: 8, md: 10 },
-          background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <Box sx={{
-          position: 'absolute', top: -100, right: -100, width: 400, height: 400,
-          borderRadius: '50%', background: 'rgba(255,255,255,0.05)',
-        }} />
-        <Box sx={{
-          position: 'absolute', bottom: -80, left: -80, width: 300, height: 300,
-          borderRadius: '50%', background: 'rgba(255,255,255,0.04)',
-        }} />
-        <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <Typography variant="h3" sx={{ fontWeight: 800, color: '#fff', mb: 2, letterSpacing: '-0.02em' }}>
-            {t('landing.ctaTitle')}
-          </Typography>
-          <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.15rem', mb: 4, maxWidth: 480, mx: 'auto' }}>
-            {t('landing.ctaSubtitle')}
-          </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            endIcon={<ArrowForward />}
-            onClick={() => navigate('/register')}
-            id="cta-register-btn"
-            sx={{
-              textTransform: 'none',
-              fontWeight: 700,
-              fontSize: '1.1rem',
-              px: 5,
-              py: 2,
-              borderRadius: '14px',
-              background: '#fff',
-              color: '#4f46e5',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
-              '&:hover': {
-                background: '#f8fafc',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
-              },
-              transition: 'all 0.3s ease',
-            }}
-          >
-            {t('landing.ctaButton')}
-          </Button>
-        </Container>
-      </Box>
-
       {/* ===== FOOTER ===== */}
-      <Box sx={{ py: 5, background: '#0f172a', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+      <Box component="footer" sx={{ py: 6, background: '#081726', color: '#cbd5e1' }}>
         <Container maxWidth="lg">
-          <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={4}>
-              <Typography sx={{ fontWeight: 800, fontSize: '1.4rem', background: 'linear-gradient(135deg, #818cf8, #5eead4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <Grid container spacing={4} sx={{ mb: 4 }}>
+            <Grid item xs={12} md={5}>
+              <Typography variant="h6" fontWeight="800" color="#ffffff" sx={{ mb: 1 }}>
                 SaralYojna
               </Typography>
-              <Typography variant="body2" sx={{ color: '#94a3b8', mt: 1 }}>
-                {t('landing.footerTagline')}
+              <Typography variant="body2" sx={{ color: '#94a3b8', lineHeight: 1.7, maxWidth: 420 }}>
+                An independent citizen facilitation portal providing structured discovery, qualification checks, and guidelines for Indian central and state welfare initiatives.
               </Typography>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <Stack direction="row" spacing={3} justifyContent={{ xs: 'flex-start', md: 'center' }}>
-                <Typography variant="body2" component={Link} to="/login" sx={{ color: '#94a3b8', '&:hover': { color: '#e2e8f0' }, transition: 'color 0.2s' }}>{t('landing.about')}</Typography>
-                <Typography variant="body2" component={Link} to="/login" sx={{ color: '#94a3b8', '&:hover': { color: '#e2e8f0' }, transition: 'color 0.2s' }}>{t('landing.contact')}</Typography>
-                <Typography variant="body2" component={Link} to="/login" sx={{ color: '#94a3b8', '&:hover': { color: '#e2e8f0' }, transition: 'color 0.2s' }}>{t('landing.privacy')}</Typography>
-                <Typography variant="body2" component={Link} to="/login" sx={{ color: '#94a3b8', '&:hover': { color: '#e2e8f0' }, transition: 'color 0.2s' }}>{t('landing.terms')}</Typography>
+            <Grid item xs={6} md={3}>
+              <Typography variant="subtitle2" fontWeight="700" color="#ffffff" sx={{ mb: 2 }}>
+                Quick Links
+              </Typography>
+              <Stack spacing={1}>
+                <Typography variant="body2" component={Link} to="/schemes" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>All Schemes Directory</Typography>
+                <Typography variant="body2" component={Link} to="/eligibility" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>Eligibility Evaluation</Typography>
+                <Typography variant="body2" component={Link} to="/chatbot" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>Scheme Guidance Assistant</Typography>
               </Stack>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <Typography variant="body2" sx={{ color: '#64748b', textAlign: { xs: 'left', md: 'right' } }}>
-                © {new Date().getFullYear()} SaralYojna. {t('footer.copyright')}
+            <Grid item xs={6} md={4}>
+              <Typography variant="subtitle2" fontWeight="700" color="#ffffff" sx={{ mb: 2 }}>
+                Legal & Governance
               </Typography>
+              <Stack spacing={1}>
+                <Typography variant="body2" component={Link} to="/privacy" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>Privacy Policy</Typography>
+                <Typography variant="body2" component={Link} to="/terms" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>Terms of Service</Typography>
+              </Stack>
             </Grid>
           </Grid>
+
+          <Divider sx={{ borderColor: '#1e293b', mb: 3 }} />
+
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+            <Typography variant="caption" sx={{ color: '#64748b' }}>
+              © {new Date().getFullYear()} SaralYojna. All public rights reserved.
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#64748b', textAlign: { xs: 'center', sm: 'right' } }}>
+              Not affiliated with any political party. Scheme details sourced from official gazette notifications.
+            </Typography>
+          </Box>
         </Container>
       </Box>
     </Box>

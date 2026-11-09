@@ -171,7 +171,7 @@ export default function RegisterPage() {
             {t('common.backToHome')}
           </Button>
 
-          <Typography variant="h5" sx={{ fontWeight: 900, background: 'linear-gradient(135deg, #4f46e5, #14b8a6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', mb: 1 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: '#0c2340', mb: 1 }}>
             SaralYojna
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', mb: 0.5 }}>
@@ -186,8 +186,8 @@ export default function RegisterPage() {
             activeStep={activeStep}
             sx={{
               mb: 4,
-              '& .MuiStepIcon-root.Mui-active': { color: '#4f46e5' },
-              '& .MuiStepIcon-root.Mui-completed': { color: '#14b8a6' },
+              '& .MuiStepIcon-root.Mui-active': { color: '#0c2340' },
+              '& .MuiStepIcon-root.Mui-completed': { color: '#047857' },
             }}
           >
             {STEPS.map(label => (
@@ -283,17 +283,17 @@ export default function RegisterPage() {
                   textTransform: 'none',
                   fontWeight: 700,
                   fontSize: '1rem',
-                  borderRadius: '14px',
-                  py: 1.6,
-                  background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                  boxShadow: '0 6px 20px rgba(79,70,229,0.3)',
+                  borderRadius: '6px',
+                  py: 1.5,
+                  background: '#0c2340',
+                  color: '#ffffff',
+                  boxShadow: 'none',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #4338ca, #6d28d9)',
-                    boxShadow: '0 8px 28px rgba(79,70,229,0.4)',
-                    transform: 'translateY(-1px)',
+                    background: '#102a43',
+                    boxShadow: '0 2px 8px rgba(12,35,64,0.15)',
                   },
                   '&:disabled': { opacity: 0.7 },
-                  transition: 'all 0.25s ease',
+                  transition: 'all 0.2s ease',
                 }}
               >
                 {loading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : activeStep === 2 ? t('auth.registerButton') : t('common.continue')}
@@ -305,7 +305,7 @@ export default function RegisterPage() {
 
           <Typography sx={{ textAlign: 'center', color: '#64748b' }}>
             {t('auth.haveAccount')}{' '}
-            <Typography component={Link} to="/login" sx={{ color: '#4f46e5', fontWeight: 600, '&:hover': { textDecoration: 'underline' } }}>
+            <Typography component={Link} to="/login" sx={{ color: '#0c2340', fontWeight: 600, '&:hover': { textDecoration: 'underline' } }}>
               {t('auth.loginButton')}
             </Typography>
           </Typography>

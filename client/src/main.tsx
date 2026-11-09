@@ -19,37 +19,37 @@ const store = configureStore({
   devTools: import.meta.env.DEV,
 });
 
-// Create Premium Theme
+// Create Civic Portal Theme
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#4f46e5',
-      light: '#818cf8',
-      dark: '#3730a3',
+      main: '#0c2340',
+      light: '#1d4ed8',
+      dark: '#081726',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#14b8a6',
-      light: '#5eead4',
-      dark: '#0f766e',
+      main: '#047857',
+      light: '#10b981',
+      dark: '#064e3b',
       contrastText: '#ffffff',
     },
     error: {
-      main: '#ef4444',
+      main: '#dc2626',
     },
     warning: {
-      main: '#f59e0b',
+      main: '#d97706',
     },
     success: {
-      main: '#22c55e',
+      main: '#059669',
     },
     background: {
       default: '#f8fafc',
       paper: '#ffffff',
     },
     text: {
-      primary: '#1e293b',
-      secondary: '#64748b',
+      primary: '#0f172a',
+      secondary: '#475569',
     },
   },
   typography: {
@@ -64,31 +64,35 @@ const theme = createTheme({
     button: { fontWeight: 600 },
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 8,
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
           textTransform: 'none' as const,
-          borderRadius: '12px',
+          borderRadius: '6px',
           fontWeight: 600,
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: '0 2px 4px rgba(12,35,64,0.12)',
+          },
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: '16px',
-          boxShadow: 'none',
-          border: '1px solid #f1f5f9',
+          borderRadius: '8px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+          border: '1px solid #e2e8f0',
         },
       },
     },
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: '8px',
+          borderRadius: '4px',
           fontWeight: 600,
         },
       },
@@ -97,7 +101,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: '12px',
+            borderRadius: '6px',
           },
         },
       },

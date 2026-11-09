@@ -8,6 +8,7 @@
  */
 import { Pinecone } from '@pinecone-database/pinecone';
 import { GoogleGenerativeAI, TaskType } from '@google/generative-ai';
+import { prisma } from '../config/prisma';
 
 // ─── TYPES ────────────────────────────────────────────────────
 
@@ -290,7 +291,7 @@ async function generateGroundedResponse(
     return buildFallbackResponse(schemes);
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
   const prompt = `${SYSTEM_PROMPT}
 

@@ -122386,10 +122386,14 @@ var cacheClear = (prefix) => {
 var router = (0, import_express.Router)();
 router.get("/", async (req, res) => {
   try {
-    const { category, department, state, q } = req.query;
+    const { category, department, state, q, page, limit } = req.query;
     const userId = req.user?.userId;
-    const cacheKey = `schemes:${category || ""}:${department || ""}:${state || ""}`;
-    if (!userId && !q) {
+    const isPaginated = Boolean(page || limit || req.query.paginated === "true");
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(limit, 10) || 12));
+    const skip = (pageNum - 1) * pageSize;
+    const cacheKey = `schemes:${category || ""}:${department || ""}:${state || ""}:${pageNum}:${pageSize}`;
+    if (!userId && !q && isPaginated) {
       const cached2 = cacheGet(cacheKey);
       if (cached2) return res.json(cached2);
     }
@@ -122407,22 +122411,50 @@ router.get("/", async (req, res) => {
         { department: { contains: q, mode: "insensitive" } }
       ];
     }
-    const schemes = await prisma.governmentScheme.findMany({
-      where: whereClause,
-      orderBy: { createdAt: "desc" },
-      include: {
-        eligibilityChecks: {
-          where: { userId },
-          orderBy: { checkedAt: "desc" },
-          take: 1
+    const [total, schemes] = await Promise.all([
+      prisma.governmentScheme.count({ where: whereClause }),
+      prisma.governmentScheme.findMany({
+        where: whereClause,
+        orderBy: { createdAt: "desc" },
+        skip: isPaginated ? skip : void 0,
+        take: isPaginated ? pageSize : void 0,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          category: true,
+          department: true,
+          stateSpecific: true,
+          benefits: true,
+          sourceUrl: true,
+          updatedAt: true,
+          createdAt: true,
+          eligibilityChecks: userId ? {
+            where: { userId },
+            orderBy: { checkedAt: "desc" },
+            take: 1
+          } : false
         }
-      }
-    });
+      })
+    ]);
     const withMeta = schemes.map((s) => ({
       ...s,
       lastUpdated: s.updatedAt,
       isStale: Date.now() - new Date(s.updatedAt).getTime() > 1e3 * 60 * 60 * 24 * 180
     }));
+    if (isPaginated) {
+      const result = {
+        data: withMeta,
+        pagination: {
+          page: pageNum,
+          limit: pageSize,
+          total,
+          totalPages: Math.ceil(total / pageSize)
+        }
+      };
+      if (!userId && !q) cacheSet(cacheKey, result, 60 * 1e3);
+      return res.json(result);
+    }
     if (!userId && !q) cacheSet(cacheKey, withMeta, 60 * 1e3);
     res.json(withMeta);
   } catch (error51) {
@@ -122431,7 +122463,11 @@ router.get("/", async (req, res) => {
 });
 router.get("/search", async (req, res) => {
   try {
-    const { q, category, department, state } = req.query;
+    const { q, category, department, state, page, limit } = req.query;
+    const isPaginated = Boolean(page || limit || req.query.paginated === "true");
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(limit, 10) || 12));
+    const skip = (pageNum - 1) * pageSize;
     const whereClause = { isActive: true };
     if (category) whereClause.category = { contains: category, mode: "insensitive" };
     if (department) whereClause.department = { contains: department, mode: "insensitive" };
@@ -122446,15 +122482,44 @@ router.get("/search", async (req, res) => {
         { department: { contains: q, mode: "insensitive" } }
       ];
     }
-    const schemes = await prisma.governmentScheme.findMany({
-      where: whereClause,
-      orderBy: { createdAt: "desc" }
-    });
-    res.json(schemes.map((s) => ({
+    const [total, schemes] = await Promise.all([
+      prisma.governmentScheme.count({ where: whereClause }),
+      prisma.governmentScheme.findMany({
+        where: whereClause,
+        orderBy: { createdAt: "desc" },
+        skip: isPaginated ? skip : void 0,
+        take: isPaginated ? pageSize : void 0,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          category: true,
+          department: true,
+          stateSpecific: true,
+          benefits: true,
+          sourceUrl: true,
+          updatedAt: true,
+          createdAt: true
+        }
+      })
+    ]);
+    const withMeta = schemes.map((s) => ({
       ...s,
       lastUpdated: s.updatedAt,
       isStale: Date.now() - new Date(s.updatedAt).getTime() > 1e3 * 60 * 60 * 24 * 180
-    })));
+    }));
+    if (isPaginated) {
+      return res.json({
+        data: withMeta,
+        pagination: {
+          page: pageNum,
+          limit: pageSize,
+          total,
+          totalPages: Math.ceil(total / pageSize)
+        }
+      });
+    }
+    res.json(withMeta);
   } catch (error51) {
     res.status(500).json({ error: "Failed to search schemes" });
   }
@@ -140856,7 +140921,7 @@ async function generateGroundedResponse(userQuery, context, schemes) {
   if (!genAI) {
     return buildFallbackResponse(schemes);
   }
-  const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   const prompt = `${SYSTEM_PROMPT}
 
 === CONTEXT (Retrieved from government scheme database) ===
@@ -141116,7 +141181,7 @@ async function generateGeminiExplanation(profile, topResults, schemes) {
       tips: topResults[0]?.recommendations || []
     };
   }
-  const model = genAI2.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
+  const model = genAI2.getGenerativeModel({ model: "gemini-2.5-flash" });
   const schemeSummaries = topResults.slice(0, 3).map((r) => {
     const scheme = schemes.find((s) => s.id === r.schemeId);
     return `- ${r.schemeName} (${r.confidenceScore}% match): ${scheme?.benefits?.substring(0, 200) || "N/A"}`;

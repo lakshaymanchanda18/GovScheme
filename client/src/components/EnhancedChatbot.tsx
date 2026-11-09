@@ -204,19 +204,18 @@ export const EnhancedChatbot: React.FC = () => {
           <Fab 
             onClick={() => setIsMinimized(false)}
             sx={{
-              background: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)',
-              color: 'white', width: 64, height: 64,
-              boxShadow: '0 10px 30px rgba(99, 102, 241, 0.4)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              background: '#0c2340',
+              color: 'white', width: 56, height: 56,
+              boxShadow: '0 4px 16px rgba(12, 35, 64, 0.25)',
+              borderRadius: '8px',
+              transition: 'all 0.2s ease',
               '&:hover': { 
-                transform: 'scale(1.1) rotate(15deg)',
-                background: 'linear-gradient(135deg, #0284c7 0%, #4f46e5 100%)',
-                boxShadow: '0 15px 40px rgba(99, 102, 241, 0.6)'
+                background: '#102a43',
+                transform: 'translateY(-2px)',
               },
-              animation: 'pulse 2s infinite'
             }}
           >
-            <AutoAwesomeIcon fontSize="large" />
+            <AutoAwesomeIcon />
           </Fab>
         </Tooltip>
       </Box>
@@ -365,21 +364,21 @@ function ChatPanel({ onMinimize, fullPage }: ChatPanelProps) {
       {/* Header */}
       <Box sx={{ 
         p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: fullPage ? 'rgba(0,0,0,0.2)' : 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-        borderBottom: fullPage ? '1px solid rgba(255,255,255,0.05)' : 'none',
+        background: '#0c2340',
+        borderBottom: '1px solid #1e293b',
         color: 'white'
       }}>
         <Box display="flex" alignItems="center" gap={1.5}>
-          <Avatar sx={{ background: fullPage ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.2)', color: fullPage ? '#818cf8' : 'white' }}>
-            <AutoAwesomeIcon />
+          <Avatar sx={{ background: '#047857', color: 'white' }}>
+            <AutoAwesomeIcon fontSize="small" />
           </Avatar>
           <Box>
-            <Typography variant="subtitle1" fontWeight="bold" fontFamily="'Outfit', sans-serif">
-              SaralYojna AI
+            <Typography variant="subtitle2" fontWeight="700">
+              SaralYojna Scheme Assistant
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.8, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', animation: 'pulse 2s infinite' }} />
-              RAG-Powered • Pinecone + Gemini
+            <Typography variant="caption" sx={{ opacity: 0.85, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.72rem' }}>
+              <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981' }} />
+              Verified Government Database
             </Typography>
           </Box>
         </Box>
@@ -415,15 +414,12 @@ function ChatPanel({ onMinimize, fullPage }: ChatPanelProps) {
                   <Box>
                     {/* Text bubble */}
                     <Box sx={{ 
-                      p: 2, borderRadius: '20px',
-                      borderTopLeftRadius: msg.isUser ? '20px' : '4px',
-                      borderTopRightRadius: msg.isUser ? '4px' : '20px',
+                      p: 2, borderRadius: '6px',
                       background: msg.isUser 
-                        ? (fullPage ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' : 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)')
+                        ? '#0c2340'
                         : (fullPage ? 'rgba(255,255,255,0.05)' : '#f8fafc'),
-                      color: msg.isUser ? 'white' : (fullPage ? '#e2e8f0' : '#1e293b'),
+                      color: msg.isUser ? '#ffffff' : (fullPage ? '#e2e8f0' : '#0f172a'),
                       border: msg.isUser ? 'none' : (fullPage ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e2e8f0'),
-                      boxShadow: msg.isUser ? '0 8px 20px rgba(79, 70, 229, 0.2)' : 'none'
                     }}>
                       <Typography variant="body1" sx={{ lineHeight: 1.6, whiteSpace: 'pre-wrap', fontSize: '0.9rem' }}>
                         {msg.text}
@@ -550,9 +546,10 @@ function ChatPanel({ onMinimize, fullPage }: ChatPanelProps) {
             onClick={() => handleSend(input)}
             disabled={!input.trim() || isTyping}
             sx={{ 
-              background: input.trim() && !isTyping ? 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' : (fullPage ? 'rgba(255,255,255,0.1)' : '#e2e8f0'),
+              background: input.trim() && !isTyping ? '#0c2340' : (fullPage ? 'rgba(255,255,255,0.1)' : '#e2e8f0'),
               color: input.trim() && !isTyping ? 'white' : (fullPage ? 'rgba(255,255,255,0.3)' : '#94a3b8'),
-              '&:hover': { background: input.trim() && !isTyping ? 'linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)' : 'auto' }
+              borderRadius: '6px',
+              '&:hover': { background: input.trim() && !isTyping ? '#102a43' : 'auto' }
             }}
           >
             <SendIcon fontSize="small" />

@@ -83,7 +83,7 @@ export default function AppLayout() {
   const drawerContent = (
     <Box sx={{ width: 260, pt: 2 }}>
       <Box sx={{ px: 3, pb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6" sx={{ fontWeight: 800, background: 'linear-gradient(135deg, #4f46e5, #14b8a6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+        <Typography variant="h6" sx={{ fontWeight: 800, color: '#0c2340', letterSpacing: '-0.02em' }}>
           SaralYojna
         </Typography>
         <IconButton onClick={() => setDrawerOpen(false)}>
@@ -99,17 +99,17 @@ export default function AppLayout() {
             to={item.path}
             onClick={() => setDrawerOpen(false)}
             sx={{
-              borderRadius: '12px', mb: 0.5, px: 2,
-              backgroundColor: location.pathname === item.path ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-              color: location.pathname === item.path ? '#4f46e5' : 'inherit',
-              '&:hover': { backgroundColor: 'rgba(79, 70, 229, 0.05)' },
+              borderRadius: '6px', mb: 0.5, px: 2,
+              backgroundColor: location.pathname === item.path ? '#f1f5f9' : 'transparent',
+              color: location.pathname === item.path ? '#0c2340' : 'inherit',
+              '&:hover': { backgroundColor: '#f8fafc' },
               transition: 'all 0.2s ease',
             }}
           >
-            <ListItemIcon sx={{ color: location.pathname === item.path ? '#4f46e5' : 'inherit', minWidth: 40 }}>
+            <ListItemIcon sx={{ color: location.pathname === item.path ? '#0c2340' : '#64748b', minWidth: 40 }}>
               {item.icon}
             </ListItemIcon>
-            <ListItemText primary={t(item.labelKey, item.label)} primaryTypographyProps={{ fontWeight: location.pathname === item.path ? 600 : 400, fontSize: '0.95rem' }} />
+            <ListItemText primary={t(item.labelKey, item.label)} primaryTypographyProps={{ fontWeight: location.pathname === item.path ? 700 : 400, fontSize: '0.95rem' }} />
           </ListItem>
         ))}
       </List>
@@ -120,12 +120,12 @@ export default function AppLayout() {
           to="/profile"
           onClick={() => setDrawerOpen(false)}
           sx={{
-            borderRadius: '12px', px: 2,
-            backgroundColor: location.pathname === '/profile' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-            '&:hover': { backgroundColor: 'rgba(79, 70, 229, 0.05)' },
+            borderRadius: '6px', px: 2,
+            backgroundColor: location.pathname === '/profile' ? '#f1f5f9' : 'transparent',
+            '&:hover': { backgroundColor: '#f8fafc' },
           }}
         >
-          <ListItemIcon sx={{ minWidth: 40 }}><AccountCircle /></ListItemIcon>
+          <ListItemIcon sx={{ minWidth: 40, color: '#64748b' }}><AccountCircle /></ListItemIcon>
           <ListItemText primary={t('navigation.profile', 'Profile')} />
         </ListItem>
         <ListItem
@@ -133,22 +133,22 @@ export default function AppLayout() {
           to="/settings"
           onClick={() => setDrawerOpen(false)}
           sx={{
-            borderRadius: '12px', px: 2,
-            backgroundColor: location.pathname === '/settings' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-            '&:hover': { backgroundColor: 'rgba(79, 70, 229, 0.05)' },
+            borderRadius: '6px', px: 2,
+            backgroundColor: location.pathname === '/settings' ? '#f1f5f9' : 'transparent',
+            '&:hover': { backgroundColor: '#f8fafc' },
           }}
         >
-          <ListItemIcon sx={{ minWidth: 40 }}><SettingsIcon /></ListItemIcon>
+          <ListItemIcon sx={{ minWidth: 40, color: '#64748b' }}><SettingsIcon /></ListItemIcon>
           <ListItemText primary={t('navigation.settings', 'Settings')} />
         </ListItem>
         <ListItem
           onClick={handleLogout}
           sx={{
-            borderRadius: '12px', px: 2, cursor: 'pointer',
-            '&:hover': { backgroundColor: 'rgba(239, 68, 68, 0.05)', color: '#ef4444' },
+            borderRadius: '6px', px: 2, cursor: 'pointer',
+            '&:hover': { backgroundColor: 'rgba(239, 68, 68, 0.05)', color: '#dc2626' },
           }}
         >
-          <ListItemIcon sx={{ minWidth: 40 }}><ExitToApp /></ListItemIcon>
+          <ListItemIcon sx={{ minWidth: 40, color: '#dc2626' }}><ExitToApp /></ListItemIcon>
           <ListItemText primary={t('navigation.logout', 'Logout')} />
         </ListItem>
       </List>
@@ -162,15 +162,14 @@ export default function AppLayout() {
         position="sticky"
         elevation={0}
         sx={{
-          background: 'rgba(255,255,255,0.85)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(226,232,240,0.8)',
-          color: '#1e293b',
+          background: '#ffffff',
+          borderBottom: '1px solid #e2e8f0',
+          color: '#0f172a',
         }}
       >
         <Toolbar sx={{ gap: 1 }}>
           {isMobile && (
-            <IconButton edge="start" onClick={() => setDrawerOpen(true)} id="mobile-menu-btn">
+            <IconButton edge="start" onClick={() => setDrawerOpen(true)} id="mobile-menu-btn" sx={{ color: '#0c2340' }}>
               <MenuIcon />
             </IconButton>
           )}
@@ -181,12 +180,12 @@ export default function AppLayout() {
             to="/dashboard"
             sx={{
               fontWeight: 800,
-              background: 'linear-gradient(135deg, #4f46e5, #14b8a6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              color: '#0c2340',
+              textDecoration: 'none',
+              letterSpacing: '-0.02em',
               flexGrow: isMobile ? 1 : 0,
               mr: 4,
-              fontSize: '1.3rem',
+              fontSize: '1.25rem',
             }}
             id="app-logo"
           >
@@ -205,12 +204,12 @@ export default function AppLayout() {
                   id={`nav-${item.path.slice(1)}`}
                   sx={{
                     textTransform: 'none',
-                    fontWeight: location.pathname === item.path ? 600 : 400,
-                    color: location.pathname === item.path ? '#4f46e5' : '#64748b',
-                    backgroundColor: location.pathname === item.path ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-                    borderRadius: '10px',
+                    fontWeight: location.pathname === item.path ? 700 : 500,
+                    color: location.pathname === item.path ? '#0c2340' : '#475569',
+                    backgroundColor: location.pathname === item.path ? '#f1f5f9' : 'transparent',
+                    borderRadius: '6px',
                     px: 2,
-                    '&:hover': { backgroundColor: 'rgba(79, 70, 229, 0.06)', color: '#4f46e5' },
+                    '&:hover': { backgroundColor: '#f8fafc', color: '#0c2340' },
                     transition: 'all 0.2s ease',
                   }}
                 >
@@ -251,7 +250,8 @@ export default function AppLayout() {
               <Avatar
                 sx={{
                   width: 34, height: 34,
-                  background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+                  background: '#0c2340',
+                  color: '#ffffff',
                   fontSize: '0.85rem', fontWeight: 700,
                 }}
               >

@@ -30,10 +30,10 @@ interface RecentScheme {
 }
 
 const QUICK_ACTIONS = [
-  { icon: <MenuBook sx={{ fontSize: 28 }} />, label: 'Browse Schemes', path: '/schemes', gradient: 'linear-gradient(135deg, #4f46e5, #7c3aed)', shadow: 'rgba(79,70,229,0.25)' },
-  { icon: <Search sx={{ fontSize: 28 }} />, label: 'Check Eligibility', path: '/eligibility', gradient: 'linear-gradient(135deg, #0d9488, #14b8a6)', shadow: 'rgba(13,148,136,0.25)' },
-  { icon: <Assignment sx={{ fontSize: 28 }} />, label: 'My Applications', path: '/applications', gradient: 'linear-gradient(135deg, #d97706, #f59e0b)', shadow: 'rgba(217,119,6,0.25)' },
-  { icon: <SmartToy sx={{ fontSize: 28 }} />, label: 'AI Assistant', path: '/chatbot', gradient: 'linear-gradient(135deg, #0891b2, #06b6d4)', shadow: 'rgba(8,145,178,0.25)' },
+  { icon: <MenuBook sx={{ fontSize: 26 }} />, label: 'Browse Schemes', path: '/schemes', bg: '#f1f5f9', color: '#0c2340' },
+  { icon: <Search sx={{ fontSize: 26 }} />, label: 'Check Eligibility', path: '/eligibility', bg: '#f0fdf4', color: '#047857' },
+  { icon: <Assignment sx={{ fontSize: 26 }} />, label: 'My Applications', path: '/applications', bg: '#fffbeb', color: '#b45309' },
+  { icon: <SmartToy sx={{ fontSize: 26 }} />, label: 'Scheme Assistant', path: '/chatbot', bg: '#f0f9ff', color: '#0284c7' },
 ];
 
 const PROFILE_FIELDS: (keyof User)[] = [
@@ -100,10 +100,10 @@ export default function DashboardPage() {
     : 0;
 
   const statCards = [
-    { label: 'Available Schemes', value: stats.totalSchemes, icon: <AccountBalance />, bg: '#eef2ff', color: '#4f46e5' },
+    { label: 'Available Schemes', value: stats.totalSchemes, icon: <AccountBalance />, bg: '#f1f5f9', color: '#0c2340' },
     { label: 'Eligible For You', value: stats.eligibleSchemes, icon: <CheckCircle />, bg: '#dcfce7', color: '#059669' },
     { label: 'Applications', value: stats.totalApplications, icon: <Assignment />, bg: '#fef3c7', color: '#d97706' },
-    { label: 'Approved', value: stats.approvedApplications, icon: <Star />, bg: '#cffafe', color: '#0891b2' },
+    { label: 'Approved', value: stats.approvedApplications, icon: <Star />, bg: '#cffafe', color: '#0284c7' },
   ];
 
   return (
@@ -115,27 +115,20 @@ export default function DashboardPage() {
           sx={{
             mb: 4,
             p: { xs: 3, md: 4 },
-            borderRadius: '24px',
-            background: 'linear-gradient(135deg, #4f46e5, #7c3aed, #4f46e5)',
-            backgroundSize: '200% 200%',
-            animation: 'gradient-shift 8s ease infinite',
+            borderRadius: '8px',
+            background: '#0c2340',
             color: '#fff',
-            position: 'relative',
-            overflow: 'hidden',
+            borderBottom: '4px solid #047857',
           }}
         >
-          <Box sx={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
-          <Box sx={{ position: 'absolute', bottom: -60, right: 100, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
-          <Box sx={{ position: 'relative', zIndex: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 800, mb: 1, letterSpacing: '-0.02em' }}>
-              Welcome back, {firstName}! 👋
-            </Typography>
-            <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.05rem', maxWidth: 500 }}>
-              {stats.eligibleSchemes > 0
-                ? `You're eligible for ${stats.eligibleSchemes} schemes. Explore and apply today!`
-                : 'Complete your profile to discover schemes tailored for you.'}
-            </Typography>
-          </Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, mb: 1, letterSpacing: '-0.02em' }}>
+            Welcome, {firstName}
+          </Typography>
+          <Typography sx={{ color: '#cbd5e1', fontSize: '1rem', maxWidth: 600 }}>
+            {stats.eligibleSchemes > 0
+              ? `You are currently eligible for ${stats.eligibleSchemes} schemes. Review requirements and submit applications online.`
+              : 'Complete your profile to discover welfare schemes tailored for your background.'}
+          </Typography>
         </Box>
 
         {/* ===== STAT CARDS ===== */}
@@ -185,24 +178,23 @@ export default function DashboardPage() {
               {QUICK_ACTIONS.map((action, idx) => (
                 <Grid item xs={6} sm={3} key={idx}>
                   <Card
-                    className="animate-fade-in-up"
                     elevation={0}
                     onClick={() => navigate(action.path)}
                     sx={{
-                      borderRadius: '18px', border: '1px solid #f1f5f9', cursor: 'pointer',
-                      textAlign: 'center', animationDelay: `${300 + idx * 80}ms`,
-                      transition: 'all 0.3s ease',
-                      '&:hover': { transform: 'translateY(-4px)', boxShadow: `0 12px 32px ${action.shadow}`, borderColor: 'transparent' },
+                      borderRadius: '8px', border: '1px solid #e2e8f0', cursor: 'pointer',
+                      textAlign: 'center',
+                      p: 2,
+                      background: '#ffffff',
+                      transition: 'all 0.2s ease',
+                      '&:hover': { transform: 'translateY(-2px)', borderColor: '#0c2340', boxShadow: '0 4px 12px rgba(12,35,64,0.06)' },
                     }}
                   >
-                    <CardContent sx={{ p: 2.5 }}>
-                      <Avatar sx={{ width: 52, height: 52, mx: 'auto', mb: 1.5, background: action.gradient, boxShadow: `0 6px 20px ${action.shadow}` }}>
-                        {action.icon}
-                      </Avatar>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>
-                        {action.label}
-                      </Typography>
-                    </CardContent>
+                    <Box sx={{ width: 48, height: 48, borderRadius: '6px', mx: 'auto', mb: 1.5, background: action.bg, color: action.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {action.icon}
+                    </Box>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#0c2340' }}>
+                      {action.label}
+                    </Typography>
                   </Card>
                 </Grid>
               ))}

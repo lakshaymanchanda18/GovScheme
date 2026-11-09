@@ -179,17 +179,17 @@ export default function LoginPage() {
                 textTransform: 'none',
                 fontWeight: 700,
                 fontSize: '1rem',
-                borderRadius: '14px',
-                py: 1.8,
-                background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                boxShadow: '0 6px 20px rgba(79,70,229,0.3)',
+                borderRadius: '6px',
+                py: 1.5,
+                background: '#0c2340',
+                color: '#ffffff',
+                boxShadow: 'none',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #4338ca, #6d28d9)',
-                  boxShadow: '0 8px 28px rgba(79,70,229,0.4)',
-                  transform: 'translateY(-1px)',
+                  background: '#102a43',
+                  boxShadow: '0 2px 8px rgba(12,35,64,0.15)',
                 },
                 '&:disabled': { opacity: 0.7 },
-                transition: 'all 0.25s ease',
+                transition: 'all 0.2s ease',
               }}
             >
               {loading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : t('auth.loginButton')}
@@ -204,7 +204,7 @@ export default function LoginPage() {
               component={Link}
               to="/register"
               sx={{
-                color: '#4f46e5',
+                color: '#0c2340',
                 fontWeight: 600,
                 '&:hover': { textDecoration: 'underline' },
               }}

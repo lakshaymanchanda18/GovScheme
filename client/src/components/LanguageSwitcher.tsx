@@ -36,31 +36,32 @@ export const LanguageSwitcher: React.FC = () => {
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        endIcon={<ExpandMoreIcon />}
+        endIcon={<ExpandMoreIcon sx={{ fontSize: 18 }} />}
         variant="outlined"
-        color="inherit"
+        size="small"
         sx={{
-          borderRadius: '20px',
+          borderRadius: '6px',
           textTransform: 'none',
           fontWeight: 600,
-          minWidth: 140,
+          borderColor: '#cbd5e1',
+          color: '#0c2340',
+          minWidth: { xs: 'auto', sm: 110 },
+          px: { xs: 1, sm: 1.5 },
+          py: 0.5,
           '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            transform: 'translateY(-1px)',
-            transition: 'all 0.3s ease'
+            borderColor: '#0c2340',
+            backgroundColor: '#f8fafc',
           }
         }}
       >
-        <Box display="flex" alignItems="center" gap={1}>
-          <span style={{ fontSize: '18px' }}>{currentLang.flag}</span>
-          <Box textAlign="left">
-            <Typography variant="body2" fontWeight="600">
-              {currentLang.nativeName}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {currentLang.name}
-            </Typography>
-          </Box>
+        <Box display="flex" alignItems="center" gap={0.75}>
+          <span style={{ fontSize: '16px' }}>{currentLang.flag}</span>
+          <Typography variant="body2" fontWeight="600" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+            {currentLang.nativeName}
+          </Typography>
+          <Typography variant="body2" fontWeight="700" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: '0.8rem' }}>
+            {currentLang.code.toUpperCase()}
+          </Typography>
         </Box>
       </Button>
       <Menu
@@ -72,12 +73,13 @@ export const LanguageSwitcher: React.FC = () => {
           'aria-labelledby': 'language-button',
         }}
         PaperProps={{
-          elevation: 4,
+          elevation: 3,
           sx: {
             mt: 1,
-            borderRadius: '12px',
-            minWidth: 280,
-            maxWidth: 400,
+            borderRadius: '6px',
+            border: '1px solid #e2e8f0',
+            minWidth: 240,
+            maxWidth: 360,
             maxHeight: 400,
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
           }
