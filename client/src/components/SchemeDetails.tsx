@@ -67,7 +67,7 @@ export default function SchemeDetails() {
           onClick={() => navigate('/schemes')}
           sx={{ borderRadius: '6px' }}
         >
-          Back to Schemes Directory
+          {t('schemes.backToDirectory', 'Back to Schemes Directory')}
         </Button>
       </Container>
     );
@@ -79,10 +79,10 @@ export default function SchemeDetails() {
         <Container maxWidth="lg">
           <Breadcrumbs sx={{ mb: 2, color: '#94a3b8' }}>
             <MuiLink component={RouterLink} to="/" sx={{ color: '#cbd5e1', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
-              Home
+              {t('navigation.home', 'Home')}
             </MuiLink>
             <MuiLink component={RouterLink} to="/schemes" sx={{ color: '#cbd5e1', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
-              Schemes
+              {t('navigation.schemes', 'Schemes')}
             </MuiLink>
             <Typography sx={{ color: '#ffffff', fontWeight: 600 }}>{scheme.name}</Typography>
           </Breadcrumbs>
@@ -126,35 +126,35 @@ export default function SchemeDetails() {
               />
               <CardContent sx={{ p: 4 }}>
                 <Typography variant="h6" fontWeight="700" color="#0c2340" sx={{ mb: 1.5 }}>
-                  Scheme Description
+                  {t('schemes.schemeDescription', 'Scheme Description')}
                 </Typography>
                 <Typography variant="body1" color="#334155" sx={{ mb: 4, lineHeight: 1.7 }}>
                   {scheme.description}
                 </Typography>
 
                 <Typography variant="h6" fontWeight="700" color="#0c2340" sx={{ mb: 1.5 }}>
-                  Key Benefits & Provisions
+                  {t('schemes.keyBenefits', 'Key Benefits & Provisions')}
                 </Typography>
                 <Typography variant="body1" color="#334155" sx={{ mb: 4, lineHeight: 1.7, background: '#f8fafc', p: 2.5, borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                   {scheme.benefits || 'No specific benefits tabulated. Refer to official guidelines.'}
                 </Typography>
 
                 <Typography variant="h6" fontWeight="700" color="#0c2340" sx={{ mb: 1.5 }}>
-                  Eligibility Guidelines
+                  {t('schemes.eligibilityGuidelines', 'Eligibility Guidelines')}
                 </Typography>
                 <Typography variant="body1" color="#334155" sx={{ mb: 4, lineHeight: 1.7 }}>
                   {scheme.eligibilityCriteria || 'General citizen eligibility applies. Verify department conditions.'}
                 </Typography>
 
                 <Typography variant="h6" fontWeight="700" color="#0c2340" sx={{ mb: 1.5 }}>
-                  Application Procedure
+                  {t('schemes.applicationProcedure', 'Application Procedure')}
                 </Typography>
                 <Typography variant="body1" color="#334155" sx={{ mb: 4, lineHeight: 1.7 }}>
                   {scheme.applicationProcess || 'Applications are processed online through the respective nodal ministry portal.'}
                 </Typography>
 
                 <Typography variant="h6" fontWeight="700" color="#0c2340" sx={{ mb: 1.5 }}>
-                  Required Documents
+                  {t('schemes.requiredDocuments', 'Required Documents')}
                 </Typography>
                 <Typography variant="body1" color="#334155" sx={{ mb: 4, lineHeight: 1.7, background: '#f8fafc', p: 2.5, borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                   {scheme.requiredDocuments || 'Aadhaar Card, active bank account details, proof of residence, and category certificate.'}
@@ -175,7 +175,7 @@ export default function SchemeDetails() {
                       '&:hover': { background: '#102a43' }
                     }}
                   >
-                    Apply for Scheme
+                    {t('schemes.applyForScheme', 'Apply for Scheme')}
                   </Button>
                   <Button
                     variant="outlined"
@@ -192,7 +192,7 @@ export default function SchemeDetails() {
                       '&:hover': { borderColor: '#0c2340', background: '#f8fafc' }
                     }}
                   >
-                    Check Eligibility
+                    {t('schemes.eligibilityCheck', 'Check Eligibility')}
                   </Button>
                 </Box>
               </CardContent>
@@ -203,49 +203,49 @@ export default function SchemeDetails() {
             <Card elevation={0} sx={{ borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', position: 'sticky', top: 90 }}>
               <CardContent sx={{ p: 3.5 }}>
                 <Typography variant="h6" fontWeight="700" color="#0c2340" sx={{ mb: 3 }}>
-                  Scheme Criteria Summary
+                  {t('schemes.criteriaSummary', 'Scheme Criteria Summary')}
                 </Typography>
 
                 <Box display="flex" justifyContent="space-between" mb={2} alignItems="center">
                   <Typography variant="body2" color="text.secondary" fontWeight="600">
-                    Income Limit:
+                    {t('schemes.incomeLimit', 'Income Limit')}:
                   </Typography>
                   <Typography variant="body2" fontWeight="700" color="#0f172a">
-                    {scheme.incomeLimit ? `₹${Number(scheme.incomeLimit).toLocaleString('en-IN')}` : 'Not restricted'}
+                    {scheme.incomeLimit ? `₹${Number(scheme.incomeLimit).toLocaleString('en-IN')}` : t('schemes.notRestricted', 'Not restricted')}
                   </Typography>
                 </Box>
 
                 <Box display="flex" justifyContent="space-between" mb={2} alignItems="center">
                   <Typography variant="body2" color="text.secondary" fontWeight="600">
-                    Age Limit:
+                    {t('schemes.ageLimit', 'Age Limit')}:
                   </Typography>
                   <Typography variant="body2" fontWeight="700" color="#0f172a">
-                    {scheme.ageLimit || 'All ages'}
+                    {scheme.ageLimit || t('schemes.allAges', 'All ages')}
                   </Typography>
                 </Box>
 
                 <Box display="flex" justifyContent="space-between" mb={2} alignItems="center">
                   <Typography variant="body2" color="text.secondary" fontWeight="600">
-                    Family Size:
+                    {t('schemes.familySize', 'Family Size')}:
                   </Typography>
                   <Typography variant="body2" fontWeight="700" color="#0f172a">
-                    {scheme.familySizeLimit || 'Not restricted'}
+                    {scheme.familySizeLimit || t('schemes.notRestricted', 'Not restricted')}
                   </Typography>
                 </Box>
 
                 <Box display="flex" justifyContent="space-between" mb={2} alignItems="center">
                   <Typography variant="body2" color="text.secondary" fontWeight="600">
-                    State Jurisdiction:
+                    {t('schemes.stateJurisdiction', 'State Jurisdiction')}:
                   </Typography>
                   <Typography variant="body2" fontWeight="700" color="#0f172a">
-                    {scheme.stateSpecific || 'Pan-India'}
+                    {scheme.stateSpecific || t('schemes.panIndia', 'Pan-India')}
                   </Typography>
                 </Box>
 
                 {scheme.sourceUrl && (
                   <Box mt={3} p={2} sx={{ background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                     <Typography variant="caption" color="text.secondary" fontWeight="600" display="block" mb={0.5}>
-                      Official Portal:
+                      {t('schemes.officialPortal', 'Official Portal')}:
                     </Typography>
                     <Link 
                       href={scheme.sourceUrl} 

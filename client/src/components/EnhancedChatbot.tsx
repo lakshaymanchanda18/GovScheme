@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
+import { useI18n } from '../hooks/useI18n';
 import { useNavigate } from 'react-router-dom';
 import SendIcon from '@mui/icons-material/Send';
 import MicIcon from '@mui/icons-material/Mic';
@@ -47,6 +48,7 @@ interface Message {
 // ─── Scheme Card Component ───
 function SchemeCard({ scheme, fullPage }: { scheme: SchemeData; fullPage?: boolean }) {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const bg = fullPage ? 'rgba(255,255,255,0.06)' : '#ffffff';
   const border = fullPage ? '1px solid rgba(255,255,255,0.12)' : '1px solid #e2e8f0';
   const textColor = fullPage ? '#e2e8f0' : '#1e293b';
@@ -55,19 +57,19 @@ function SchemeCard({ scheme, fullPage }: { scheme: SchemeData; fullPage?: boole
   return (
     <Card sx={{
       p: 2, mb: 1.5, background: bg, border,
-      borderRadius: '16px', boxShadow: 'none',
+      borderRadius: '8px', boxShadow: 'none',
       transition: 'all 0.2s ease',
       '&:hover': { 
-        border: fullPage ? '1px solid rgba(99,102,241,0.4)' : '1px solid #a5b4fc',
+        borderColor: '#0c2340',
         transform: 'translateY(-1px)',
-        boxShadow: fullPage ? '0 4px 20px rgba(99,102,241,0.15)' : '0 4px 12px rgba(0,0,0,0.08)'
+        boxShadow: '0 4px 12px rgba(12,35,64,0.08)'
       }
     }}>
       {/* Header: Name + Score */}
       <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
         <Box flex={1} mr={1}>
           <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-            <VerifiedIcon sx={{ fontSize: 16, color: '#4f46e5' }} />
+            <VerifiedIcon sx={{ fontSize: 16, color: '#047857' }} />
             <Typography variant="subtitle2" fontWeight={700} sx={{ color: textColor, lineHeight: 1.3 }}>
               {scheme.schemeName}
             </Typography>
@@ -77,9 +79,9 @@ function SchemeCard({ scheme, fullPage }: { scheme: SchemeData; fullPage?: boole
             size="small" 
             sx={{ 
               height: 20, fontSize: '0.65rem', fontWeight: 600,
-              background: fullPage ? 'rgba(99,102,241,0.2)' : '#eef2ff',
-              color: fullPage ? '#a5b4fc' : '#4f46e5',
-              border: 'none'
+              background: fullPage ? 'rgba(255,255,255,0.1)' : '#f1f5f9',
+              color: fullPage ? '#cbd5e1' : '#0c2340',
+              borderRadius: '4px'
             }} 
           />
         </Box>
@@ -99,10 +101,10 @@ function SchemeCard({ scheme, fullPage }: { scheme: SchemeData; fullPage?: boole
               '& .MuiLinearProgress-bar': { 
                 borderRadius: 2,
                 background: scheme.relevanceScore >= 70 
-                  ? 'linear-gradient(90deg, #10b981, #34d399)'
+                  ? '#047857'
                   : scheme.relevanceScore >= 40
-                  ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
-                  : 'linear-gradient(90deg, #94a3b8, #cbd5e1)'
+                  ? '#f59e0b'
+                  : '#94a3b8'
               }
             }} 
           />
@@ -112,17 +114,18 @@ function SchemeCard({ scheme, fullPage }: { scheme: SchemeData; fullPage?: boole
       {/* Why Relevant */}
       {scheme.whyRelevant && (
         <Typography variant="caption" sx={{ 
-          display: 'block', mb: 1, color: fullPage ? '#a5b4fc' : '#6366f1',
-          fontStyle: 'italic', lineHeight: 1.4
+          display: 'block', mb: 1, color: fullPage ? '#93c5fd' : '#0369a1',
+          background: fullPage ? 'rgba(59,130,246,0.1)' : '#f0f9ff',
+          p: 0.75, borderRadius: '4px', fontStyle: 'italic', fontSize: '0.75rem'
         }}>
-          ★ {scheme.whyRelevant}
+          💡 {scheme.whyRelevant}
         </Typography>
       )}
 
       {/* Benefits */}
       {scheme.benefits && (
         <Box mb={0.5}>
-          <Typography variant="caption" fontWeight={600} sx={{ color: subColor }}>Benefits:</Typography>
+          <Typography variant="caption" fontWeight={600} sx={{ color: subColor }}>{t('common.benefits', 'Benefits')}:</Typography>
           <Typography variant="body2" sx={{ color: textColor, fontSize: '0.8rem', lineHeight: 1.4 }}>
             {scheme.benefits}
           </Typography>
@@ -132,7 +135,7 @@ function SchemeCard({ scheme, fullPage }: { scheme: SchemeData; fullPage?: boole
       {/* Eligibility */}
       {scheme.eligibility && (
         <Box mb={1}>
-          <Typography variant="caption" fontWeight={600} sx={{ color: subColor }}>Eligibility:</Typography>
+          <Typography variant="caption" fontWeight={600} sx={{ color: subColor }}>{t('schemes.eligibilityCheck', 'Eligibility')}:</Typography>
           <Typography variant="body2" sx={{ color: textColor, fontSize: '0.8rem', lineHeight: 1.4 }}>
             {scheme.eligibility}
           </Typography>
@@ -150,13 +153,13 @@ function SchemeCard({ scheme, fullPage }: { scheme: SchemeData; fullPage?: boole
             rel="noreferrer"
             sx={{
               fontSize: '0.7rem', textTransform: 'none', px: 1.5, py: 0.3,
-              borderRadius: '8px',
-              color: fullPage ? '#a5b4fc' : '#4f46e5',
-              border: fullPage ? '1px solid rgba(165,180,252,0.3)' : '1px solid #c7d2fe',
-              '&:hover': { background: fullPage ? 'rgba(99,102,241,0.15)' : '#eef2ff' }
+              borderRadius: '6px',
+              color: fullPage ? '#cbd5e1' : '#0c2340',
+              border: fullPage ? '1px solid rgba(255,255,255,0.2)' : '1px solid #cbd5e1',
+              '&:hover': { background: fullPage ? 'rgba(255,255,255,0.1)' : '#f8fafc' }
             }}
           >
-            Official Source
+            {t('schemes.officialPortal', 'Official Portal')}
           </Button>
         )}
         <Button
@@ -164,13 +167,13 @@ function SchemeCard({ scheme, fullPage }: { scheme: SchemeData; fullPage?: boole
           onClick={() => navigate('/eligibility')}
           sx={{
             fontSize: '0.7rem', textTransform: 'none', px: 1.5, py: 0.3,
-            borderRadius: '8px',
-            background: fullPage ? 'rgba(99,102,241,0.2)' : '#eef2ff',
-            color: fullPage ? '#c7d2fe' : '#4f46e5',
-            '&:hover': { background: fullPage ? 'rgba(99,102,241,0.3)' : '#ddd6fe' }
+            borderRadius: '6px',
+            background: '#047857',
+            color: '#ffffff',
+            '&:hover': { background: '#065f46' }
           }}
         >
-          Check Eligibility
+          {t('schemes.eligibilityCheck', 'Check Eligibility')}
         </Button>
       </Box>
     </Card>
@@ -179,15 +182,16 @@ function SchemeCard({ scheme, fullPage }: { scheme: SchemeData; fullPage?: boole
 
 // ─── No Schemes Found Component ───
 function NoSchemesFound({ fullPage }: { fullPage?: boolean }) {
+  const { t } = useI18n();
   return (
     <Box sx={{
-      p: 2, mt: 1, borderRadius: '16px', textAlign: 'center',
+      p: 2, mt: 1, borderRadius: '8px', textAlign: 'center',
       background: fullPage ? 'rgba(255,255,255,0.04)' : '#fafafa',
       border: fullPage ? '1px solid rgba(255,255,255,0.08)' : '1px solid #f1f5f9'
     }}>
       <SearchOffIcon sx={{ fontSize: 32, color: fullPage ? 'rgba(255,255,255,0.3)' : '#94a3b8', mb: 1 }} />
       <Typography variant="body2" sx={{ color: fullPage ? 'rgba(255,255,255,0.5)' : '#64748b', fontSize: '0.85rem' }}>
-        No matching schemes found. Try describing your situation — age, income, occupation, or state — for better results.
+        {t('schemes.noSchemesSuggestion', 'No matching schemes found. Try describing your situation — age, income, occupation, or state — for better results.')}
       </Typography>
     </Box>
   );
@@ -259,6 +263,7 @@ interface ChatPanelProps {
 function ChatPanel({ onMinimize, fullPage }: ChatPanelProps) {
   const { user } = useAuth();
   const { api } = useApi();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -266,7 +271,7 @@ function ChatPanel({ onMinimize, fullPage }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Hello! I am SaralYojna AI, your government schemes search engine. Ask me about any scheme — describe your situation and I will find real, verified schemes from our database.',
+      text: t('chatbot.greeting', 'Hello! How can I help you today? Ask me about schemes, eligibility, or application process.'),
       isUser: false,
       timestamp: new Date(),
       suggestions: ['Find schemes for farmers', 'Education scholarships', 'Healthcare schemes', 'Housing schemes for low income']
@@ -527,7 +532,7 @@ function ChatPanel({ onMinimize, fullPage }: ChatPanelProps) {
             multiline
             maxRows={4}
             variant="standard"
-            placeholder={isListening ? "Listening..." : "Describe your situation — e.g. 'I am a farmer in UP'"}
+            placeholder={isListening ? t('common.listening', 'Listening...') : t('chatbot.placeholder', 'Ask me about schemes, eligibility, or application process...')}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => {

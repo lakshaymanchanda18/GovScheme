@@ -153,10 +153,10 @@ export default function SchemeList() {
             fontWeight="800" 
             sx={{ mb: 1.5, fontSize: { xs: '1.8rem', md: '2.5rem' }, letterSpacing: '-0.02em' }}
           >
-            Central & State Government Schemes
+            {t('schemes.centralAndState', 'Central & State Government Schemes')}
           </Typography>
           <Typography variant="body1" sx={{ color: '#94a3b8', mb: 4, maxWidth: 600, mx: 'auto' }}>
-            Search verified welfare initiatives, eligibility criteria, and application guidelines across Indian ministries.
+            {t('schemes.heroDescription', 'Search verified welfare initiatives, eligibility criteria, and application guidelines across Indian ministries.')}
           </Typography>
 
           {/* Structured Civic Search Bar */}
@@ -171,7 +171,7 @@ export default function SchemeList() {
             <TextField
               fullWidth
               variant="standard"
-              placeholder="Search by scheme name, keywords, or department..."
+              placeholder={t('schemes.searchPlaceholderLong', 'Search by scheme name, keywords, or department...')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               InputProps={{
@@ -186,7 +186,7 @@ export default function SchemeList() {
                 onClick={() => { setQuery(''); fetchSchemes({ q: '', page: 1 }); }}
                 sx={{ color: '#64748b', textTransform: 'none', px: 2 }}
               >
-                Clear
+                {t('common.clear', 'Clear')}
               </Button>
             )}
           </Box>
@@ -210,38 +210,38 @@ export default function SchemeList() {
           <Box display="flex" alignItems="center" gap={1}>
             <FilterListIcon sx={{ color: '#0c2340' }} />
             <Typography variant="subtitle2" fontWeight="700" color="#0c2340">
-              Filters
+              {t('schemes.filters', 'Filters')}
             </Typography>
           </Box>
 
           <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel>Category</InputLabel>
+            <InputLabel>{t('common.category', 'Category')}</InputLabel>
             <Select 
               value={category} 
-              label="Category" 
+              label={t('common.category', 'Category')} 
               onChange={(e) => { 
                 setCategory(e.target.value); 
                 setPage(1); 
                 fetchSchemes({ category: e.target.value, page: 1 }); 
               }}
             >
-              <MenuItem value=""><em>All Categories</em></MenuItem>
+              <MenuItem value=""><em>{t('schemes.allCategories', 'All Categories')}</em></MenuItem>
               {categories.map((c) => <MenuItem key={c} value={c}>{c}</MenuItem>)}
             </Select>
           </FormControl>
 
           <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel>Department</InputLabel>
+            <InputLabel>{t('common.department', 'Department')}</InputLabel>
             <Select 
               value={department} 
-              label="Department" 
+              label={t('common.department', 'Department')} 
               onChange={(e) => { 
                 setDepartment(e.target.value); 
                 setPage(1); 
                 fetchSchemes({ department: e.target.value, page: 1 }); 
               }}
             >
-              <MenuItem value=""><em>All Departments</em></MenuItem>
+              <MenuItem value=""><em>{t('schemes.allDepartments', 'All Departments')}</em></MenuItem>
               {departments.map((d) => <MenuItem key={d} value={d}>{d}</MenuItem>)}
             </Select>
           </FormControl>
@@ -257,7 +257,7 @@ export default function SchemeList() {
               }}
               sx={{ color: '#dc2626', textTransform: 'none' }}
             >
-              Reset Filters
+              {t('schemes.resetFilters', 'Reset Filters')}
             </Button>
           )}
 
@@ -267,28 +267,28 @@ export default function SchemeList() {
           <Box display="flex" gap={1} flexWrap="wrap">
             <Chip 
               icon={<SchoolIcon fontSize="small"/>} 
-              label="Education" 
+              label={t('landing.catEdu', 'Education')} 
               clickable 
               onClick={() => { setCategory('Education'); setPage(1); fetchSchemes({ category: 'Education', page: 1 }); }}
               sx={{ borderRadius: '4px', backgroundColor: category === 'Education' ? '#e2e8f0' : undefined }}
             />
             <Chip 
               icon={<NaturePeopleIcon fontSize="small"/>} 
-              label="Agriculture" 
+              label={t('landing.catAgri', 'Agriculture')} 
               clickable 
               onClick={() => { setCategory('Agriculture'); setPage(1); fetchSchemes({ category: 'Agriculture', page: 1 }); }}
               sx={{ borderRadius: '4px', backgroundColor: category === 'Agriculture' ? '#e2e8f0' : undefined }}
             />
             <Chip 
               icon={<HealthAndSafetyIcon fontSize="small"/>} 
-              label="Healthcare" 
+              label={t('landing.catHealth', 'Healthcare')} 
               clickable 
               onClick={() => { setCategory('Healthcare'); setPage(1); fetchSchemes({ category: 'Healthcare', page: 1 }); }}
               sx={{ borderRadius: '4px', backgroundColor: category === 'Healthcare' ? '#e2e8f0' : undefined }}
             />
             <Chip 
               icon={<AccountBalanceIcon fontSize="small"/>} 
-              label="Finance" 
+              label={t('landing.catFinance', 'Finance')} 
               clickable 
               onClick={() => { setCategory('Financial Inclusion'); setPage(1); fetchSchemes({ category: 'Financial Inclusion', page: 1 }); }}
               sx={{ borderRadius: '4px', backgroundColor: category === 'Financial Inclusion' ? '#e2e8f0' : undefined }}
@@ -298,14 +298,14 @@ export default function SchemeList() {
 
         {error && (
           <Alert severity="error" sx={{ mb: 4, borderRadius: '6px' }}>
-            {error} <Button size="small" onClick={() => fetchSchemes()}>Retry</Button>
+            {error} <Button size="small" onClick={() => fetchSchemes()}>{t('common.retry', 'Retry')}</Button>
           </Alert>
         )}
 
         {/* Total results count */}
         {!loading && (
           <Typography variant="body2" sx={{ color: '#64748b', mb: 2, fontWeight: 500 }}>
-            Showing {schemes.length} of {totalCount} schemes {category ? `in ${category}` : ''}
+            {t('schemes.showingCount', { shown: schemes.length, total: totalCount, defaultValue: `Showing ${schemes.length} of ${totalCount} schemes` })} {category ? `in ${category}` : ''}
           </Typography>
         )}
 
@@ -315,17 +315,17 @@ export default function SchemeList() {
         ) : schemes.length === 0 ? (
           <Box textAlign="center" py={8} sx={{ background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
             <Typography variant="h6" color="#0c2340" fontWeight="600" sx={{ mb: 1 }}>
-              No schemes found matching your criteria.
+              {t('schemes.noSchemesFound', 'No schemes found matching your criteria.')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Try adjusting your search terms or clearing selected category filters.
+              {t('schemes.noSchemesSuggestion', 'Try adjusting your search terms or clearing selected category filters.')}
             </Typography>
             <Button 
               variant="outlined" 
               size="small"
               onClick={() => { setQuery(''); setCategory(''); setDepartment(''); fetchSchemes({ q: '', category: '', department: '', page: 1 }); }}
             >
-              Reset All Filters
+              {t('schemes.resetAllFilters', 'Reset All Filters')}
             </Button>
           </Box>
         ) : (
@@ -415,9 +415,9 @@ export default function SchemeList() {
                           '&:hover': { borderColor: '#0c2340', background: '#f8fafc' } 
                         }}
                       >
-                        View Details
+                        {t('schemes.viewDetails', 'View Details')}
                       </Button>
-                      <Tooltip title="Check Eligibility">
+                      <Tooltip title={t('schemes.eligibilityCheck', 'Check Eligibility')}>
                         <Button
                           variant="contained"
                           size="medium"

@@ -11,6 +11,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useI18n } from '../hooks/useI18n';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 const STATES = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
@@ -53,9 +54,9 @@ export default function RegisterPage() {
   const inputSx = {
     mb: 2.5,
     '& .MuiOutlinedInput-root': {
-      borderRadius: '12px',
-      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#a5b4fc' },
-      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#4f46e5' },
+      borderRadius: '6px',
+      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#cbd5e1' },
+      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#0c2340' },
     },
   };
 
@@ -67,11 +68,11 @@ export default function RegisterPage() {
       }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email.trim())) {
-        setError('Please enter a valid email address');
+        setError(t('auth.invalidEmail', 'Please enter a valid email address'));
         return false;
       }
       if (formData.password.length < 8) {
-        setError('Password must be at least 8 characters');
+        setError(t('auth.passwordMinLength', 'Password must be at least 8 characters'));
         return false;
       }
       if (!/[A-Z]/.test(formData.password)) {
@@ -142,36 +143,36 @@ export default function RegisterPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(160deg, #f8fafc 0%, #eef2ff 40%, #f0fdfa 70%, #f8fafc 100%)',
+        background: '#f8fafc',
         position: 'relative',
-        overflow: 'hidden',
         py: 4,
       }}
     >
-      <Box sx={{ position: 'absolute', top: -120, right: -120, width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)' }} />
-      <Box sx={{ position: 'absolute', bottom: -100, left: -100, width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(20,184,166,0.06) 0%, transparent 70%)' }} />
+      <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+        <LanguageSwitcher />
+      </Box>
 
       <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
         <Box
           className="animate-fade-in-up"
           sx={{
-            background: '#fff',
-            borderRadius: '24px',
-            boxShadow: '0 20px 60px rgba(79,70,229,0.08)',
-            border: '1px solid rgba(226,232,240,0.6)',
-            p: { xs: 4, md: 5 },
+            background: '#ffffff',
+            borderRadius: '8px',
+            boxShadow: '0 4px 16px rgba(12, 35, 64, 0.08)',
+            border: '1px solid #cbd5e1',
+            p: { xs: 3.5, md: 5 },
           }}
         >
           <Button
             component={Link}
             to="/"
             startIcon={<ArrowBack />}
-            sx={{ textTransform: 'none', color: '#64748b', fontWeight: 500, mb: 3, '&:hover': { backgroundColor: 'rgba(79,70,229,0.04)' } }}
+            sx={{ textTransform: 'none', color: '#64748b', fontWeight: 500, mb: 3, '&:hover': { backgroundColor: '#f1f5f9', color: '#0c2340' } }}
           >
             {t('common.backToHome')}
           </Button>
 
-          <Typography variant="h5" sx={{ fontWeight: 800, color: '#0c2340', mb: 1 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: '#0c2340', mb: 0.5 }}>
             SaralYojna
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', mb: 0.5 }}>
@@ -198,7 +199,7 @@ export default function RegisterPage() {
           </Stepper>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }} onClose={() => setError('')}>
+            <Alert severity="error" sx={{ mb: 3, borderRadius: '6px' }} onClose={() => setError('')}>
               {error}
             </Alert>
           )}
@@ -260,11 +261,11 @@ export default function RegisterPage() {
                     flex: 1,
                     textTransform: 'none',
                     fontWeight: 600,
-                    borderRadius: '14px',
-                    py: 1.6,
-                    borderColor: '#e2e8f0',
-                    color: '#334155',
-                    '&:hover': { borderColor: '#94a3b8' },
+                    borderRadius: '6px',
+                    py: 1.5,
+                    borderColor: '#cbd5e1',
+                    color: '#0c2340',
+                    '&:hover': { borderColor: '#0c2340', background: '#f8fafc' },
                   }}
                 >
                   {t('common.back')}
@@ -290,7 +291,6 @@ export default function RegisterPage() {
                   boxShadow: 'none',
                   '&:hover': {
                     background: '#102a43',
-                    boxShadow: '0 2px 8px rgba(12,35,64,0.15)',
                   },
                   '&:disabled': { opacity: 0.7 },
                   transition: 'all 0.2s ease',

@@ -7,6 +7,7 @@ import {
 import { Visibility, VisibilityOff, Email, Lock, ArrowBack } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useI18n } from '../hooks/useI18n';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -47,24 +48,24 @@ export default function LoginPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(160deg, #f8fafc 0%, #eef2ff 40%, #f0fdfa 70%, #f8fafc 100%)',
+        background: '#f8fafc',
         position: 'relative',
-        overflow: 'hidden',
+        py: 4,
       }}
     >
-      {/* Background Shapes */}
-      <Box sx={{ position: 'absolute', top: -120, left: -120, width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)' }} />
-      <Box sx={{ position: 'absolute', bottom: -100, right: -100, width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(20,184,166,0.06) 0%, transparent 70%)' }} />
+      <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+        <LanguageSwitcher />
+      </Box>
 
       <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
         <Box
           className="animate-fade-in-up"
           sx={{
-            background: '#fff',
-            borderRadius: '24px',
-            boxShadow: '0 20px 60px rgba(79,70,229,0.08)',
-            border: '1px solid rgba(226,232,240,0.6)',
-            p: { xs: 4, md: 5 },
+            background: '#ffffff',
+            borderRadius: '8px',
+            boxShadow: '0 4px 16px rgba(12, 35, 64, 0.08)',
+            border: '1px solid #cbd5e1',
+            p: { xs: 3.5, md: 5 },
           }}
         >
           {/* Back to Home */}
@@ -77,7 +78,7 @@ export default function LoginPage() {
               color: '#64748b',
               fontWeight: 500,
               mb: 3,
-              '&:hover': { backgroundColor: 'rgba(79,70,229,0.04)' },
+              '&:hover': { backgroundColor: '#f1f5f9', color: '#0c2340' },
             }}
           >
             {t('common.backToHome')}
@@ -87,11 +88,9 @@ export default function LoginPage() {
           <Typography
             variant="h5"
             sx={{
-              fontWeight: 900,
-              background: 'linear-gradient(135deg, #4f46e5, #14b8a6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              mb: 1,
+              fontWeight: 800,
+              color: '#0c2340',
+              mb: 0.5,
             }}
           >
             SaralYojna
@@ -99,14 +98,14 @@ export default function LoginPage() {
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', mb: 0.5 }}>
             {t('auth.welcomeBack')}
           </Typography>
-          <Typography sx={{ color: '#64748b', mb: 4 }}>
+          <Typography sx={{ color: '#64748b', mb: 3 }}>
             {t('auth.loginSubtitle')}
           </Typography>
 
           {error && (
             <Alert
               severity="error"
-              sx={{ mb: 3, borderRadius: '12px' }}
+              sx={{ mb: 3, borderRadius: '6px' }}
               onClose={() => setError('')}
             >
               {error}
@@ -124,9 +123,9 @@ export default function LoginPage() {
               sx={{
                 mb: 2.5,
                 '& .MuiOutlinedInput-root': {
-                  borderRadius: '12px',
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#a5b4fc' },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#4f46e5' },
+                  borderRadius: '6px',
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#cbd5e1' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#0c2340' },
                 },
               }}
               InputProps={{
@@ -147,9 +146,9 @@ export default function LoginPage() {
               sx={{
                 mb: 3,
                 '& .MuiOutlinedInput-root': {
-                  borderRadius: '12px',
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#a5b4fc' },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#4f46e5' },
+                  borderRadius: '6px',
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#cbd5e1' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#0c2340' },
                 },
               }}
               InputProps={{
@@ -186,7 +185,6 @@ export default function LoginPage() {
                 boxShadow: 'none',
                 '&:hover': {
                   background: '#102a43',
-                  boxShadow: '0 2px 8px rgba(12,35,64,0.15)',
                 },
                 '&:disabled': { opacity: 0.7 },
                 transition: 'all 0.2s ease',

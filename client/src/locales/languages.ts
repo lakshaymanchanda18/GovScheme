@@ -11,7 +11,7 @@ export const SUPPORTED_LANGUAGES: LanguageConfig[] = [
     code: 'en',
     name: 'English',
     nativeName: 'English',
-    flag: '🇺🇸'
+    flag: '🌐'
   },
   {
     code: 'hi',
@@ -23,13 +23,13 @@ export const SUPPORTED_LANGUAGES: LanguageConfig[] = [
     code: 'bn',
     name: 'Bengali',
     nativeName: 'বাংলা',
-    flag: '🇧🇩'
+    flag: '🇮🇳'
   },
   {
     code: 'ta',
     name: 'Tamil',
     nativeName: 'தமிழ்',
-    flag: '🇱🇰'
+    flag: '🇮🇳'
   },
   {
     code: 'te',
@@ -71,7 +71,7 @@ export const SUPPORTED_LANGUAGES: LanguageConfig[] = [
     code: 'ur',
     name: 'Urdu',
     nativeName: 'اردو',
-    flag: '🇵🇰',
+    flag: '🇮🇳',
     rtl: true
   },
   {

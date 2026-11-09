@@ -1,7 +1,7 @@
 import React from 'react';
-import { Box, Button, Menu, MenuItem, Typography, Chip, Grid, Divider } from '@mui/material';
+import { Box, Button, Menu, MenuItem, Typography, Chip, Divider } from '@mui/material';
 import { useI18n } from '../hooks/useI18n';
-import { Language as LanguageIcon, ExpandMore as ExpandMoreIcon, Check as CheckIcon } from '@mui/icons-material';
+import { ExpandMore as ExpandMoreIcon, Check as CheckIcon } from '@mui/icons-material';
 import { SUPPORTED_LANGUAGES } from '../locales/languages';
 
 export const LanguageSwitcher: React.FC = () => {
@@ -55,7 +55,7 @@ export const LanguageSwitcher: React.FC = () => {
         }}
       >
         <Box display="flex" alignItems="center" gap={0.75}>
-          <span style={{ fontSize: '16px' }}>{currentLang.flag}</span>
+          <span style={{ fontSize: '15px' }}>{currentLang.flag}</span>
           <Typography variant="body2" fontWeight="600" sx={{ display: { xs: 'none', sm: 'inline' } }}>
             {currentLang.nativeName}
           </Typography>
@@ -73,74 +73,81 @@ export const LanguageSwitcher: React.FC = () => {
           'aria-labelledby': 'language-button',
         }}
         PaperProps={{
-          elevation: 3,
+          elevation: 4,
           sx: {
             mt: 1,
-            borderRadius: '6px',
+            borderRadius: '8px',
             border: '1px solid #e2e8f0',
-            minWidth: 240,
-            maxWidth: 360,
-            maxHeight: 400,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            minWidth: 260,
+            maxWidth: 340,
+            maxHeight: 460,
+            overflowY: 'auto',
+            boxShadow: '0 10px 30px rgba(12, 35, 64, 0.12)'
           }
         }}
       >
-        <Box p={2}>
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+        <Box p={1.5}>
+          <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', px: 1, display: 'block', mb: 1 }}>
             {t('language.switcher.title', 'Select Language')}
           </Typography>
           
-          <Grid container spacing={1}>
-            {SUPPORTED_LANGUAGES.map((language) => (
-              <Grid item xs={12} key={language.code}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            {SUPPORTED_LANGUAGES.map((language) => {
+              const isSelected = currentLanguage === language.code;
+              return (
                 <MenuItem
+                  key={language.code}
                   onClick={() => handleLanguageChange(language.code)}
-                  selected={currentLanguage === language.code}
+                  selected={isSelected}
                   sx={{
-                    borderRadius: '8px',
-                    py: 1.5,
-                    px: 2,
-                    '&.Mui-selected': {
-                      backgroundColor: 'primary.light',
-                      color: 'primary.contrastText',
-                      fontWeight: 600
-                    },
+                    borderRadius: '6px',
+                    py: 1,
+                    px: 1.5,
+                    backgroundColor: isSelected ? '#f1f5f9 !important' : 'transparent',
+                    color: isSelected ? '#0c2340' : 'inherit',
                     '&:hover': {
-                      backgroundColor: 'action.hover'
+                      backgroundColor: '#f8fafc'
                     }
                   }}
                 >
                   <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <span style={{ fontSize: '20px' }}>{language.flag}</span>
+                    <Box display="flex" alignItems="center" gap={1.5}>
+                      <span style={{ fontSize: '18px' }}>{language.flag}</span>
                       <Box>
-                        <Typography variant="subtitle2" fontWeight="600">
+                        <Typography variant="body2" fontWeight={isSelected ? 700 : 500} color={isSelected ? '#0c2340' : '#1e293b'}>
                           {language.nativeName}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="caption" color="#64748b" sx={{ fontSize: '0.72rem' }}>
                           {language.name}
                         </Typography>
                       </Box>
                     </Box>
-                    {currentLanguage === language.code && (
-                      <CheckIcon color="primary" />
+                    {isSelected && (
+                      <CheckIcon sx={{ fontSize: 18, color: '#047857' }} />
                     )}
                   </Box>
                 </MenuItem>
-              </Grid>
-            ))}
-          </Grid>
+              );
+            })}
+          </Box>
           
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 1.5 }} />
           
-          <Box display="flex" alignItems="center" gap={1} justifyContent="space-between">
-            <Typography variant="caption" color="text.secondary">
+          <Box display="flex" alignItems="center" gap={1} justifyContent="space-between" px={1}>
+            <Typography variant="caption" color="#64748b">
               {t('language.switcher.total', 'Total Languages')}: {SUPPORTED_LANGUAGES.length}
             </Typography>
             <Chip 
               label={t('language.switcher.india', 'Made for India')} 
               size="small" 
-              color="success" 
+              sx={{ 
+                height: 20, 
+                fontSize: '0.7rem', 
+                fontWeight: 600,
+                color: '#047857',
+                borderColor: '#a7f3d0',
+                backgroundColor: '#ecfdf5'
+              }}
               variant="outlined"
             />
           </Box>

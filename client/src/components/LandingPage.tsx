@@ -6,7 +6,7 @@ import {
   ListItemIcon, Divider, useMediaQuery, useTheme
 } from '@mui/material';
 import {
-  Search, Assignment, VerifiedUser, Translate, Security,
+  Search, Assignment, VerifiedUser,
   ArrowForward, Menu as MenuIcon, Close as CloseIcon,
   School, HealthAndSafety, NaturePeople, AccountBalance,
   HomeWork, WorkOutline, CheckCircle
@@ -25,38 +25,38 @@ export default function LandingPage() {
 
   const CATEGORIES = [
     {
-      name: 'Agriculture & Farmers',
-      description: 'Income support, crop insurance, irrigation, and agricultural credit schemes.',
+      name: t('landing.catAgri', 'Agriculture & Farmers'),
+      description: t('landing.catAgriDesc', 'Income support, crop insurance, irrigation, and agricultural credit schemes.'),
       icon: <NaturePeople sx={{ fontSize: 28, color: '#047857' }} />,
       category: 'Agriculture',
     },
     {
-      name: 'Health & Medical Care',
-      description: 'Comprehensive health coverage, diagnostic support, and maternity assistance.',
+      name: t('landing.catHealth', 'Health & Medical Care'),
+      description: t('landing.catHealthDesc', 'Comprehensive health coverage, diagnostic support, and maternity assistance.'),
       icon: <HealthAndSafety sx={{ fontSize: 28, color: '#0284c7' }} />,
       category: 'Healthcare',
     },
     {
-      name: 'Education & Scholarships',
-      description: 'Pre-matric and post-matric scholarships, skill training, and higher education fellowships.',
+      name: t('landing.catEdu', 'Education & Scholarships'),
+      description: t('landing.catEduDesc', 'Pre-matric and post-matric scholarships, skill training, and higher education fellowships.'),
       icon: <School sx={{ fontSize: 28, color: '#b45309' }} />,
       category: 'Education',
     },
     {
-      name: 'Financial Inclusion & Credit',
-      description: 'Micro-loans, zero-balance banking, subsidized insurance, and pension accounts.',
+      name: t('landing.catFinance', 'Financial Inclusion & Credit'),
+      description: t('landing.catFinanceDesc', 'Micro-loans, zero-balance banking, subsidized insurance, and pension accounts.'),
       icon: <AccountBalance sx={{ fontSize: 28, color: '#0c2340' }} />,
       category: 'Financial Inclusion',
     },
     {
-      name: 'Housing & Rural Amenities',
-      description: 'Affordable pucca housing grants, clean tap water connections, and sanitation facilities.',
+      name: t('landing.catHousing', 'Housing & Rural Amenities'),
+      description: t('landing.catHousingDesc', 'Affordable pucca housing grants, clean tap water connections, and sanitation facilities.'),
       icon: <HomeWork sx={{ fontSize: 28, color: '#475569' }} />,
       category: 'Housing',
     },
     {
-      name: 'Employment & Livelihood',
-      description: 'Guaranteed rural wage employment, self-help groups, and startup incubation grants.',
+      name: t('landing.catEmployment', 'Employment & Livelihood'),
+      description: t('landing.catEmploymentDesc', 'Guaranteed rural wage employment, self-help groups, and startup incubation grants.'),
       icon: <WorkOutline sx={{ fontSize: 28, color: '#0f766e' }} />,
       category: 'Employment',
     },
@@ -65,18 +65,18 @@ export default function LandingPage() {
   const STEPS = [
     {
       num: '01',
-      title: 'Find Schemes',
-      description: 'Browse central and state initiatives organized by your occupation, age, and state.',
+      title: t('landing.step1Title', 'Find Schemes'),
+      description: t('landing.step1Desc', 'Browse central and state initiatives organized by your occupation, age, and state.'),
     },
     {
       num: '02',
-      title: 'Check Eligibility',
-      description: 'Review transparent criteria including income limits, required documents, and family quotas.',
+      title: t('landing.step2Title', 'Check Eligibility'),
+      description: t('landing.step2Desc', 'Review transparent criteria including income limits, required documents, and family quotas.'),
     },
     {
       num: '03',
-      title: 'Apply Directly',
-      description: 'Access official nodal portals with step-by-step guidance and document checklists.',
+      title: t('landing.step3Title', 'Apply Directly'),
+      description: t('landing.step3Desc', 'Access official nodal portals with step-by-step guidance and document checklists.'),
     },
   ];
 
@@ -86,7 +86,7 @@ export default function LandingPage() {
       <Box sx={{ background: '#081726', color: '#94a3b8', py: 0.75, px: 2, fontSize: '0.78rem', textAlign: 'center', borderBottom: '1px solid #1e293b' }}>
         <Container maxWidth="lg">
           <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 500 }}>
-            Official Citizen Facilitation Portal for Central & State Welfare Schemes · Free Public Access
+            {t('landing.officialAnnouncement', 'Official Citizen Facilitation Portal for Central & State Welfare Schemes · Free Public Access')}
           </Typography>
         </Container>
       </Box>
@@ -144,21 +144,21 @@ export default function LandingPage() {
               to="/schemes"
               sx={{ color: '#334155', textTransform: 'none', fontWeight: 500, px: 1.5, '&:hover': { color: '#0c2340', background: '#f1f5f9' } }}
             >
-              All Schemes
+              {t('navigation.schemes', 'All Schemes')}
             </Button>
             <Button
               component={Link}
               to="/eligibility"
               sx={{ color: '#334155', textTransform: 'none', fontWeight: 500, px: 1.5, '&:hover': { color: '#0c2340', background: '#f1f5f9' } }}
             >
-              Check Eligibility
+              {t('navigation.eligibility', 'Check Eligibility')}
             </Button>
             <Button
               component={Link}
               to="/chatbot"
               sx={{ color: '#334155', textTransform: 'none', fontWeight: 500, px: 1.5, '&:hover': { color: '#0c2340', background: '#f1f5f9' } }}
             >
-              Scheme Assistant
+              {t('navigation.chatbot', 'Scheme Assistant')}
             </Button>
           </Stack>
 
@@ -176,7 +176,7 @@ export default function LandingPage() {
                   size="small"
                   sx={{ textTransform: 'none', background: '#0c2340', color: '#fff', borderRadius: '6px', px: 2 }}
                 >
-                  Dashboard
+                  {t('navigation.dashboard', 'Dashboard')}
                 </Button>
                 <Button
                   onClick={() => { logout(); navigate('/'); }}
@@ -184,7 +184,7 @@ export default function LandingPage() {
                   size="small"
                   sx={{ textTransform: 'none', color: '#dc2626', borderColor: '#fca5a5', borderRadius: '6px' }}
                 >
-                  Logout
+                  {t('navigation.logout', 'Logout')}
                 </Button>
               </Box>
             ) : (
@@ -195,7 +195,7 @@ export default function LandingPage() {
                   size="small"
                   sx={{ textTransform: 'none', color: '#0c2340', fontWeight: 600, px: 2 }}
                 >
-                  Sign In
+                  {t('auth.loginTitle', 'Sign In')}
                 </Button>
                 <Button
                   component={Link}
@@ -212,7 +212,7 @@ export default function LandingPage() {
                     '&:hover': { background: '#102a43' },
                   }}
                 >
-                  Create Account
+                  {t('auth.registerTitle', 'Create Account')}
                 </Button>
               </Box>
             )}
@@ -250,24 +250,24 @@ export default function LandingPage() {
         <List sx={{ pt: 2, flexGrow: 1 }}>
           <ListItem button component={Link} to="/schemes" onClick={() => setMobileMenuOpen(false)} sx={{ borderRadius: '6px', mb: 0.5 }}>
             <ListItemIcon sx={{ minWidth: 36, color: '#0c2340' }}><Search fontSize="small" /></ListItemIcon>
-            <ListItemText primary="All Schemes" primaryTypographyProps={{ fontWeight: 600, color: '#0c2340' }} />
+            <ListItemText primary={t('navigation.schemes', 'All Schemes')} primaryTypographyProps={{ fontWeight: 600, color: '#0c2340' }} />
           </ListItem>
           <ListItem button component={Link} to="/eligibility" onClick={() => setMobileMenuOpen(false)} sx={{ borderRadius: '6px', mb: 0.5 }}>
             <ListItemIcon sx={{ minWidth: 36, color: '#047857' }}><VerifiedUser fontSize="small" /></ListItemIcon>
-            <ListItemText primary="Check Eligibility" primaryTypographyProps={{ fontWeight: 600, color: '#0c2340' }} />
+            <ListItemText primary={t('navigation.eligibility', 'Check Eligibility')} primaryTypographyProps={{ fontWeight: 600, color: '#0c2340' }} />
           </ListItem>
           <ListItem button component={Link} to="/chatbot" onClick={() => setMobileMenuOpen(false)} sx={{ borderRadius: '6px', mb: 0.5 }}>
             <ListItemIcon sx={{ minWidth: 36, color: '#0284c7' }}><Assignment fontSize="small" /></ListItemIcon>
-            <ListItemText primary="Scheme Assistant" primaryTypographyProps={{ fontWeight: 600, color: '#0c2340' }} />
+            <ListItemText primary={t('navigation.chatbot', 'Scheme Assistant')} primaryTypographyProps={{ fontWeight: 600, color: '#0c2340' }} />
           </ListItem>
           
           <Divider sx={{ my: 2 }} />
 
           <ListItem button component={Link} to="/privacy" onClick={() => setMobileMenuOpen(false)} sx={{ borderRadius: '6px' }}>
-            <ListItemText primary="Privacy Policy" primaryTypographyProps={{ fontSize: '0.9rem', color: '#475569' }} />
+            <ListItemText primary={t('footer.privacy', 'Privacy Policy')} primaryTypographyProps={{ fontSize: '0.9rem', color: '#475569' }} />
           </ListItem>
           <ListItem button component={Link} to="/terms" onClick={() => setMobileMenuOpen(false)} sx={{ borderRadius: '6px' }}>
-            <ListItemText primary="Terms of Service" primaryTypographyProps={{ fontSize: '0.9rem', color: '#475569' }} />
+            <ListItemText primary={t('footer.terms', 'Terms of Service')} primaryTypographyProps={{ fontSize: '0.9rem', color: '#475569' }} />
           </ListItem>
         </List>
 
@@ -282,7 +282,7 @@ export default function LandingPage() {
                 onClick={() => setMobileMenuOpen(false)}
                 sx={{ textTransform: 'none', background: '#0c2340', borderRadius: '6px' }}
               >
-                Go to Dashboard
+                {t('navigation.dashboard', 'Dashboard')}
               </Button>
               <Button
                 fullWidth
@@ -290,7 +290,7 @@ export default function LandingPage() {
                 onClick={() => { logout(); setMobileMenuOpen(false); navigate('/'); }}
                 sx={{ textTransform: 'none', color: '#dc2626', borderColor: '#fca5a5', borderRadius: '6px' }}
               >
-                Logout
+                {t('navigation.logout', 'Logout')}
               </Button>
             </Stack>
           ) : (
@@ -303,7 +303,7 @@ export default function LandingPage() {
                 onClick={() => setMobileMenuOpen(false)}
                 sx={{ textTransform: 'none', color: '#0c2340', borderColor: '#cbd5e1', borderRadius: '6px' }}
               >
-                Sign In
+                {t('auth.loginTitle', 'Sign In')}
               </Button>
               <Button
                 component={Link}
@@ -313,7 +313,7 @@ export default function LandingPage() {
                 onClick={() => setMobileMenuOpen(false)}
                 sx={{ textTransform: 'none', background: '#0c2340', color: '#ffffff', borderRadius: '6px' }}
               >
-                Create Account
+                {t('auth.registerTitle', 'Create Account')}
               </Button>
             </Stack>
           )}
@@ -326,7 +326,7 @@ export default function LandingPage() {
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={7}>
               <Chip
-                label="National Citizen Facilitation Portal"
+                label={t('landing.portalChip', '🇮🇳  Unified Government Schemes Portal')}
                 size="small"
                 sx={{
                   mb: 2.5,
@@ -350,7 +350,7 @@ export default function LandingPage() {
                   color: '#0c2340',
                 }}
               >
-                Find Government Schemes You Are Eligible For
+                {t('landing.heroTitle', 'Find Government Schemes You Are Eligible For')}
               </Typography>
               <Typography
                 variant="body1"
@@ -362,10 +362,10 @@ export default function LandingPage() {
                   mb: 4,
                 }}
               >
-                Search official central and state initiatives, verify qualification criteria transparently, and follow clear step-by-step application instructions.
+                {t('landing.heroSubtitle', 'Search official central and state initiatives, verify qualification criteria transparently, and follow clear step-by-step application instructions.')}
               </Typography>
 
-              {/* Action Buttons - Stacked on mobile, side-by-side on desktop */}
+              {/* Action Buttons */}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <Button
                   component={Link}
@@ -385,7 +385,7 @@ export default function LandingPage() {
                     '&:hover': { background: '#102a43' },
                   }}
                 >
-                  Explore All Schemes
+                  {t('landing.exploreSchemes', 'Explore All Schemes')}
                 </Button>
                 <Button
                   component={Link}
@@ -405,7 +405,7 @@ export default function LandingPage() {
                     '&:hover': { borderColor: '#0c2340', background: '#f8fafc' },
                   }}
                 >
-                  Check Your Eligibility
+                  {t('landing.checkEligibility', 'Check Your Eligibility')}
                 </Button>
               </Stack>
             </Grid>
@@ -424,33 +424,37 @@ export default function LandingPage() {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                   <Chip
-                    label="Official Welfare Scheme"
+                    label={t('landing.spotlightBadge', 'Official Welfare Scheme')}
                     size="small"
                     sx={{ borderRadius: '4px', background: '#dcfce7', color: '#15803d', fontWeight: 700, fontSize: '0.75rem' }}
                   />
                   <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
-                    Ministry of Agriculture
+                    {t('landing.spotlightMinistry', 'Ministry of Agriculture')}
                   </Typography>
                 </Box>
 
                 <Typography variant="h6" fontWeight="700" color="#0c2340" sx={{ mb: 1, lineHeight: 1.3 }}>
-                  PM Kisan Samman Nidhi
+                  {t('landing.spotlightTitle', 'PM Kisan Samman Nidhi')}
                 </Typography>
                 <Typography variant="body2" color="#475569" sx={{ mb: 2.5, lineHeight: 1.6 }}>
-                  Direct income support of ₹6,000 per year in three equal installments to eligible small and marginal farmer families nationwide.
+                  {t('landing.spotlightDesc', 'Direct income support of ₹6,000 per year in three equal installments to eligible small and marginal farmer families nationwide.')}
                 </Typography>
 
                 <Box sx={{ background: '#f8fafc', p: 2, borderRadius: '6px', border: '1px solid #e2e8f0', mb: 2.5 }}>
                   <Typography variant="caption" sx={{ fontWeight: 700, color: '#0c2340', display: 'block', mb: 1 }}>
-                    Key Eligibility Guidelines:
+                    {t('landing.spotlightGuidelines', 'Key Eligibility Guidelines:')}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                     <CheckCircle sx={{ fontSize: 16, color: '#047857' }} />
-                    <Typography variant="caption" color="#334155">Cultivable landholding in applicant or family name</Typography>
+                    <Typography variant="caption" color="#334155">
+                      {t('landing.spotlightRule1', 'Cultivable landholding in applicant or family name')}
+                    </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <CheckCircle sx={{ fontSize: 16, color: '#047857' }} />
-                    <Typography variant="caption" color="#334155">Aadhaar-seeded active bank account</Typography>
+                    <Typography variant="caption" color="#334155">
+                      {t('landing.spotlightRule2', 'Aadhaar-seeded active bank account')}
+                    </Typography>
                   </Box>
                 </Box>
 
@@ -462,7 +466,7 @@ export default function LandingPage() {
                   size="small"
                   sx={{ textTransform: 'none', color: '#0c2340', borderColor: '#cbd5e1', borderRadius: '6px' }}
                 >
-                  View Scheme Guidelines & Details
+                  {t('landing.spotlightAction', 'View Scheme Guidelines & Details')}
                 </Button>
               </Card>
             </Grid>
@@ -470,15 +474,15 @@ export default function LandingPage() {
         </Container>
       </Box>
 
-      {/* ===== FUNCTIONAL SCHEME CATEGORIES (REPLACES FAKE COUNTERS) ===== */}
+      {/* ===== FUNCTIONAL SCHEME CATEGORIES ===== */}
       <Box sx={{ py: { xs: 6, md: 8 }, background: '#f8fafc' }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 5 }}>
             <Typography variant="h4" fontWeight="800" color="#0c2340" sx={{ mb: 1, letterSpacing: '-0.02em' }}>
-              Welfare Categories
+              {t('landing.categoriesTitle', 'Welfare Categories')}
             </Typography>
             <Typography variant="body1" color="#64748b" sx={{ maxWidth: 540, mx: 'auto' }}>
-              Explore schemes curated by welfare sector to find benefits matching your circumstances.
+              {t('landing.categoriesSubtitle', 'Explore schemes curated by welfare sector to find benefits matching your circumstances.')}
             </Typography>
           </Box>
 
@@ -518,7 +522,7 @@ export default function LandingPage() {
                     {cat.description}
                   </Typography>
                   <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 0.5, color: '#0c2340', fontWeight: 600, fontSize: '0.85rem' }}>
-                    Browse category <ArrowForward sx={{ fontSize: 14 }} />
+                    {t('landing.browseCategory', 'Browse category')} <ArrowForward sx={{ fontSize: 14 }} />
                   </Box>
                 </Card>
               </Grid>
@@ -527,15 +531,15 @@ export default function LandingPage() {
         </Container>
       </Box>
 
-      {/* ===== HOW IT WORKS (AUTHENTIC CIVIC STEPS) ===== */}
+      {/* ===== HOW IT WORKS ===== */}
       <Box sx={{ py: { xs: 6, md: 8 }, background: '#ffffff', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 6 }}>
             <Typography variant="h4" fontWeight="800" color="#0c2340" sx={{ mb: 1, letterSpacing: '-0.02em' }}>
-              How to Access Benefits
+              {t('landing.howItWorksTitle', 'How to Access Benefits')}
             </Typography>
             <Typography variant="body1" color="#64748b">
-              Follow these three straightforward steps to navigate welfare initiatives.
+              {t('landing.howItWorksSubtitle', 'Follow these three straightforward steps to navigate welfare initiatives.')}
             </Typography>
           </Box>
 
@@ -568,26 +572,36 @@ export default function LandingPage() {
                 SaralYojna
               </Typography>
               <Typography variant="body2" sx={{ color: '#94a3b8', lineHeight: 1.7, maxWidth: 420 }}>
-                An independent citizen facilitation portal providing structured discovery, qualification checks, and guidelines for Indian central and state welfare initiatives.
+                {t('footer.description', 'An independent citizen facilitation portal providing structured discovery, qualification checks, and guidelines for Indian central and state welfare initiatives.')}
               </Typography>
             </Grid>
             <Grid item xs={6} md={3}>
               <Typography variant="subtitle2" fontWeight="700" color="#ffffff" sx={{ mb: 2 }}>
-                Quick Links
+                {t('footer.quickLinks', 'Quick Links')}
               </Typography>
               <Stack spacing={1}>
-                <Typography variant="body2" component={Link} to="/schemes" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>All Schemes Directory</Typography>
-                <Typography variant="body2" component={Link} to="/eligibility" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>Eligibility Evaluation</Typography>
-                <Typography variant="body2" component={Link} to="/chatbot" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>Scheme Guidance Assistant</Typography>
+                <Typography variant="body2" component={Link} to="/schemes" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
+                  {t('footer.allSchemes', 'All Schemes Directory')}
+                </Typography>
+                <Typography variant="body2" component={Link} to="/eligibility" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
+                  {t('footer.eligibilityCheck', 'Eligibility Evaluation')}
+                </Typography>
+                <Typography variant="body2" component={Link} to="/chatbot" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
+                  {t('footer.assistant', 'Scheme Guidance Assistant')}
+                </Typography>
               </Stack>
             </Grid>
             <Grid item xs={6} md={4}>
               <Typography variant="subtitle2" fontWeight="700" color="#ffffff" sx={{ mb: 2 }}>
-                Legal & Governance
+                {t('footer.legal', 'Legal & Governance')}
               </Typography>
               <Stack spacing={1}>
-                <Typography variant="body2" component={Link} to="/privacy" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>Privacy Policy</Typography>
-                <Typography variant="body2" component={Link} to="/terms" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>Terms of Service</Typography>
+                <Typography variant="body2" component={Link} to="/privacy" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
+                  {t('footer.privacy', 'Privacy Policy')}
+                </Typography>
+                <Typography variant="body2" component={Link} to="/terms" sx={{ color: '#94a3b8', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
+                  {t('footer.terms', 'Terms of Service')}
+                </Typography>
               </Stack>
             </Grid>
           </Grid>
@@ -596,10 +610,10 @@ export default function LandingPage() {
 
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
             <Typography variant="caption" sx={{ color: '#64748b' }}>
-              © {new Date().getFullYear()} SaralYojna. All public rights reserved.
+              © {new Date().getFullYear()} SaralYojna. {t('footer.empowering', 'Empowering Citizens')}
             </Typography>
             <Typography variant="caption" sx={{ color: '#64748b', textAlign: { xs: 'center', sm: 'right' } }}>
-              Not affiliated with any political party. Scheme details sourced from official gazette notifications.
+              {t('footer.disclaimer', 'Not affiliated with any political party. Scheme details sourced from official gazette notifications.')}
             </Typography>
           </Box>
         </Container>

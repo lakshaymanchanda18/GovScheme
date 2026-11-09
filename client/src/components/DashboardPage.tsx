@@ -5,7 +5,7 @@ import {
   Chip, LinearProgress, IconButton, Skeleton, Stack, Divider
 } from '@mui/material';
 import {
-  MenuBook, Search, Assignment, TrendingUp,
+  MenuBook, Search, Assignment,
   ArrowForward, CheckCircle, Schedule, Cancel, Star,
   AccountBalance, SmartToy
 } from '@mui/icons-material';
@@ -28,13 +28,6 @@ interface RecentScheme {
   category: string;
   department: string;
 }
-
-const QUICK_ACTIONS = [
-  { icon: <MenuBook sx={{ fontSize: 26 }} />, label: 'Browse Schemes', path: '/schemes', bg: '#f1f5f9', color: '#0c2340' },
-  { icon: <Search sx={{ fontSize: 26 }} />, label: 'Check Eligibility', path: '/eligibility', bg: '#f0fdf4', color: '#047857' },
-  { icon: <Assignment sx={{ fontSize: 26 }} />, label: 'My Applications', path: '/applications', bg: '#fffbeb', color: '#b45309' },
-  { icon: <SmartToy sx={{ fontSize: 26 }} />, label: 'Scheme Assistant', path: '/chatbot', bg: '#f0f9ff', color: '#0284c7' },
-];
 
 const PROFILE_FIELDS: (keyof User)[] = [
   'firstName', 'lastName', 'email', 'phone', 'state', 'income', 'occupation', 'education'
@@ -65,7 +58,6 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      // Fetch stats, schemes, and recent applications
       const [statsData, eligibilityData, appsData] = await Promise.all([
         api.get('/dashboard/stats').catch(() => null),
         api.post('/eligibility/check-all').catch(() => null),
@@ -88,7 +80,7 @@ export default function DashboardPage() {
 
       setRecentApps(Array.isArray(appsData) ? appsData.slice(0, 5) : []);
     } catch {
-      // Stats will stay at defaults
+      // Keep defaults
     } finally {
       setLoading(false);
     }
@@ -99,15 +91,22 @@ export default function DashboardPage() {
     ? (PROFILE_FIELDS.filter(k => user[k]).length / PROFILE_FIELDS.length) * 100
     : 0;
 
+  const quickActions = [
+    { icon: <MenuBook sx={{ fontSize: 26 }} />, label: t('dashboard.browseSchemes', 'Browse Schemes'), path: '/schemes', bg: '#f1f5f9', color: '#0c2340' },
+    { icon: <Search sx={{ fontSize: 26 }} />, label: t('dashboard.checkEligibility', 'Check Eligibility'), path: '/eligibility', bg: '#f0fdf4', color: '#047857' },
+    { icon: <Assignment sx={{ fontSize: 26 }} />, label: t('dashboard.viewApplications', 'My Applications'), path: '/applications', bg: '#fffbeb', color: '#b45309' },
+    { icon: <SmartToy sx={{ fontSize: 26 }} />, label: t('dashboard.assistant', 'Scheme Assistant'), path: '/chatbot', bg: '#f0f9ff', color: '#0284c7' },
+  ];
+
   const statCards = [
-    { label: 'Available Schemes', value: stats.totalSchemes, icon: <AccountBalance />, bg: '#f1f5f9', color: '#0c2340' },
-    { label: 'Eligible For You', value: stats.eligibleSchemes, icon: <CheckCircle />, bg: '#dcfce7', color: '#059669' },
-    { label: 'Applications', value: stats.totalApplications, icon: <Assignment />, bg: '#fef3c7', color: '#d97706' },
-    { label: 'Approved', value: stats.approvedApplications, icon: <Star />, bg: '#cffafe', color: '#0284c7' },
+    { label: t('dashboard.availableSchemes', 'Available Schemes'), value: stats.totalSchemes, icon: <AccountBalance />, bg: '#f1f5f9', color: '#0c2340' },
+    { label: t('dashboard.eligibleForYou', 'Eligible For You'), value: stats.eligibleSchemes, icon: <CheckCircle />, bg: '#dcfce7', color: '#059669' },
+    { label: t('dashboard.myApplications', 'Applications'), value: stats.totalApplications, icon: <Assignment />, bg: '#fef3c7', color: '#d97706' },
+    { label: t('dashboard.approved', 'Approved'), value: stats.approvedApplications, icon: <Star />, bg: '#cffafe', color: '#0284c7' },
   ];
 
   return (
-    <Box sx={{ py: { xs: 3, md: 4 }, minHeight: 'calc(100vh - 120px)' }}>
+    <Box sx={{ py: { xs: 3, md: 4 }, minHeight: 'calc(100vh - 120px)', background: '#f8fafc' }}>
       <Container maxWidth="lg">
         {/* ===== WELCOME HEADER ===== */}
         <Box
@@ -122,12 +121,12 @@ export default function DashboardPage() {
           }}
         >
           <Typography variant="h4" sx={{ fontWeight: 800, mb: 1, letterSpacing: '-0.02em' }}>
-            Welcome, {firstName}
+            {t('dashboard.welcome', { name: firstName, defaultValue: `Welcome, ${firstName}` })}
           </Typography>
           <Typography sx={{ color: '#cbd5e1', fontSize: '1rem', maxWidth: 600 }}>
             {stats.eligibleSchemes > 0
-              ? `You are currently eligible for ${stats.eligibleSchemes} schemes. Review requirements and submit applications online.`
-              : 'Complete your profile to discover welfare schemes tailored for your background.'}
+              ? t('dashboard.eligibleMessage', { count: stats.eligibleSchemes, defaultValue: `You are currently eligible for ${stats.eligibleSchemes} schemes. Review requirements and submit applications online.` })
+              : t('dashboard.completeProfileMessage', 'Complete your profile to discover welfare schemes tailored for your background.')}
           </Typography>
         </Box>
 
@@ -139,11 +138,11 @@ export default function DashboardPage() {
                 className="animate-fade-in-up"
                 elevation={0}
                 sx={{
-                  borderRadius: '18px',
-                  border: '1px solid #f1f5f9',
-                  animationDelay: `${idx * 80}ms`,
-                  transition: 'all 0.3s ease',
-                  '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 32px rgba(0,0,0,0.06)' },
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0',
+                  background: '#ffffff',
+                  transition: 'all 0.2s ease',
+                  '&:hover': { transform: 'translateY(-2px)', borderColor: '#0c2340', boxShadow: '0 4px 12px rgba(12,35,64,0.06)' },
                 }}
               >
                 <CardContent sx={{ p: 2.5 }}>
@@ -171,11 +170,11 @@ export default function DashboardPage() {
         <Grid container spacing={3}>
           {/* ===== QUICK ACTIONS + RECENT SCHEMES ===== */}
           <Grid item xs={12} md={8}>
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#0f172a' }} className="animate-fade-in-up delay-200">
-              Quick Actions
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#0c2340' }} className="animate-fade-in-up delay-200">
+              {t('dashboard.quickActions', 'Quick Actions')}
             </Typography>
             <Grid container spacing={2} sx={{ mb: 3 }}>
-              {QUICK_ACTIONS.map((action, idx) => (
+              {quickActions.map((action, idx) => (
                 <Grid item xs={6} sm={3} key={idx}>
                   <Card
                     elevation={0}
@@ -200,10 +199,10 @@ export default function DashboardPage() {
               ))}
             </Grid>
 
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#0f172a' }} className="animate-fade-in-up delay-400">
-              Top Scheme Recommendations
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#0c2340' }} className="animate-fade-in-up delay-400">
+              {t('dashboard.topRecommendations', 'Top Scheme Recommendations')}
             </Typography>
-            <Card elevation={0} className="animate-fade-in-up delay-400" sx={{ borderRadius: '18px', border: '1px solid #f1f5f9' }}>
+            <Card elevation={0} className="animate-fade-in-up delay-400" sx={{ borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff' }}>
               {loading ? (
                 <CardContent>
                   {[1, 2, 3].map(i => (
@@ -223,22 +222,22 @@ export default function DashboardPage() {
                       <Box
                         sx={{
                           display: 'flex', alignItems: 'center', gap: 2, p: 2.5, cursor: 'pointer',
-                          transition: 'all 0.2s ease', '&:hover': { backgroundColor: 'rgba(79,70,229,0.03)' },
+                          transition: 'all 0.2s ease', '&:hover': { backgroundColor: '#f8fafc' },
                         }}
                         onClick={() => navigate(`/schemes/${scheme.id}`)}
                       >
-                        <Avatar sx={{ width: 44, height: 44, background: `hsl(${(idx * 60) + 240}, 60%, 95%)`, color: `hsl(${(idx * 60) + 240}, 60%, 45%)`, fontWeight: 700, fontSize: '0.9rem' }}>
+                        <Avatar sx={{ width: 40, height: 40, background: '#f1f5f9', color: '#0c2340', fontWeight: 700, fontSize: '0.9rem', borderRadius: '6px' }}>
                           {scheme.name[0]}
                         </Avatar>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#0c2340', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {scheme.name}
                           </Typography>
                           <Typography variant="caption" sx={{ color: '#64748b' }}>
                             {scheme.department}
                           </Typography>
                         </Box>
-                        <Chip label={scheme.category} size="small" sx={{ fontWeight: 600, fontSize: '0.7rem', background: 'rgba(79,70,229,0.08)', color: '#4f46e5', borderRadius: '8px' }} />
+                        <Chip label={scheme.category} size="small" sx={{ fontWeight: 600, fontSize: '0.72rem', background: '#f1f5f9', color: '#0c2340', borderRadius: '4px' }} />
                         <IconButton size="small" sx={{ color: '#94a3b8' }}>
                           <ArrowForward fontSize="small" />
                         </IconButton>
@@ -247,8 +246,8 @@ export default function DashboardPage() {
                     </Box>
                   ))}
                   <Box sx={{ p: 2, textAlign: 'center' }}>
-                    <Button size="small" endIcon={<ArrowForward />} onClick={() => navigate('/schemes')} sx={{ textTransform: 'none', fontWeight: 600, color: '#4f46e5' }}>
-                      View All Schemes
+                    <Button size="small" endIcon={<ArrowForward />} onClick={() => navigate('/schemes')} sx={{ textTransform: 'none', fontWeight: 600, color: '#0c2340' }}>
+                      {t('schemes.allSchemes', 'View All Schemes')}
                     </Button>
                   </Box>
                 </CardContent>
@@ -256,7 +255,7 @@ export default function DashboardPage() {
                 <CardContent sx={{ textAlign: 'center', py: 4 }}>
                   <MenuBook sx={{ fontSize: 48, color: '#cbd5e1', mb: 1 }} />
                   <Typography variant="body2" color="text.secondary">
-                    No schemes loaded yet. Make sure the server is running.
+                    {t('dashboard.noRecommendations', 'No recommendations available. Update your profile for matches.')}
                   </Typography>
                 </CardContent>
               )}
@@ -264,10 +263,10 @@ export default function DashboardPage() {
 
             {/* ===== RECENT APPLICATIONS ===== */}
             <Box sx={{ mt: 4 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#0f172a' }} className="animate-fade-in-up delay-400">
-                Recent Applications
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#0c2340' }} className="animate-fade-in-up delay-400">
+                {t('dashboard.recentApplications', 'Recent Applications')}
               </Typography>
-              <Card elevation={0} className="animate-fade-in-up delay-400" sx={{ borderRadius: '18px', border: '1px solid #f1f5f9' }}>
+              <Card elevation={0} className="animate-fade-in-up delay-400" sx={{ borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff' }}>
                 {loading ? (
                   <CardContent>
                     <Skeleton width="100%" height={60} sx={{ mb: 1 }} />
@@ -280,12 +279,12 @@ export default function DashboardPage() {
                         <Box
                           sx={{
                             display: 'flex', alignItems: 'center', p: 2.5, cursor: 'pointer',
-                            '&:hover': { backgroundColor: 'rgba(79,70,229,0.03)' },
+                            '&:hover': { backgroundColor: '#f8fafc' },
                           }}
                           onClick={() => navigate(`/applications/${app.id}`)}
                         >
                           <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#0f172a', mb: 0.5 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#0c2340', mb: 0.5 }}>
                               {app.scheme?.name || 'Unknown Scheme'}
                             </Typography>
                             <Typography variant="caption" sx={{ color: '#64748b' }}>
@@ -297,6 +296,7 @@ export default function DashboardPage() {
                             size="small" 
                             sx={{ 
                               fontWeight: 700, fontSize: '0.7rem',
+                              borderRadius: '4px',
                               background: app.status === 'APPROVED' ? '#dcfce7' : app.status === 'REJECTED' ? '#fee2e2' : '#fef3c7',
                               color: app.status === 'APPROVED' ? '#15803d' : app.status === 'REJECTED' ? '#b91c1c' : '#b45309'
                             }} 
@@ -306,8 +306,8 @@ export default function DashboardPage() {
                       </Box>
                     ))}
                     <Box sx={{ p: 2, textAlign: 'center' }}>
-                      <Button size="small" endIcon={<ArrowForward />} onClick={() => navigate('/applications')} sx={{ textTransform: 'none', fontWeight: 600, color: '#4f46e5' }}>
-                        View All Applications
+                      <Button size="small" endIcon={<ArrowForward />} onClick={() => navigate('/applications')} sx={{ textTransform: 'none', fontWeight: 600, color: '#0c2340' }}>
+                        {t('dashboard.viewApplications', 'View All Applications')}
                       </Button>
                     </Box>
                   </CardContent>
@@ -315,7 +315,7 @@ export default function DashboardPage() {
                   <CardContent sx={{ textAlign: 'center', py: 4 }}>
                     <Assignment sx={{ fontSize: 48, color: '#cbd5e1', mb: 1 }} />
                     <Typography variant="body2" color="text.secondary">
-                      You haven't submitted any applications yet.
+                      {t('dashboard.noApplications', 'You haven\'t submitted any applications yet.')}
                     </Typography>
                   </CardContent>
                 )}
@@ -326,15 +326,18 @@ export default function DashboardPage() {
           {/* ===== SIDEBAR ===== */}
           <Grid item xs={12} md={4}>
             {/* Profile Completion */}
-            <Card elevation={0} className="animate-fade-in-up delay-300" sx={{ borderRadius: '18px', border: '1px solid #f1f5f9', mb: 3 }}>
+            <Card elevation={0} className="animate-fade-in-up delay-300" sx={{ borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', mb: 3 }}>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#0f172a' }}>Profile</Typography>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#0c2340' }}>
+                    {t('navigation.profile', 'Profile')}
+                  </Typography>
                   <Chip
                     label={`${Math.round(profileComplete)}%`}
                     size="small"
                     sx={{
                       fontWeight: 700,
+                      borderRadius: '4px',
                       background: profileComplete >= 80 ? '#dcfce7' : profileComplete >= 50 ? '#fef3c7' : '#fee2e2',
                       color: profileComplete >= 80 ? '#15803d' : profileComplete >= 50 ? '#b45309' : '#b91c1c',
                     }}
@@ -347,71 +350,65 @@ export default function DashboardPage() {
                     height: 8, borderRadius: 4, mb: 2, backgroundColor: '#f1f5f9',
                     '& .MuiLinearProgress-bar': {
                       borderRadius: 4,
-                      background: profileComplete >= 80 ? 'linear-gradient(90deg, #059669, #34d399)' : 'linear-gradient(90deg, #4f46e5, #818cf8)',
+                      background: profileComplete >= 80 ? '#059669' : '#0c2340',
                     },
                   }}
                 />
                 <Typography variant="body2" sx={{ color: '#64748b', mb: 2 }}>
-                  {profileComplete < 80 ? 'Complete your profile to get better scheme recommendations.' : 'Great! Your profile is nearly complete.'}
+                  {profileComplete < 80 
+                    ? t('landing.step1Desc', 'Sign up and tell us about yourself — income, location, occupation, and family details.') 
+                    : t('profile.profileUpdated', 'Your profile is complete.')}
                 </Typography>
                 <Button
                   fullWidth variant="outlined" size="small" onClick={() => navigate('/profile')} id="dashboard-profile-btn"
-                  sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '10px', borderColor: '#e2e8f0', color: '#4f46e5', '&:hover': { borderColor: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.04)' } }}
+                  sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '6px', borderColor: '#cbd5e1', color: '#0c2340', '&:hover': { borderColor: '#0c2340', backgroundColor: '#f8fafc' } }}
                 >
-                  Complete Profile
+                  {t('profile.updateProfile', 'Update Profile')}
                 </Button>
               </CardContent>
             </Card>
 
             {/* Application Status Summary */}
-            <Card elevation={0} className="animate-fade-in-up delay-400" sx={{ borderRadius: '18px', border: '1px solid #f1f5f9', mb: 3 }}>
+            <Card elevation={0} className="animate-fade-in-up delay-400" sx={{ borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', mb: 3 }}>
               <CardContent sx={{ p: 3 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#0f172a', mb: 2 }}>Application Status</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#0c2340', mb: 2 }}>
+                  {t('applications.title', 'Application Status')}
+                </Typography>
                 <Stack spacing={2}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Schedule sx={{ color: '#f59e0b', fontSize: 20 }} />
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Pending</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {t('applications.status.pending', 'Pending')}
+                      </Typography>
                     </Box>
                     <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f59e0b' }}>{stats.pendingApplications}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <CheckCircle sx={{ color: '#22c55e', fontSize: 20 }} />
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Approved</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {t('applications.status.approved', 'Approved')}
+                      </Typography>
                     </Box>
                     <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#22c55e' }}>{stats.approvedApplications}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Cancel sx={{ color: '#ef4444', fontSize: 20 }} />
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Rejected</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {t('applications.status.rejected', 'Rejected')}
+                      </Typography>
                     </Box>
                     <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ef4444' }}>{stats.rejectedApplications}</Typography>
                   </Box>
                 </Stack>
                 <Button
                   fullWidth size="small" endIcon={<ArrowForward />} onClick={() => navigate('/applications')}
-                  sx={{ mt: 2.5, textTransform: 'none', fontWeight: 600, borderRadius: '10px', color: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.06)', '&:hover': { backgroundColor: 'rgba(79,70,229,0.12)' } }}
+                  sx={{ mt: 2.5, textTransform: 'none', fontWeight: 600, borderRadius: '6px', color: '#0c2340', backgroundColor: '#f1f5f9', '&:hover': { backgroundColor: '#e2e8f0' } }}
                 >
-                  View All Applications
+                  {t('dashboard.viewApplications', 'View All Applications')}
                 </Button>
-              </CardContent>
-            </Card>
-
-            {/* Tips Card */}
-            <Card
-              elevation={0} className="animate-fade-in-up delay-500"
-              sx={{ borderRadius: '18px', border: '1px solid rgba(20,184,166,0.2)', background: 'linear-gradient(135deg, #f0fdfa, #ecfdf5)' }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#0f766e', mb: 1 }}>
-                  💡 Did you know?
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#115e59', lineHeight: 1.7 }}>
-                  Completing your Aadhar and PAN details improves scheme matching accuracy by up to 40%.
-                  Update your profile to unlock more recommendations!
-                </Typography>
               </CardContent>
             </Card>
           </Grid>
