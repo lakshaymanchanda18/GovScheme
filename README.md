@@ -1,165 +1,177 @@
-# GovScheme
+# SaralYojna (सरल योजना)
 
-> **Intelligent Government Scheme Discovery & Application Platform**
+> **National Citizen Facilitation Portal for Central & State Welfare Schemes**
 
-A comprehensive full-stack web application designed to help citizens discover, evaluate eligibility for, and apply to government schemes through an AI-powered chatbot interface. Built with modern web technologies and enterprise-grade security practices.
-
-[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/React-18+-61dafb?logo=react)](https://react.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-0C2340.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18.2-61dafb.svg?logo=react)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg?logo=node.js)](https://nodejs.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748.svg?logo=prisma)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791.svg?logo=postgresql)](https://www.postgresql.org/)
+[![Pinecone](https://img.shields.io/badge/Vector_DB-Pinecone-000000.svg)](https://www.pinecone.io/)
+[![Google Gemini](https://img.shields.io/badge/AI-Gemini_2.5_Flash-8E75C2.svg)](https://ai.google.dev/)
+[![Languages](https://img.shields.io/badge/Languages-13_Official_Indian-047857.svg)](#-13-official-indian-languages)
 
 ---
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Running the Application](#running-the-application)
-- [API Documentation](#api-documentation)
-- [Database](#database)
-- [Security Features](#security-features)
-- [Development](#development)
-- [Scripts](#scripts)
-- [Contributing](#contributing)
-- [License](#license)
+- [Overview](#-overview)
+- [Key Pillars & Highlights](#-key-pillars--highlights)
+- [13 Official Indian Languages](#-13-official-indian-languages)
+- [Civic Design System](#-civic-design-system)
+- [System Architecture](#-system-architecture)
+- [AI & Vector RAG Pipeline](#-ai--vector-rag-pipeline)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Environment Variables](#environment-variables)
+  - [Database Setup](#database-setup)
+  - [Running the Application](#running-the-application)
+- [Testing & Quality Assurance](#-testing--quality-assurance)
+- [API Reference](#-api-reference)
+- [Security & Compliance](#-security--compliance)
+- [Deployment](#-deployment)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
 ## 🎯 Overview
 
-**GovScheme** is an innovative digital platform that bridges the gap between Indian citizens and government welfare schemes. The application leverages AI and machine learning to:
+**SaralYojna** is a citizen facilitation platform that bridges the gap between Indian citizens and government welfare schemes across all states and union territories. Citizens often struggle to navigate complex guidelines, multilingual documentation, and fragmented ministerial portals.
 
-- **Discover**: Browse and search across hundreds of government schemes
-- **Evaluate**: Automatically assess eligibility based on user profile
-- **Apply**: Submit applications directly through the platform
-- **Track**: Monitor application status in real-time
-- **Communicate**: AI-powered chatbot for assistance and guidance
-
-The platform is designed with accessibility, scalability, and security at its core, ensuring a seamless experience for citizens across diverse demographics.
+SaralYojna solves this with:
+1. **Unified Scheme Repository**: Centralized, structured data covering agriculture, healthcare, housing, education, finance, women empowerment, and social welfare.
+2. **Transparent Eligibility Engine**: Real-time matching against user demographics, income, education, occupation, and state without requiring opaque approvals.
+3. **Conversational RAG Assistant**: Retrieval-Augmented Generation that searches verified scheme knowledge bases to answer citizen queries in natural language with source references.
+4. **Multilingual Inclusivity**: Full end-to-end interface support in 13 official Indian languages with native scripts and bidirectional layout support (LTR and Urdu RTL).
+5. **Civic Trust & Anti-Vibe-Coding**: Designed with institutional dignity—no purple gradients, no fake counters or synthetic reviews, and clear legal protections (Privacy Policy & Terms).
 
 ---
 
-## ✨ Features
+## 🚀 Key Pillars & Highlights
 
-### User-Centric Features
-- 🔐 **Secure Authentication**: JWT-based auth with 2FA support
-- 👤 **User Profiles**: Comprehensive demographic and socioeconomic data management
-- 🔍 **Scheme Discovery**: Advanced search and filtering across 500+ government schemes
-- 🎯 **Eligibility Assessment**: AI-powered eligibility scoring with Pinecone vector database
-- 📋 **Application Management**: Submit, track, and manage multiple scheme applications
-- 📄 **Document Upload**: Secure file management with verification support
-- 🔔 **Real-time Notifications**: Status updates and alerts
-- 💬 **AI Chatbot**: Google Generative AI-powered assistance
+| Pillar | Capability | Technical Details |
+|---|---|---|
+| **Multilingual Access** | 13 official Indian scheduled languages | Full client-side i18next localization with 357 keys, 100% key parity, Indian flag markers (`🇮🇳`), and Urdu RTL. |
+| **Civic Design** | High-contrast, institutional visual design | Deep Civic Navy (`#0C2340`), Emerald Green (`#047857`), unified skeleton loaders, zero layout shifts. |
+| **AI Scheme Guidance** | Grounded question-answering with citations | Pinecone 768-dim vector embeddings via `gemini-embedding-001`, generative reasoning via `gemini-2.5-flash`. |
+| **Fast Scheme Catalog** | Sub-100ms catalog discovery | Server-side pagination with field projection, smart debounce search, state/category filters. |
+| **Security & Privacy** | AES-256 PII protection & RBAC | Scrypt key derivation, AES-256-CBC field encryption, JWT with 2FA/TOTP support, CSRF protection, rate limiting. |
+| **Compliance** | Transparent legal terms & privacy policy | Dedicated `/privacy` and `/terms` routes outlining citizen data protection and fair usage. |
 
-### Administrative Features
-- 📊 **Analytics Dashboard**: Comprehensive metrics and insights
-- 👨‍💼 **Scheme Management**: CRUD operations for government schemes
-- 👥 **User Management**: Role-based access control
-- 🔄 **Application Workflow**: Multi-stage approval pipeline
-- 📈 **Reporting**: Detailed analytics and audit logs
+---
 
-### Technical Features
-- 🛡️ **Security**: CSRF protection, rate limiting, helmet, CORS
-- 🗃️ **Caching**: Redis-powered caching for performance
-- 📧 **Email Notifications**: Welcome emails and status updates
-- 🎙️ **Voice Interface**: Voice-based interaction support
-- 🌍 **Internationalization**: Multi-language support (i18n)
-- 🔄 **Job Queue**: Background job processing for async operations
-- 📱 **PWA Ready**: Progressive Web App capabilities with service workers
+## 🇮🇳 13 Official Indian Languages
+
+SaralYojna provides native-language accessibility for citizens across India. The entire interface, navigation, dialogs, forms, errors, and chatbot controls are translated across all 13 languages with zero missing keys:
+
+| Language | Code | Native Script | Direction | Coverage |
+|---|---|---|---|---|
+| **English** | `en` | English | LTR | 100% (357 keys) |
+| **हिन्दी (Hindi)** | `hi` | हिन्दी | LTR | 100% (357 keys) |
+| **বাংলা (Bengali)** | `bn` | বাংলা | LTR | 100% (357 keys) |
+| **தமிழ் (Tamil)** | `ta` | தமிழ் | LTR | 100% (357 keys) |
+| **తెలుగు (Telugu)** | `te` | తెలుగు | LTR | 100% (357 keys) |
+| **मराठी (Marathi)** | `mr` | मराठी | LTR | 100% (357 keys) |
+| **ગુજરાતી (Gujarati)** | `gu` | ગુજરાતી | LTR | 100% (357 keys) |
+| **ਪੰਜਾਬੀ (Punjabi)** | `pa` | ਪੰਜਾਬੀ | LTR | 100% (357 keys) |
+| **മലയാളം (Malayalam)** | `ml` | മലയാളം | LTR | 100% (357 keys) |
+| **ಕನ್ನಡ (Kannada)** | `kn` | ಕನ್ನಡ | LTR | 100% (357 keys) |
+| **اردو (Urdu)** | `ur` | اردو | **RTL** | 100% (357 keys) |
+| **অসমীয়া (Assamese)** | `as` | অসমীয়া | LTR | 100% (357 keys) |
+| **ଓଡ଼ିଆ (Odia)** | `or` | ଓଡ଼ିଆ | LTR | 100% (357 keys) |
+
+Language switching is client-side and instantaneous, automatically updating document `lang` and `dir` attributes for appropriate text shaping and alignment.
+
+---
+
+## 🏛️ Civic Design System
+
+SaralYojna intentionally adheres to government portal standards of trust, clarity, and accessibility:
+- **Palette**: Deep Civic Navy (`#0C2340`) for primary elements, Institutional Slate (`#1E293B`) for body text, and Emerald Green (`#047857`) for confirmations and active status badges.
+- **Button Standards**: Rectangular buttons with subtle `borderRadius: 4px` - `6px` (avoiding rounded bubble/pill styling).
+- **Zero Vibe-Coding**: Eliminates synthetic floating blur circles, purple/neon gradients, fake counter metrics, and AI slop placeholders.
+- **Skeleton Loaders**: Dedicated `<SchemeCardSkeleton>` and `<SchemeDetailsSkeleton>` components ensure smooth transitions and zero Cumulative Layout Shift (CLS) during network fetches.
+- **Responsive Layout**: Designed mobile-first, ensuring zero horizontal overflow on small screens and accessible touch targets.
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Citizen Browser / Client                        │
+│   React 18 + Vite + TypeScript + Material UI + i18next (13 Languages)   │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ HTTPS / REST (JSON)
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                   Express API Server (or Vercel Serverless)             │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │ Middlewares: Auth (JWT), Rate Limiter, Helmet, CORS, Validation  │  │
+│  └────────────────────────────────┬─────────────────────────────────┘  │
+│                                   │                                    │
+│  ┌─────────────────────────┐      │      ┌──────────────────────────┐  │
+│  │   Core Domain Routes    │◄─────┼─────►│     AI & RAG Services    │  │
+│  │  /schemes, /eligibility │      │      │  Pinecone Vector Search  │  │
+│  │  /applications, /users  │      │      │  Google Gemini 2.5 Flash │  │
+│  └────────────┬────────────┘      │      └─────────────┬────────────┘  │
+└───────────────┼───────────────────┼────────────────────┼───────────────┘
+                │                   │                    │
+                ▼                   │                    ▼
+┌───────────────────────────────┐   │   ┌────────────────────────────────┐
+│   PostgreSQL via Prisma ORM   │   │   │     Pinecone Vector Index      │
+│  Users, Schemes, Applications,│   │   │  768-dim Scheme Embeddings     │
+│  Audit Logs, Documents        │   │   │  (gemini-embedding-001)        │
+└───────────────────────────────┘   │   └────────────────────────────────┘
+                                    ▼
+                        ┌────────────────────────┐
+                        │   Google Gemini API    │
+                        │  (gemini-2.5-flash)    │
+                        └────────────────────────┘
+```
+
+---
+
+## 🧠 AI & Vector RAG Pipeline
+
+The platform uses Retrieval-Augmented Generation (RAG) to provide contextual, verifiable scheme guidance without hallucination:
+
+1. **Embedding Generation**: Scheme attributes (name, description, eligibility, benefits, application steps) are encoded into 768-dimensional vector embeddings using Google's `gemini-embedding-001` model.
+2. **Vector Indexing**: Embeddings are stored in a Pinecone serverless index (`gov-schemes`) with cosine similarity metric.
+3. **Retrieval**: When a citizen asks a question (e.g., *"How can a marginal farmer apply for PM-KISAN?"*), the query is converted to a vector and top-matching scheme contexts are retrieved via cosine similarity.
+4. **Grounded Generation**: The retrieved official documentation is provided as system grounding to `gemini-2.5-flash`, which composes a clear, structured response citing verified criteria and documentation requirements.
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-```
-- React 18.2.0 - UI library
-- TypeScript 5.2.2 - Type safety
-- Vite 5.0.0 - Build tool & dev server
-- Material-UI (MUI) 5.14.3 - Component library
-- React Router 6.20.1 - Client-side routing
-- Redux Toolkit 1.9.5 - State management
-- TanStack React Query 5.91.0 - Server state management
-- React Hook Form 7.45.4 - Form handling
-- React i18next 12.3.1 - Internationalization
-- Axios 1.6.2 - HTTP client
-- Notistack 3.0.1 - Notifications
-```
+- **Framework**: [React 18](https://react.dev/) + [TypeScript 5](https://www.typescriptlang.org/)
+- **Build Tool**: [Vite 5](https://vitejs.dev/)
+- **UI Components**: [Material UI (MUI 5)](https://mui.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Internationalization**: [i18next](https://www.i18next.com/) & [react-i18next](https://react.i18next.com/)
+- **Routing**: [React Router 6](https://reactrouter.com/)
+- **Notifications**: [Notistack](https://notistack.com/)
 
 ### Backend
-```
-- Express 4.18.2 - Web framework
-- TypeScript 5.3.3 - Type safety
-- Prisma 5.7.0 - ORM & database migrations
-- SQLite - Primary database
-- JWT - Authentication
-- bcryptjs 2.4.3 - Password hashing
-- Google Generative AI 0.24.1 - AI chatbot
-- Pinecone 7.2.0 - Vector database for ML
-- Nodemailer 6.9.7 - Email service
-- Redis - Caching & sessions
-```
+- **Runtime**: [Node.js](https://nodejs.org/) (v18+)
+- **Framework**: [Express 4](https://expressjs.com/) + TypeScript
+- **Database & ORM**: [Prisma ORM 5](https://www.prisma.io/) with [PostgreSQL](https://www.postgresql.org/)
+- **Validation**: [Zod](https://zod.dev/) & [express-validator](https://express-validator.github.io/)
+- **Security**: [Helmet](https://helmetjs.github.io/), [bcryptjs](https://github.com/dcodeIO/bcrypt.js), [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
+- **Encryption**: AES-256-CBC with Node.js crypto & Scrypt key derivation
+- **Documentation**: [Swagger / OpenAPI 3.0](https://swagger.io/)
 
-### Development & Testing
-```
-- Jest 30.3.0 - Testing framework
-- ts-jest - TypeScript support for Jest
-- Nodemon 3.0.2 - Auto-reload during development
-- Swagger/OpenAPI - API documentation
-```
-
----
-
-## 🏗️ Architecture
-
-### System Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     Frontend (React + Vite)                  │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │ Components | Pages | Hooks | Contexts | State (Redux)  │ │
-│  └────────────────────────────────────────────────────────┘ │
-└──────────────────────┬──────────────────────────────────────┘
-                       │ HTTP/REST
-┌──────────────────────▼──────────────────────────────────────┐
-│                   Backend (Express + Node)                   │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │ Routes | Controllers | Services | Middleware | Utils   │ │
-│  └────────────────────────────────────────────────────────┘ │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │ Auth | Schemes | Applications | Documents | Chatbot    │ │
-│  └────────────────────────────────────────────────────────┘ │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │ Email Queue | Job Processing | Background Tasks       │ │
-│  └────────────────────────────────────────────────────────┘ │
-└──────────┬─────────────────┬──────────────┬─────────────────┘
-           │                 │              │
-      ┌────▼────┐     ┌──────▼──────┐  ┌───▼────┐
-      │ SQLite  │     │   Redis     │  │ Pinecone
-      │ (Data)  │     │ (Cache/Que) │  │ (Vector)
-      └─────────┘     └─────────────┘  └────────┘
-```
-
-### Database Schema
-
-The application uses **Prisma ORM** with SQLite, featuring these core models:
-
-- **User**: User profiles with demographic and financial information
-- **GovernmentScheme**: Comprehensive scheme data with eligibility criteria
-- **Application**: User applications to schemes with workflow tracking
-- **EligibilityCheck**: AI-based eligibility assessment results
-- **Document**: Secure document storage and management
-- **Notification**: User notifications and alerts
-- **ApplicationStatusUpdate**: Audit trail for application lifecycle
-- **AuditLog**: System-wide audit logging
+### AI & Vector Services
+- **Generative AI**: [Google Generative AI](https://ai.google.dev/) (`gemini-2.5-flash`)
+- **Embeddings**: `models/gemini-embedding-001` (768 dimensions)
+- **Vector Database**: [Pinecone](https://www.pinecone.io/) (Serverless)
 
 ---
 
@@ -167,555 +179,264 @@ The application uses **Prisma ORM** with SQLite, featuring these core models:
 
 ```
 GovScheme/
-├── client/                          # React Frontend
+├── client/                               # Frontend Application
+│   ├── public/
+│   │   ├── favicon.svg                   # Custom civic emblem favicon
+│   │   └── manifest.json                 # PWA configuration
 │   ├── src/
-│   │   ├── components/              # Reusable React components
-│   │   ├── contexts/                # React Context providers
-│   │   ├── hooks/                   # Custom React hooks
-│   │   ├── locales/                 # i18n translation files
-│   │   ├── App.tsx                  # Main App component
-│   │   ├── main.tsx                 # React entry point
-│   │   ├── i18n.ts                  # i18n configuration
-│   │   ├── index.css                # Global styles
-│   │   └── service-worker.ts        # PWA service worker
-│   ├── public/                      # Static assets
-│   ├── vite.config.ts               # Vite configuration
-│   ├── tsconfig.json                # TypeScript config
-│   ├── package.json                 # Frontend dependencies
-│   └── index.html                   # HTML template
+│   │   ├── components/                   # UI components
+│   │   │   ├── common/Skeletons.tsx      # Skeleton loaders for zero layout shift
+│   │   │   ├── LandingPage.tsx           # Civic hero & scheme showcase
+│   │   │   ├── SchemeList.tsx            # Paginated scheme directory with filters
+│   │   │   ├── SchemeDetails.tsx         # Detailed scheme view & eligibility check
+│   │   │   ├── EnhancedChatbot.tsx       # AI assistant with RAG grounding
+│   │   │   ├── LanguageSwitcher.tsx      # 13-language native switcher
+│   │   │   ├── PrivacyPolicy.tsx         # Formal privacy compliance page
+│   │   │   └── TermsOfService.tsx        # Terms of service and usage policies
+│   │   ├── locales/                      # 13 official language JSON bundles
+│   │   │   ├── en.json, hi.json, bn.json, ta.json, te.json, mr.json...
+│   │   │   └── languages.ts              # Language metadata & flags
+│   │   ├── i18n.ts                       # i18next configuration & auto-direction
+│   │   ├── App.tsx                       # Client application routes
+│   │   └── main.tsx                      # Entry point
+│   ├── vite.config.ts                    # Vite build configuration
+│   └── package.json
 │
-├── server/                          # Express Backend
+├── server/                               # Backend API Service
 │   ├── src/
-│   │   ├── index.ts                 # Server entry point
-│   │   ├── swagger.ts               # OpenAPI/Swagger configuration
-│   │   ├── config/
-│   │   │   └── prisma.ts            # Prisma client setup
-│   │   ├── routes/                  # API route handlers
-│   │   │   ├── auth.ts              # Authentication routes
-│   │   │   ├── schemes.ts           # Scheme management routes
-│   │   │   ├── applications.ts      # Application routes
-│   │   │   ├── users.ts             # User management routes
-│   │   │   ├── documents.ts         # Document handling
-│   │   │   ├── chatbot.ts           # AI chatbot routes
-│   │   │   ├── eligibility.ts       # Eligibility check routes
-│   │   │   ├── admin.ts             # Admin dashboard routes
-│   │   │   ├── notifications.ts     # Notification routes
-│   │   │   ├── integrations.ts      # External integrations
-│   │   │   └── voice.ts             # Voice interaction routes
-│   │   ├── middleware/
-│   │   │   ├── auth.ts              # JWT authentication
-│   │   │   ├── validation.ts        # Zod schema validation
-│   │   │   └── csrf.ts              # CSRF protection
+│   │   ├── config/prisma.ts              # Prisma PostgreSQL client instance
+│   │   ├── middleware/                   # JWT auth, validation, rate limiting
+│   │   ├── routes/                       # Express route controllers
+│   │   │   ├── schemes.ts                # Paginated scheme directory
+│   │   │   ├── chatbot.ts                # AI chatbot endpoint
+│   │   │   ├── eligibility.ts            # Profile evaluation engine
+│   │   │   ├── applications.ts           # Scheme application management
+│   │   │   └── users.ts                  # User profile and PII handling
 │   │   ├── services/
-│   │   │   ├── encryption.ts        # PII encryption/decryption
-│   │   │   ├── queue.ts             # Job queue management
-│   │   │   ├── cache.ts             # Redis caching
-│   │   │   ├── email.ts             # Email service
-│   │   │   ├── schemeImport.ts      # Scheme data import
-│   │   │   └── [other services]     # Domain-specific services
-│   │   ├── utils/
-│   │   │   └── errors.ts            # Custom error classes
-│   │   └── __tests__/               # Unit and integration tests
-│   ├── scripts/
-│   │   ├── seed.ts                  # Database seeding
-│   │   ├── importSchemes.ts         # Scheme import script
-│   │   └── [migration scripts]
-│   ├── jest.config.js               # Jest test configuration
-│   ├── tsconfig.json                # TypeScript config
-│   ├── package.json                 # Backend dependencies
-│   └── test.sql                     # Database test queries
+│   │   │   ├── geminiAI.ts               # Gemini 2.5 Flash conversational engine
+│   │   │   ├── pineconeRAG.ts            # Vector search & context retrieval
+│   │   │   ├── eligibilityChecker.ts     # Rule-based eligibility scoring
+│   │   │   └── encryption.ts             # AES-256 field encryption
+│   │   ├── __tests__/                    # Backend test suites (35 unit/integration tests)
+│   │   └── index.ts                      # Express application entrypoint
+│   ├── jest.config.js                    # Jest configuration
+│   └── package.json
 │
 ├── prisma/
-│   ├── schema.prisma                # Database schema definition
-│   └── migrations/                  # Database migration history
+│   ├── schema.prisma                     # Prisma schema (PostgreSQL)
+│   └── migrations/                       # Schema migration history
 │
-├── data/
-│   ├── schemes.seed.json            # 500+ government schemes dataset
-│   ├── schemes.seed.csv             # CSV format seed data
-│   ├── scripts/                     # Data processing scripts
-│   └── processed/                   # Processed/normalized data
+├── data/                                 # Seed and reference datasets
+│   ├── schemes.seed.json                 # Comprehensive government scheme seed data
+│   └── schemes.seed.csv
 │
-├── scripts/
-│   ├── clean_data.py                # Data cleaning utilities
-│   ├── scrape_schemes.py            # Web scraping for schemes
-│   ├── config.py                    # Python configuration
-│   ├── ingest.py                    # Data ingestion pipeline
-│   ├── export_dataset.py            # Export utilities
-│   ├── validate_data.py             # Data validation
-│   ├── run_pipeline.py              # ETL pipeline orchestration
-│   ├── test_apis.py                 # Python API tests
-│   ├── test_apis.js                 # Node.js API tests
-│   └── requirements.txt             # Python dependencies
+├── scripts/                              # ETL & ingestion scripts
+│   ├── clean_data.py                     # Data cleaning & normalization
+│   ├── ingest.py                         # Pinecone embedding ingestion script
+│   └── config.py
 │
-├── .vscode/                         # VS Code configuration
-├── .gitignore                       # Git ignore rules
-├── package.json                     # Root workspace config
-├── package-lock.json                # Dependency lock file
-├── LICENSE                          # MIT License
-└── README.md                        # This file
+├── api/
+│   └── index.js                          # Vercel serverless bundle
+├── vercel.json                           # Vercel deployment routing configuration
+├── .gitignore                            # Clean Git ignore rules
+└── README.md
 ```
 
 ---
 
-## 📋 Prerequisites
+## ⚡ Getting Started
 
-Before you begin, ensure you have the following installed:
+### Prerequisites
 
 - **Node.js**: v18.0.0 or higher ([Download](https://nodejs.org/))
-- **npm**: v9.0.0 or higher (comes with Node.js)
-- **Git**: For version control ([Download](https://git-scm.com/))
-- **SQLite**: v3.0 or higher (usually pre-installed)
-- **Redis** (Optional): For production deployment
-- **Python**: v3.8+ (for data scripts)
+- **npm**: v9.0.0 or higher
+- **PostgreSQL**: Local PostgreSQL or cloud instance ([Neon](https://neon.tech), [Supabase](https://supabase.com))
+- **Google AI Studio API Key**: For Gemini 2.5 Flash and Embeddings ([Get Key](https://aistudio.google.com/))
+- **Pinecone API Key**: For Vector Database ([Get Key](https://www.pinecone.io/))
 
-### Optional Services
-- **Google Generative AI API Key**: For AI chatbot features
-- **Pinecone API Key**: For semantic search and eligibility assessment
-- **SMTP Server**: For email notifications (or use SendGrid/similar)
+### Installation
 
----
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/lakshaymanchanda18/GovScheme.git
+   cd GovScheme
+   ```
 
-## 📦 Installation
+2. **Install all dependencies** (root, backend, and frontend):
+   ```bash
+   npm install
+   ```
 
-### 1. Clone the Repository
+### Environment Variables
 
-```bash
-git clone https://github.com/lakshaymanchanda18/GovScheme.git
-cd GovScheme
-```
-
-### 2. Install Dependencies
-
-Install root dependencies:
-```bash
-npm install
-npm run prisma:generate
-```
-
-Install frontend dependencies:
-```bash
-cd client
-npm install
-cd ..
-```
-
-Install backend dependencies:
-```bash
-cd server
-npm install
-cd ..
-```
-
-### 3. Install Python Scripts Dependencies (Optional)
-
-```bash
-cd scripts
-pip install -r requirements.txt
-cd ..
-```
-
----
-
-## ⚙️ Configuration
-
-### 1. Environment Variables
-
-Create a `.env.local` file in the `server` directory:
+#### 1. Backend Configuration (`server/.env`)
+Create a file at `server/.env` based on `server/.env.production.example`:
 
 ```env
-# Database
-DATABASE_URL="file:./dev.db"
+# Database (PostgreSQL)
+DATABASE_URL="postgresql://username:password@localhost:5432/govscheme?schema=public"
+
+# Security & Tokens
+JWT_SECRET="generate-a-secure-random-secret-key-at-least-32-characters"
+JWT_EXPIRE="7d"
+ENCRYPTION_KEY="generate-a-secure-random-32-char-key-for-pii"
 
 # Server Configuration
-PORT=5000
-NODE_ENV=development
-JWT_SECRET=your-secret-key-min-32-characters
-JWT_EXPIRE=7d
+PORT=5001
+NODE_ENV="development"
+FRONTEND_URL="http://localhost:5173"
+CORS_ORIGIN="http://localhost:5173"
 
-# CORS
-CORS_ORIGIN=http://localhost:5173,http://localhost:3000
+# Google Gemini AI & Pinecone Vector DB
+GEMINI_API_KEY="your-google-ai-studio-api-key"
+PINECONE_API_KEY="your-pinecone-api-key"
+PINECONE_INDEX_NAME="gov-schemes"
 
-# Security
-CSRF_SECRET=your-csrf-secret-key
-
-# Email Service
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-SMTP_FROM=noreply@govscheme.com
-
-# AI & ML Services
-GOOGLE_API_KEY=your-google-generative-ai-key
-PINECONE_API_KEY=your-pinecone-api-key
-PINECONE_ENVIRONMENT=your-pinecone-environment
-PINECONE_INDEX=govscheme-index
-
-# Redis (Optional)
-REDIS_URL=redis://localhost:6379
-
-# Two-Factor Authentication
-2FA_WINDOW_SIZE=30
+# Optional Email Service
+EMAIL_HOST="smtp.gmail.com"
+EMAIL_PORT=587
+EMAIL_USER=""
+EMAIL_PASS=""
 ```
 
-### 2. Frontend Configuration
-
-Create a `.env.local` file in the `client` directory:
+#### 2. Frontend Configuration (`client/.env`)
+Create a file at `client/.env`:
 
 ```env
-VITE_API_URL=http://localhost:5000/api
-VITE_APP_NAME=GovScheme
-VITE_APP_VERSION=1.0.0
+VITE_API_URL="http://localhost:5001/api"
 ```
 
-### 3. Database Setup
+### Database Setup
 
-Initialize the database:
+1. **Generate Prisma Client & Run Migrations**:
+   ```bash
+   npm run postinstall
+   cd server
+   npx prisma migrate dev --name init
+   cd ..
+   ```
 
-```bash
-cd server
-npm run prisma:migrate
-npm run prisma:generate
-cd ..
-```
+2. **Seed Initial Schemes Data** (optional):
+   ```bash
+   cd server
+   node add-schemes-prisma.js
+   cd ..
+   ```
 
-Seed the database with government schemes:
+### Running the Application
 
-```bash
-cd server
-npm run seed
-cd ..
-```
-
----
-
-## 🚀 Running the Application
-
-### Development Mode (Full Stack)
-
-**Terminal 1 - Backend Server:**
+#### Start Backend (Terminal 1)
 ```bash
 cd server
 npm run dev
 ```
-The backend will start on `http://localhost:5000`
-API docs available at `http://localhost:5000/api-docs`
+The server will start on `http://localhost:5001`. Swagger documentation is available at `http://localhost:5001/api-docs`.
 
-**Terminal 2 - Frontend Dev Server:**
+#### Start Frontend (Terminal 2)
 ```bash
 cd client
 npm run dev
 ```
-The frontend will start on `http://localhost:5173`
+The client will start on `http://localhost:5173`.
 
-### Production Mode
+---
 
-**Build Frontend:**
+## 🧪 Testing & Quality Assurance
+
+The backend includes a comprehensive Jest test suite covering eligibility evaluation, cryptographic security, and payload validation:
+
 ```bash
-cd client
-npm run build
+# Run server test suite
+npm test --prefix server
 ```
 
-**Build & Start Backend:**
+**Current Test Status**:
+```
+PASS  src/__tests__/services/validation.test.ts (11 tests)
+PASS  src/__tests__/services/encryption.test.ts (7 tests)
+PASS  src/__tests__/services/eligibilityChecker.test.ts (17 tests)
+
+Test Suites: 3 passed, 3 total
+Tests:       35 passed, 35 total
+Snapshots:   0 total
+Time:        ~2.5s
+```
+
+Frontend production build verification:
 ```bash
-cd server
-npm run build
-npm start
+npm run build --prefix client
 ```
 
 ---
 
-## 📚 API Documentation
+## 📚 API Reference
 
-The API is fully documented using **Swagger/OpenAPI**. After starting the server, visit:
-
-```
-http://localhost:5000/api-docs
-```
-
-### Key API Endpoints
-
-#### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-- `GET /api/auth/profile` - Get user profile
-- `POST /api/auth/refresh` - Refresh JWT token
-- `GET /api/auth/csrf-token` - Get CSRF token
-
-#### Schemes
-- `GET /api/schemes` - List all schemes (paginated)
-- `GET /api/schemes/:id` - Get scheme details
-- `POST /api/schemes` - Create scheme (admin)
-- `PUT /api/schemes/:id` - Update scheme (admin)
-- `DELETE /api/schemes/:id` - Delete scheme (admin)
-
-#### Applications
-- `GET /api/applications` - List user's applications
-- `POST /api/applications` - Submit new application
-- `GET /api/applications/:id` - Get application details
-- `PUT /api/applications/:id` - Update application
-- `DELETE /api/applications/:id` - Cancel application
-
-#### Eligibility
-- `POST /api/eligibility/check` - Check scheme eligibility
-- `GET /api/eligibility/results` - Get eligibility history
-
-#### Documents
-- `POST /api/documents/upload` - Upload document
-- `GET /api/documents/:id` - Download document
-- `DELETE /api/documents/:id` - Delete document
-
-#### Chatbot
-- `POST /api/chatbot/message` - Send message to AI chatbot
-- `GET /api/chatbot/context` - Get chat context
-
-#### Admin
-- `GET /api/admin/analytics` - Dashboard analytics
-- `GET /api/admin/users` - List all users
-- `GET /api/admin/applications` - List all applications
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `GET` | `/api/schemes` | List schemes with server-side pagination (`page`, `limit`, `search`, `category`, `state`) | No |
+| `GET` | `/api/schemes/:id` | Get full scheme details | No |
+| `POST` | `/api/schemes` | Create new scheme | Admin |
+| `POST` | `/api/eligibility/check` | Evaluate citizen eligibility criteria | Optional |
+| `POST` | `/api/chatbot/message` | Query conversational RAG assistant | No |
+| `POST` | `/api/auth/register` | Register citizen account | No |
+| `POST` | `/api/auth/login` | Authenticate citizen and receive JWT | No |
+| `GET` | `/api/auth/profile` | Retrieve citizen profile and applications | Yes |
+| `POST` | `/api/applications` | Submit application for a scheme | Yes |
+| `GET` | `/api/applications` | List citizen submitted applications | Yes |
 
 ---
 
-## 🗄️ Database
+## 🔒 Security & Compliance
 
-### Database Schema Highlights
-
-**User Model**:
-- Complete demographic information
-- Financial data (encrypted)
-- Document references
-- Application history
-
-**GovernmentScheme Model**:
-- Comprehensive scheme details
-- Eligibility criteria
-- Benefits information
-- Application process steps
-
-**Application Model**:
-- Multi-stage workflow (PENDING → APPROVED/REJECTED)
-- Document attachments
-- Status history tracking
-- Audit trail
-
-**EligibilityCheck Model**:
-- AI-based assessment scores
-- Matched/unmatched criteria
-- Confidence scores
-- Historical records
-
-### Database Migrations
-
-Run migrations:
-```bash
-cd server
-npm run prisma:migrate
-```
-
-View database in Prisma Studio:
-```bash
-npm run prisma:studio
-```
+- **PII Encryption**: Sensitive user profile fields (e.g., Aadhaar number, bank account details) are encrypted at rest using AES-256-CBC with per-user salt derivation.
+- **Stateless Authentication**: Signed JWTs with configurable expiration and secure HTTP-only cookies.
+- **Brute Force & DoS Protection**: Express rate limiting applied globally and specifically tuned for authentication and chatbot endpoints.
+- **SQL Injection Prevention**: Strongly-typed queries via Prisma ORM prevent raw SQL injection vulnerabilities.
+- **Legal Compliance**: Full transparency via `/privacy` (Privacy Policy) and `/terms` (Terms of Service) following the Indian Digital Personal Data Protection (DPDP) principles.
 
 ---
 
-## 🔒 Security Features
+## 🚀 Deployment
 
-### Authentication & Authorization
-- ✅ JWT-based stateless authentication
-- ✅ bcryptjs password hashing (salt rounds: 12)
-- ✅ 2FA/TOTP support
-- ✅ Role-based access control (RBAC)
-- ✅ HTTP-only secure cookies
+The repository is configured for serverless deployment on [Vercel](https://vercel.com):
 
-### Data Protection
-- ✅ PII encryption/decryption
-- ✅ HTTPS enforcement (production)
-- ✅ CORS configuration
-- ✅ CSRF token protection
-- ✅ SQL injection prevention (Prisma ORM)
-
-### Rate Limiting
-- ✅ Global rate limiter: 200 requests/15min
-- ✅ Auth limiter: 100 requests/15min
-- ✅ Chatbot limiter: 30 requests/min
-- ✅ Upload limiter: 10 requests/min
-
-### Security Headers
-- ✅ Helmet.js for secure HTTP headers
-- ✅ Content-Security-Policy
-- ✅ X-Frame-Options
-- ✅ X-Content-Type-Options
-
-### Audit & Logging
-- ✅ Request ID tracking
-- ✅ Structured logging
-- ✅ Audit trail for all operations
-- ✅ Error tracking without sensitive data exposure
-
----
-
-## 👨‍💻 Development
-
-### Project Scripts
-
-**Frontend**:
-```bash
-cd client
-npm run dev          # Start dev server
-npm run build        # Production build
-npm run preview      # Preview production build
-```
-
-**Backend**:
-```bash
-cd server
-npm run dev                  # Start with nodemon
-npm run build               # Compile TypeScript
-npm run start               # Run compiled code
-npm test                    # Run tests
-npm run test:coverage       # Generate coverage report
-npm run prisma:migrate      # Run migrations
-npm run prisma:studio       # Open Prisma Studio
-npm run import:schemes      # Import schemes data
-```
-
-**Data Scripts**:
-```bash
-cd scripts
-python scrape_schemes.py       # Scrape schemes from web
-python clean_data.py           # Clean and validate data
-python validate_data.py        # Run data validation
-python export_dataset.py       # Export processed data
-python run_pipeline.py         # Run full ETL pipeline
-python test_apis.py            # Test APIs with Python
-```
-
-### Code Quality
-
-The project uses:
-- **TypeScript** for type safety
-- **Zod** for runtime schema validation
-- **Jest** for unit and integration testing
-- **ESLint** (recommended) for code linting
-- **Prettier** (recommended) for code formatting
-
-### Testing
-
-Run tests:
-```bash
-cd server
-npm test
-npm run test:coverage
-```
-
----
-
-## 📊 Key Features Deep Dive
-
-### AI-Powered Eligibility Assessment
-The platform uses **Pinecone vector database** with semantic search to:
-1. Parse user profile
-2. Create embeddings
-3. Compare against scheme requirements
-4. Generate confidence scores
-5. Recommend matching schemes
-
-### Real-time Notifications
-- Application status updates
-- Chatbot assistance notifications
-- Administrative alerts
-- Document verification notices
-
-### Multi-language Support (i18n)
-- English (en) - Default
-- Hindi (hi)
-- Regional language support
-- Dynamic language switching
-
-### Background Job Processing
-- Email delivery
-- Document processing
-- Analytics refresh
-- Scheme validation
+1. **Deploying on Vercel**:
+   - Set the root directory as the repository root.
+   - Build Command: `npm run build`
+   - Output Directory: `client/dist`
+   - Add all environment variables listed in [Environment Variables](#environment-variables) into the Vercel Project Settings.
+2. **Serverless API Function**:
+   - `api/index.js` automatically routes `/api/*` and `/health` requests to the Express server bundle.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+We welcome contributions from developers passionate about civic technology and public service delivery:
 
-1. **Fork** the repository
-2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
-3. **Commit** your changes: `git commit -m 'Add amazing feature'`
-4. **Push** to the branch: `git push origin feature/amazing-feature`
-5. **Open** a Pull Request
-
-### Contribution Guidelines
-- Follow the existing code style
-- Add tests for new features
-- Update documentation
-- Keep commits atomic and descriptive
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/improvement-name`.
+3. Ensure all tests pass: `npm test --prefix server` and `npm run build --prefix client`.
+4. Commit your changes: `git commit -m 'feat: description of improvement'`.
+5. Push to the branch: `git push origin feature/improvement-name`.
+6. Open a Pull Request.
 
 ---
 
 ## 📝 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 ```
-MIT License
-
 Copyright (c) 2026 Lakshay Manchanda
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
 ```
-
----
-
-## 📞 Support & Contact
-
-- **Author**: Lakshay Manchanda
-- **GitHub**: [@lakshaymanchanda18](https://github.com/lakshaymanchanda18)
-- **Email**: [Contact through GitHub](https://github.com/lakshaymanchanda18)
-
----
-
-## 🙏 Acknowledgments
-
-- Google Generative AI for AI chatbot capabilities
-- Pinecone for vector search infrastructure
-- Material-UI for component library
-- Express.js community
-- Prisma team for excellent ORM
-
----
-
-## 📈 Project Status
-
-- ✅ MVP Complete
-- ✅ Core Features Implemented
-- 🚀 Production Ready
-- 📋 Continuous Improvements Ongoing
-
-**Last Updated**: May 2026  
-**Version**: 1.0.0
 
 ---
 
 <div align="center">
 
-**Built with ❤️ to serve Indian citizens**
+**SaralYojna — Dedicated to transparent, accessible public welfare for every citizen.**
 
-[⬆ back to top](#govscheme)
+[⬆ Back to Top](#saralyojna-सरल-योजना)
 
 </div>

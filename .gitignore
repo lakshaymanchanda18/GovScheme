@@ -6,32 +6,58 @@
 .pnp.js
 server/node_modules
 client/node_modules
-client/dist
+node_modules/
+
+# production & build outputs
+/build
+/dist
+dist/
+build/
+server/dist/
+client/dist/
 server/uploads
 
-# testing
+# archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+archive.zip
+
+# python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+.pytest_cache/
+
+# testing & coverage
 /coverage
+coverage/
 
 # next.js
 /.next/
 /out/
 
-# production
-/build
-/dist
-
 # misc
 .DS_Store
+Thumbs.db
 *.pem
 
-# debug
+# debug & temporary logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+output.txt
+*.log
+logs/
 
-# local env files
+# local env files (do NOT commit secrets)
 .env*.local
 .env
+client/.env
+server/.env
 
 # vercel
 .vercel
@@ -40,20 +66,19 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Database
+# Database & scratch queries
 *.db
 *.sqlite
 *.sqlite3
 *.db-journal
+server/test.sql
+check_db.py
+server/clearDb.ts
 
 # Data pipeline
 data/raw/
 data/final/
 
-# Docs & Logs (generated/internal)
+# Docs
 docs/
-logs/
 
-# Misc
-check_db.py
-server/clearDb.ts
